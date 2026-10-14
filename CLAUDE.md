@@ -192,10 +192,11 @@ This package calls:
 
 - `R-CMD-check.yaml`: `r-cmd-check.yml@v1`, quick on pull requests, full on
   `main` or with the `full-ci` label.
-- `native-checks.yml`: `sanitizers.yml` (with ASan), `valgrind.yml`,
-  `lto.yml`, `gctorture.yml`, `rchk.yml` (with `github-packages:
-  pedrobtz/zufast`, since the rchk image ignores `Remotes:`),
-  `analyzers.yml` and `cran-special.yml`, with the same profile expression.
+- `native-checks.yml`: `valgrind.yml`, `lto.yml`, `gctorture.yml`,
+  `rchk.yml` (with `github-packages: pedrobtz/zufast`, since the rchk image
+  ignores `Remotes:`), `analyzers.yml` and `cran-special.yml`, with the same
+  profile expression. `sanitizers.yml` (with ASan) joins in stage 1, once
+  there is C for it to instrument (pedrobtz/r-actions#68).
 - `coverage.yaml`: `coverage.yml` pinned to a commit. The badge is committed
   to `gh-pages` because `main` takes no direct pushes.
 - `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with

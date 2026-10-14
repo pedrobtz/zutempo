@@ -100,6 +100,13 @@ Already done, not repeated here: `.Rbuildignore` with `^\.agents$`,
 - `rchk.yml` gets `github-packages: pedrobtz/zufast` and
   `fail-on-findings: true`: the rchk image ignores `Remotes:`, so without it
   the package cannot be installed there and nothing is analysed.
+- The `sanitizers` job of `native-checks.yml` is deferred to stage 1. Its
+  instrumentation verifier requires a `__ubsan*` symbol in the shared
+  object, and `init.c`, the only C in stage 0, contains nothing UBSan
+  instruments, so both UBSan legs fail before `R CMD check` runs although
+  the flags reach the compiler ([pedrobtz/r-actions#68](https://github.com/pedrobtz/r-actions/issues/68)). Stage 1
+  adds the first C with arithmetic and restores the job; the other six
+  native jobs run from stage 0.
 
 **Design.** §3 (identity table), §13, §14 row 0.
 
@@ -142,11 +149,15 @@ produces cases, and CI runs the suite with and without `__int128`.
   `LinkingTo`, reached by one internal `.Call` that a test exercises.
 - CI: a second `r-cmd-check.yml` call (or an `env` input the Makevars
   honours) that defines `ZUF_NO_INT128`, on the quick and full profiles.
+- CI: restore the `sanitizers` job (with `asan: true`) in
+  `native-checks.yml`, deferred from stage 0 because its verifier needs
+  instrumentable C ([pedrobtz/r-actions#68](https://github.com/pedrobtz/r-actions/issues/68)).
 - `.Rbuildignore` entries for `tools/`, `inst/spec/PINS` stays in the
   tarball.
 
 **Exit criteria.**
-- CI is green on every leg, including the `ZUF_NO_INT128` leg.
+- CI is green on every leg, including the `ZUF_NO_INT128` leg and the
+  `sanitizers` job.
 - `zutempo_info()` returns the three pins from `inst/spec/PINS`.
 - `inst/spec/members.csv` exists and `test-members.R` passes with every
   in-scope member listed as pending.
