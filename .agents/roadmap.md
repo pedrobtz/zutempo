@@ -21,7 +21,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 
 | Stage | Title | Issue | Pull request | Done |
 | --- | --- | --- | --- | --- |
-| 0 | [Package identity](#stage-0--package-identity) | [#3](https://github.com/pedrobtz/zutempo/issues/3) | | |
+| 0 | [Package identity](#stage-0--package-identity) | [#3](https://github.com/pedrobtz/zutempo/issues/3) | [#19](https://github.com/pedrobtz/zutempo/pull/19) | 2026-10-15 |
 | 1 | [Engine scaffold, pinned specification and oracle](#stage-1--engine-scaffold-pinned-specification-and-oracle) | [#4](https://github.com/pedrobtz/zutempo/issues/4) | | |
 | 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | | |
 | 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | | |
@@ -82,6 +82,32 @@ Already done, not repeated here: `.Rbuildignore` with `^\.agents$`,
   `v0.1.0` issue.
 - `DESCRIPTION` contains no template text.
 
+**Deviations (2026-10-15).**
+- `LinkingTo: zufast (>= 0.1.0.9000)`, not `(>= 0.1.1)`: `zufast`'s default
+  branch, which `Remotes: pedrobtz/zufast` installs, is at 0.1.0.9000, and
+  0.1.1 does not exist yet, so the `>= 0.1.1` constraint cannot resolve. The
+  constraint moves to `>= 0.1.1` in stage 13, with `Remotes:` removed (open
+  question 1).
+- `NEWS.md`'s heading is `# zutempo 0.0.0.9000`, not `(development
+  version)`: R 4.6.1's `R CMD check` drops a section whose title has no
+  version and reports "No news entries found" as a NOTE. The heading still
+  tracks the development version and becomes `# zutempo 0.1.0` in stage 13.
+- The coverage badge is committed to `gh-pages` (`badge-branch`), not
+  `main`: the `main` ruleset rejects direct pushes, so the badge job failed
+  on every merge. The pkgdown deploy gets `force: false` so it rebases on
+  the badge commit, and the badge link in `README.md` points at `gh-pages`.
+  Both are the r-actions README's prescribed setup for this case.
+- `rchk.yml` gets `github-packages: pedrobtz/zufast` and
+  `fail-on-findings: true`: the rchk image ignores `Remotes:`, so without it
+  the package cannot be installed there and nothing is analysed.
+- The `sanitizers` job of `native-checks.yml` is deferred to stage 1. Its
+  instrumentation verifier requires a `__ubsan*` symbol in the shared
+  object, and `init.c`, the only C in stage 0, contains nothing UBSan
+  instruments, so both UBSan legs fail before `R CMD check` runs although
+  the flags reach the compiler ([pedrobtz/r-actions#68](https://github.com/pedrobtz/r-actions/issues/68)). Stage 1
+  adds the first C with arithmetic and restores the job; the other six
+  native jobs run from stage 0.
+
 **Design.** §3 (identity table), §13, §14 row 0.
 
 ## Stage 1 — Engine scaffold, pinned specification and oracle
@@ -123,11 +149,15 @@ produces cases, and CI runs the suite with and without `__int128`.
   `LinkingTo`, reached by one internal `.Call` that a test exercises.
 - CI: a second `r-cmd-check.yml` call (or an `env` input the Makevars
   honours) that defines `ZUF_NO_INT128`, on the quick and full profiles.
+- CI: restore the `sanitizers` job (with `asan: true`) in
+  `native-checks.yml`, deferred from stage 0 because its verifier needs
+  instrumentable C ([pedrobtz/r-actions#68](https://github.com/pedrobtz/r-actions/issues/68)).
 - `.Rbuildignore` entries for `tools/`, `inst/spec/PINS` stays in the
   tarball.
 
 **Exit criteria.**
-- CI is green on every leg, including the `ZUF_NO_INT128` leg.
+- CI is green on every leg, including the `ZUF_NO_INT128` leg and the
+  `sanitizers` job.
 - `zutempo_info()` returns the three pins from `inst/spec/PINS`.
 - `inst/spec/members.csv` exists and `test-members.R` passes with every
   in-scope member listed as pending.

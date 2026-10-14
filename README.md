@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/pedrobtz/zutempo/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pedrobtz/zutempo/actions/workflows/R-CMD-check.yaml)
-[![coverage](https://raw.githubusercontent.com/pedrobtz/zutempo/main/.github/badges/coverage.svg)](https://github.com/pedrobtz/zutempo/actions/workflows/coverage.yaml)
+[![coverage](https://raw.githubusercontent.com/pedrobtz/zutempo/gh-pages/badges/coverage.svg)](https://github.com/pedrobtz/zutempo/actions/workflows/coverage.yaml)
 <!-- badges: end -->
 
 The goal of zutempo is to ...
