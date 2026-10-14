@@ -1,0 +1,229 @@
+# CLAUDE.md
+
+<!-- markdownlint-disable-next-line MD013 -->
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+`zutempo` implements the Temporal date and time model of ECMA-262 in R:
+`Instant`, `ZonedDateTime`, `PlainDateTime`, `PlainDate`, `PlainTime`,
+`PlainYearMonth`, `PlainMonthDay`, `Duration` and `Now`, in the ISO 8601
+calendar, with IANA time zones read from the same database base R uses. The
+arithmetic is a transliteration of the specification's abstract operations
+into C over the specification's full ranges, so a result in R matches the
+result in a browser or in Node. It has no hard runtime dependency: `zufast`
+is `LinkingTo` only (header-only C, needed at build time). It does not do
+non-ISO calendars, locale formatting, custom time zones, `strftime`, or
+arithmetic operators in 0.1.0.
+
+The specification is [`.agents/design.md`](.agents/design.md) and the plan
+is [`.agents/roadmap.md`](.agents/roadmap.md). They outrank this file:
+`CLAUDE.md` orients, the design decides, the roadmap says what each stage
+builds and when it is done.
+
+## Current state
+
+Verified 2026-10-15: package identity only (stage 0). `src/` holds the
+registration entry point and nothing else; no R function exists yet. The
+engine, the types and the time zone reader are not implemented. See the
+roadmap's stage table for what is done.
+
+## Stage tracking
+
+Progress toward the next version is tracked as GitHub sub-issues, so the
+parent issue shows a progress bar such as "6 of 14".
+
+- **One parent issue per target version**, titled with the bare version:
+  [v0.1.0 (#2)](https://github.com/pedrobtz/zutempo/issues/2).
+- **One sub-issue per roadmap stage**, titled as the roadmap titles it, for
+  example `Stage 2 — PlainDate, PlainTime and PlainDateTime`, and linking to
+  that section. The roadmap has fourteen stages, 0 to 13.
+- **Every tracking issue carries the `stage` label**, so it can be told apart
+  from bug and feature issues and left out of open-issue counts.
+- **Close a stage by merging its pull request.** Put `Closes #<n>` in the
+  body of the stage's pull request. Never close a stage whose exit criteria
+  are not met; record a deviation in the roadmap first.
+- **The roadmap stays authoritative.** The issues record which stages are
+  done, not what a stage requires. Adding, removing or renaming a stage
+  means editing the roadmap and the sub-issues in the same change.
+- Close the parent issue when CRAN accepts the version and it is tagged.
+
+## Versioning
+
+The package develops at `0.0.0.9000` and targets `0.1.0` for its first CRAN
+release. Set `Version: 0.1.0` and the matching `NEWS.md` heading when the
+package enters `Pre-flight`. Bump to `0.1.0.9000` only after CRAN accepts it,
+never before.
+
+`zutempo` depends on `zufast` through `LinkingTo` and develops against its
+default branch (`Remotes: pedrobtz/zufast`) until `zufast` 0.1.1 is on CRAN;
+`zutempo` is not submitted before then (roadmap, open question 1). Nothing
+depends on `zutempo` yet. The C table for other packages (design §7) comes
+after 0.1.0.
+
+## Commands
+
+Run from the package root.
+
+```sh
+Rscript -e 'devtools::load_all()'                # compile src/ and load
+Rscript -e 'devtools::document()'                # roxygen -> NAMESPACE, man/
+Rscript -e 'devtools::test()'                    # full testthat suite
+Rscript -e 'devtools::test(filter = "<name>")'   # one test file
+Rscript -e 'devtools::test(shuffle = TRUE)'      # order independence
+Rscript -e 'devtools::check()'                   # R CMD check
+air format .                                     # format R sources
+```
+
+The default loop is `document()`, `test()`, `check()`. Before the first
+`load_all()`, install the development `zufast`:
+`Rscript -e 'pak::pak("pedrobtz/zufast")'`.
+
+## Architecture
+
+Design §4 is the reference. The layers, top down:
+
+- `R/`: argument and option normalisation, recycling, class and attribute
+  handling, `vctrs` and `pillar` methods registered lazily.
+- `src/ztp_r_*.c`: the glue. R vectors in, column loops, `NA` handling,
+  conditions raised with the 1-based index of the failing element.
+- `src/ztp_*.c`: the engine. The specification's abstract operations over
+  plain C structs, one C function per operation where practical, each
+  commented with the section it implements. No `SEXP`, no R calls, no
+  allocation in loops. Calendar algorithms and 128-bit intermediates come
+  from `zufast`'s headers.
+- `src/ztp_tz*.c`: the zone cache. TZif reader, POSIX TZ footer rules, link
+  table, identifier index.
+- `src/init.c`: the only exported symbol, `R_init_zutempo`.
+
+## Invariants that are easy to break
+
+- **The engine never calls R.** Errors are status codes plus a message in a
+  per-call buffer; the glue turns them into conditions. This is what lets
+  the same engine serve C callers after 0.1.0. An `Rf_error()` or an
+  allocation inside `ztp_*.c` breaks that.
+- **Values are stored exactly in R's own vector types** (design §4.1). No
+  bit reinterpretation, no 64-bit integers smuggled in doubles. 128-bit
+  integers exist only inside C.
+- **Nanoseconds are normalised to `[0, 1e9)` with the floor convention**, so
+  lexicographic order on (Re, Im) of a complex value is chronological order.
+- **Every `TZif` count and offset is bounds-checked against the file size**
+  before use. The reader is a fuzz target.
+- **A slim TZif file needs the POSIX footer.** R's own database is slim;
+  macOS's is fat, which hides a footer bug on the developer's machine
+  (design §0).
+- **Duration fields are doubles because Temporal's are.** Field-to-normalised
+  conversion is a sum of products in 128 bits, never a double computation.
+- **The pinned specification moves only on purpose.** `inst/spec/PINS`
+  records the `tc39/proposal-temporal` and test262 commits; changing either
+  needs its own `NEWS.md` entry.
+- **The suite must build and pass with `ZUF_NO_INT128`** as well as with
+  `__int128`. CI runs both.
+
+## Testing conventions
+
+- **Self-sufficient.** Every test builds its own inputs inside the
+  `test_that()` block. No file-scope objects.
+- **Self-contained.** Global state goes through `withr::local_*()`, randomised
+  input through `withr::local_seed()`. Tests write only under `tempdir()`.
+- **Assert on condition classes, never message text.** Use
+  `expect_error(..., class = "zutempo_<kind>_error")`. Wording belongs in
+  snapshot tests.
+- **Order independence.** `devtools::test(shuffle = TRUE)` is part of the
+  definition of done.
+- **Borrow a conformance suite before writing one.** The oracle is
+  `temporal-polyfill` under Node (`tools/temporal-oracle/`, from stage 1),
+  checked against Node 26's native Temporal; test262's result assertions are
+  translated in stage 11. Zone cases run against committed TZif fixtures
+  from a pinned tzdata release, not the machine's database.
+- **Tests that need the machine's database skip when it is missing.**
+- **Helpers live in `tests/testthat/helper-*.R`.** `helper-oracle.R` runs
+  every case in an oracle JSON file (from stage 1).
+- **Keep the suite inside the CRAN time budget.** Not yet measured.
+
+## Definition of done
+
+`devtools::document()` and `devtools::check()` clean, meaning 0 errors, 0
+warnings and 0 notes. The one allowed note is "New submission" before the first
+release. `devtools::test(shuffle = TRUE)` green. `gctorture(TRUE)` clean when C
+changed. CI green on every leg. A user-facing change also needs a test, roxygen
+documentation and a `NEWS.md` entry.
+
+## Releasing to CRAN
+
+- **CI is the pre-submission check.** The `pedrobtz/r-actions` R CMD check runs
+  `--as-cran` on the CRAN-like runners and containers, and it replaces
+  win-builder, the macOS builder and R-hub. None of them is a release step,
+  and `cran-comments.md` lists the CI legs as its test environments.
+- **Entering `Pre-flight`.** The roadmap's feature stages are done, the
+  version is set as in Versioning, `NEWS.md` and `cran-comments.md` are
+  written, and CI is green. Only submission work remains.
+- **Before submitting,** run the `pkg-cran-review` skill and resolve every
+  finding.
+- **The pretest is automated and does not read `cran-comments.md`.** A NOTE
+  that is explained but not fixed gets the upload archived. Fix the NOTE
+  instead of justifying it.
+- **After acceptance,** tag `v0.1.0`, publish the GitHub release, bump to
+  `0.1.0.9000`, and close the version's parent issue.
+
+## Editing rules
+
+- roxygen comments are the source. Never edit `man/` or `NAMESPACE` by hand.
+- Edit `README.Rmd`, not the generated `README.md` (from stage 12).
+- Keep prose simple and short. One idea per sentence. British spelling.
+- Wrap roxygen text at 80 characters and run `air format .` on R sources.
+- Use `lower_snake_case`. R names follow design §5: constructors named after
+  the type, `temporal_` for methods, accessors named after the property,
+  `now_` for `Temporal.Now`, `zutempo_` for package helpers. Internal native
+  symbols are prefixed `ztp_`; the public C prefix is `zutempo_`.
+- Keep hard runtime dependencies at zero. `zufast` is `LinkingTo` only.
+- Export and document public functions. Do not create roxygen topics for
+  internal ones.
+
+## Continuous integration
+
+Workflows come from `pedrobtz/r-actions`. Call those reusable workflows instead
+of writing bespoke ones, and pin a released tag rather than `main`. Pin a
+workflow that holds a write token, such as `coverage.yml`, to a commit, with
+the tag in a comment. The `R-CMD-check` workflow must call `r-cmd-check.yml`,
+because a hand-rolled one does not count as the pre-submission check.
+
+This package calls:
+
+- `R-CMD-check.yaml`: `r-cmd-check.yml@v1`, quick on pull requests, full on
+  `main` or with the `full-ci` label.
+- `native-checks.yml`: `sanitizers.yml` (with ASan), `valgrind.yml`,
+  `lto.yml`, `gctorture.yml`, `rchk.yml` (with `github-packages:
+  pedrobtz/zufast`, since the rchk image ignores `Remotes:`),
+  `analyzers.yml` and `cran-special.yml`, with the same profile expression.
+- `coverage.yaml`: `coverage.yml` pinned to a commit. The badge is committed
+  to `gh-pages` because `main` takes no direct pushes.
+- `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with
+  `force: false` so it does not overwrite the badge.
+
+Small edits get a small run. The shared workflows look at the files a pull
+request changes, compared with its merge base:
+
+- **Markdown only**, such as `README.md`, `NEWS.md` or `cran-comments.md`,
+  skips every check. Only coverage and the pkgdown site run.
+- **`DESCRIPTION` or `README.Rmd` as well**, and nothing else, adds one R CMD
+  check on Ubuntu R-release.
+- **Any other file** runs everything.
+
+So put a README or `DESCRIPTION` touch-up in its own pull request. Once a pull
+request changes code, every later push to it runs in full.
+
+## Commits and pull requests
+
+Short, imperative, sentence-case commit subjects, optionally scoped. Keep each
+commit focused and do not sweep in unrelated files. A pull request explains the
+user-visible outcome and the rationale, links related issues, lists the checks
+that were run and the tests that were skipped, and flags platform-sensitive
+changes. Performance claims need evidence.
+
+Never commit or push to the default branch. Work on a branch, open a pull
+request, and merge it only when every check is green. A stage's pull request
+closes its sub-issue.
+
+When you find a defect, in this package or in an upstream tool, open an issue
+for it rather than only working around it.
