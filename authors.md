@@ -2,16 +2,20 @@
 
 ## Authors
 
-- **First Last**. Author, maintainer.
+- **Pedro Baltazar**. Author, maintainer, copyright holder.
 
 ## Citation
 
-Last F (2026). *zutempo: What the Package Does (One Line, Title Case)*.
-R package version 0.0.0.9000, <https://pedrobtz.github.io/zutempo/>.
+Source:
+[`DESCRIPTION`](https://github.com/pedrobtz/zutempo/blob/main/DESCRIPTION)
+
+Baltazar P (2026). *zutempo: Dates, Times and Durations Following the
+'TC39' Temporal Specification*. R package version 0.0.0.9000,
+<https://pedrobtz.github.io/zutempo/>.
 
     @Manual{,
-      title = {zutempo: What the Package Does (One Line, Title Case)},
-      author = {First Last},
+      title = {zutempo: Dates, Times and Durations Following the 'TC39' Temporal Specification},
+      author = {Pedro Baltazar},
       year = {2026},
       note = {R package version 0.0.0.9000},
       url = {https://pedrobtz.github.io/zutempo/},
