@@ -9,12 +9,13 @@
 #include "ztp_zoned.h"
 #include "ztp_parse.h"
 #include "ztp_relative.h"
+#include "ztp_tz.h"
 
 #include <string.h>
 
 /* The zones of a table, parsed; the identifiers are canonical and loaded
    (R/tz.R did that), so a failure here is a programming error. */
-static ztp_zone *ztp_r_zones_open(SEXP zones)
+ztp_zone *ztp_r_zones_open(SEXP zones)
 {
     R_xlen_t n = Rf_xlength(zones);
     ztp_zone *out = (ztp_zone *)R_alloc((size_t)(n ? n : 1), sizeof *out);
@@ -336,6 +337,171 @@ SEXP ztp_r_parse_offset_string(SEXP x)
             ztp_r_raise(&ctx);
         }
         REAL(out)[i] = (double)p.offset_ns;
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* --- arithmetic (stage 8) ----------------------------------------------- */
+
+static bool ztp_r_zoned_dur_get(SEXP list, R_xlen_t i, ztp_duration *d)
+{
+    for (int f = 0; f < ZTP_DURATION_FIELDS; f++) {
+        double v = REAL(VECTOR_ELT(list, f))[i];
+        if (ISNAN(v)) return false;
+        ztp_duration_set_field(d, f, v);
+    }
+    return true;
+}
+
+static SEXP ztp_r_zoned_dur_alloc(R_xlen_t n)
+{
+    static const char *names[] = {
+        "years", "months", "weeks", "days", "hours", "minutes", "seconds",
+        "milliseconds", "microseconds", "nanoseconds", ""
+    };
+    SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));
+    for (int f = 0; f < ZTP_DURATION_FIELDS; f++)
+        SET_VECTOR_ELT(out, f, Rf_allocVector(REALSXP, n));
+    UNPROTECT(1);
+    return out;
+}
+
+static void ztp_r_zoned_dur_put(SEXP list, R_xlen_t i, const ztp_duration *d)
+{
+    for (int f = 0; f < ZTP_DURATION_FIELDS; f++)
+        REAL(VECTOR_ELT(list, f))[i] = d ? ztp_duration_field(d, f) : NA_REAL;
+}
+
+/* AddDurationToZonedDateTime over elements; the duration is negated on
+   the R side for subtract. */
+SEXP ztp_r_zoned_add(SEXP x, SEXP codes, SEXP zones, SEXP dur, SEXP overflow)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const ztp_zone *tz = ztp_r_zones_open(zones);
+    ztp_overflow ov = (ztp_overflow)Rf_asInteger(overflow);
+    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        const ztp_zone *zone = ztp_r_zone_of(tz, codes, i);
+        zuf_i128 epoch, result;
+        ztp_duration d;
+        ztp_internal_duration internal;
+        if (zone == NULL || !ztp_r_zoned_get(x, i, &epoch) || !ztp_r_zoned_dur_get(dur, i, &d)) {
+            ztp_r_zoned_put_na(out, i);
+            continue;
+        }
+        internal = ztp_duration_to_internal(&d);
+        if (ztp_add_zoned_date_time(&ctx, (size_t)i + 1, epoch, zone, &internal, ov, &result) != ZTP_OK)
+            ztp_r_raise(&ctx);
+        ztp_r_zoned_put(out, i, result);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* DifferenceTemporalZonedDateTime (until; since is negated on the R side):
+   a time largest unit differences the instants; a date one needs equal
+   zones. */
+SEXP ztp_r_zoned_until(SEXP x1, SEXP codes1, SEXP zones1, SEXP x2, SEXP codes2, SEXP zones2,
+                       SEXP largest, SEXP smallest, SEXP increment, SEXP mode)
+{
+    R_xlen_t n = Rf_xlength(x1);
+    const ztp_zone *tz1 = ztp_r_zones_open(zones1), *tz2 = ztp_r_zones_open(zones2);
+    ztp_unit largest_unit = (ztp_unit)Rf_asInteger(largest);
+    ztp_unit smallest_unit = (ztp_unit)Rf_asInteger(smallest);
+    int64_t inc = (int64_t)Rf_asReal(increment);
+    ztp_rounding_mode rmode = (ztp_rounding_mode)Rf_asInteger(mode);
+    SEXP out = PROTECT(ztp_r_zoned_dur_alloc(n));
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        const ztp_zone *za = ztp_r_zone_of(tz1, codes1, i), *zb = ztp_r_zone_of(tz2, codes2, i);
+        zuf_i128 a, b;
+        ztp_internal_duration internal;
+        ztp_duration result;
+        ztp_unit result_largest = largest_unit;
+        if (za == NULL || zb == NULL || !ztp_r_zoned_get(x1, i, &a) || !ztp_r_zoned_get(x2, i, &b)) {
+            ztp_r_zoned_dur_put(out, i, NULL);
+            continue;
+        }
+        if (largest_unit <= ZTP_UNIT_DAY) {
+            if (!ztp_zone_equals(za, zb)) {
+                ztp_fail(&ctx, ZTP_ERR_RANGE, (size_t)i + 1,
+                         "the two values must be in the same time zone to difference them in days or larger units");
+                ztp_r_raise(&ctx);
+            }
+            result_largest = ZTP_UNIT_HOUR;
+        }
+        if (ztp_difference_zoned_rounded(&ctx, (size_t)i + 1, a, b, za, largest_unit, inc,
+                                         smallest_unit, rmode, &internal) != ZTP_OK)
+            ztp_r_raise(&ctx);
+        if (ztp_duration_from_internal(&ctx, (size_t)i + 1, &internal, result_largest, &result) != ZTP_OK)
+            ztp_r_raise(&ctx);
+        ztp_r_zoned_dur_put(out, i, &result);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+SEXP ztp_r_zoned_round(SEXP x, SEXP codes, SEXP zones, SEXP increment, SEXP unit, SEXP mode)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const ztp_zone *tz = ztp_r_zones_open(zones);
+    int64_t inc = (int64_t)Rf_asReal(increment);
+    ztp_unit u = (ztp_unit)Rf_asInteger(unit);
+    ztp_rounding_mode m = (ztp_rounding_mode)Rf_asInteger(mode);
+    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        const ztp_zone *zone = ztp_r_zone_of(tz, codes, i);
+        zuf_i128 epoch, result;
+        if (zone == NULL || !ztp_r_zoned_get(x, i, &epoch)) {
+            ztp_r_zoned_put_na(out, i);
+            continue;
+        }
+        if (ztp_round_zoned_date_time(&ctx, (size_t)i + 1, epoch, zone, inc, u, m, &result) != ZTP_OK)
+            ztp_r_raise(&ctx);
+        ztp_r_zoned_put(out, i, result);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* getTimeZoneTransition: the next (direction 1) or previous (-1)
+   transition of a named zone, NA for an offset zone or when there is none
+   within the instant range. */
+SEXP ztp_r_zoned_transition(SEXP x, SEXP codes, SEXP zones, SEXP direction)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const ztp_zone *tz = ztp_r_zones_open(zones);
+    int dir = Rf_asInteger(direction);
+    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    const int64_t limit = (int64_t)ZTP_MAX_EPOCH_DAY * 86400;
+
+    for (R_xlen_t i = 0; i < n; i++) {
+        const ztp_zone *zone = ztp_r_zone_of(tz, codes, i);
+        const Rcomplex *p = COMPLEX(x);
+        int64_t t, found;
+        bool ok;
+        if (zone == NULL || ISNAN(p[i].r) || zone->kind != ZTP_ZONE_IANA) {
+            ztp_r_zoned_put_na(out, i);
+            continue;
+        }
+        t = (int64_t)p[i].r;
+        ok = dir > 0 ? ztp_tz_next_transition(&zone->iana->data, t, limit, &found)
+                     : ztp_tz_previous_transition(&zone->iana->data, p[i].i > 0 ? t + 1 : t, limit, &found);
+        if (!ok) {
+            ztp_r_zoned_put_na(out, i);
+        } else {
+            COMPLEX(out)[i].r = (double)found;
+            COMPLEX(out)[i].i = 0;
+        }
     }
     UNPROTECT(1);
     return out;

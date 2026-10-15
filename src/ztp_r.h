@@ -15,6 +15,7 @@
 #include <Rinternals.h>
 
 #include "ztp.h"
+#include "ztp_instant.h"
 
 /* Raise the condition that ctx describes. Never returns. */
 #if defined(__GNUC__) || defined(__clang__)
@@ -77,6 +78,7 @@ SEXP ztp_r_instant_format(SEXP x, SEXP zone, SEXP precision);
 SEXP ztp_r_zone_normalise(SEXP x);
 
 /* ztp_r_zoned.c */
+ztp_zone *ztp_r_zones_open(SEXP zones);
 SEXP ztp_r_zoned_interpret(SEXP days, SEXP ns, SEXP codes, SEXP zones, SEXP behaviour,
                            SEXP offset_ns, SEXP disambiguation, SEXP offset_option,
                            SEXP match_minutes);
@@ -90,6 +92,12 @@ SEXP ztp_r_zoned_format(SEXP x, SEXP codes, SEXP zones, SEXP precision, SEXP sho
 SEXP ztp_r_zone_equals(SEXP a, SEXP b);
 SEXP ztp_r_format_offset_exact(SEXP offset_ns);
 SEXP ztp_r_parse_offset_string(SEXP x);
+SEXP ztp_r_zoned_add(SEXP x, SEXP codes, SEXP zones, SEXP dur, SEXP overflow);
+SEXP ztp_r_zoned_until(SEXP x1, SEXP codes1, SEXP zones1, SEXP x2, SEXP codes2, SEXP zones2,
+                       SEXP largest, SEXP smallest, SEXP increment, SEXP mode);
+SEXP ztp_r_zoned_round(SEXP x, SEXP codes, SEXP zones, SEXP increment, SEXP unit, SEXP mode);
+SEXP ztp_r_zoned_transition(SEXP x, SEXP codes, SEXP zones, SEXP direction);
+/* The zones of a table, parsed (ztp_zone is declared in ztp_instant.h). */
 
 /* ztp_r_tz.c */
 SEXP ztp_r_tz_load(SEXP id, SEXP bytes);
@@ -109,9 +117,12 @@ SEXP ztp_r_duration_parse(SEXP x);
 SEXP ztp_r_duration_format(SEXP dur, SEXP precision);
 SEXP ztp_r_duration_add(SEXP a, SEXP b);
 SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
-                          SEXP mode, SEXP smallest_present, SEXP relative_days);
-SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days);
-SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days);
+                          SEXP mode, SEXP smallest_present, SEXP relative_days,
+                          SEXP relative_zoned, SEXP relative_codes, SEXP relative_zones);
+SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days, SEXP relative_zoned,
+                          SEXP relative_codes, SEXP relative_zones);
+SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days, SEXP relative_zoned,
+                            SEXP relative_codes, SEXP relative_zones);
 SEXP ztp_r_plain_date_add(SEXP days, SEXP dur, SEXP overflow);
 SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
                             SEXP increment, SEXP mode);

@@ -135,15 +135,18 @@ temporal_equals <- function(x, other) {
 #' @param x A zutempo value.
 #' @param smallest_unit The unit to round to: `"hour"`, `"minute"`,
 #'   `"second"`, `"millisecond"`, `"microsecond"` or `"nanosecond"`, or
-#'   their plurals; `"day"` for a `plain_date_time()`; any unit for a
-#'   `duration()`, which may instead give only `largest_unit`.
+#'   their plurals; `"day"` for a `plain_date_time()` or a
+#'   `zoned_date_time()`, where a day is that calendar day in the zone,
+#'   however long; any unit for a `duration()`, which may instead give only
+#'   `largest_unit`.
 #' @param ... Must be empty, except for a `duration()`'s `largest_unit`
 #'   and `relative_to`.
 #' @param largest_unit For a `duration()`: the unit to balance up to,
 #'   `"auto"` or `NULL` for the duration's own largest unit.
 #' @param relative_to For a `duration()`: a `plain_date()`,
-#'   `plain_date_time()` or a string either reads, required to round years,
-#'   months or weeks (design 6.5).
+#'   `plain_date_time()`, `zoned_date_time()` or a string one of them
+#'   reads, required to round years, months or weeks; with a zoned value,
+#'   days follow the zone (design 6.5).
 #' @param rounding_increment A positive integer that divides the next
 #'   larger unit evenly: 24 hours, 60 minutes or seconds, 1000 of the
 #'   sub-second units, and 1 for `"day"`.

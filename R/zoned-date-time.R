@@ -835,3 +835,176 @@ as.character.zutempo_zoned_date_time <- function(x, ...) temporal_to_string(x)
 print.zutempo_zoned_date_time <- function(x, ...) ztp_print(x, ...)
 #' @export
 is.na.zutempo_zoned_date_time <- function(x) is.na(ztp_zdt_instant(x))
+
+# --- arithmetic (stage 8) --------------------------------------------------------
+
+# Recycle a zoned vector and a duration to a common length; returns the
+# instants, the codes and the loaded zone table, plus the duration data.
+ztp_zoned_with_duration <- function(x, other, negate) {
+  other <- ztp_as_duration(other)
+  n <- ztp_common_length(x, other)
+  data <- ztp_duration_data(other, n)
+  if (negate) {
+    data <- ztp_negate_duration_data(data)
+  }
+  idx <- rep_len(seq_along(x), n)
+  list(
+    z = ztp_zdt_instant(x)[idx],
+    codes = ztp_zdt_codes(x)[idx],
+    zones = ztp_zdt_zones_ready(x),
+    data = data
+  )
+}
+
+#' @rdname temporal_add
+#' @export
+temporal_add.zutempo_zoned_date_time <- function(x, other, ..., overflow = "constrain") {
+  ztp_check_dots_empty(...)
+  ov <- ztp_overflow_code(overflow)
+  a <- ztp_zoned_with_duration(x, other, negate = FALSE)
+  new_zoned_date_time(.Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov), a$codes, a$zones)
+}
+
+#' @rdname temporal_add
+#' @export
+temporal_subtract.zutempo_zoned_date_time <- function(x, other, ..., overflow = "constrain") {
+  ztp_check_dots_empty(...)
+  ov <- ztp_overflow_code(overflow)
+  a <- ztp_zoned_with_duration(x, other, negate = TRUE)
+  new_zoned_date_time(.Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov), a$codes, a$zones)
+}
+
+ztp_zoned_difference <- function(
+  x,
+  other,
+  largest_unit,
+  smallest_unit,
+  rounding_increment,
+  rounding_mode,
+  since
+) {
+  settings <- ztp_difference_settings(
+    largest_unit,
+    smallest_unit,
+    rounding_increment,
+    rounding_mode,
+    group = "datetime",
+    disallowed = character(),
+    fallback_smallest = "nanosecond",
+    default_largest = "hour",
+    since = since
+  )
+  other <- ztp_as_zoned_date_time(other)
+  n <- ztp_common_length(x, other)
+  ix <- rep_len(seq_along(x), n)
+  io <- rep_len(seq_along(other), n)
+  out <- .Call(
+    C_ztp_r_zoned_until,
+    ztp_zdt_instant(x)[ix],
+    ztp_zdt_codes(x)[ix],
+    ztp_zdt_zones_ready(x),
+    ztp_zdt_instant(other)[io],
+    ztp_zdt_codes(other)[io],
+    ztp_zdt_zones_ready(other),
+    settings$largest,
+    settings$smallest,
+    settings$increment,
+    settings$mode
+  )
+  if (since) {
+    out <- ztp_negate_duration_data(out)
+  }
+  new_duration(out)
+}
+
+#' @rdname temporal_until
+#' @export
+temporal_until.zutempo_zoned_date_time <- function(
+  x,
+  other,
+  ...,
+  largest_unit = NULL,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "trunc"
+) {
+  ztp_check_dots_empty(...)
+  ztp_zoned_difference(x, other, largest_unit, smallest_unit, rounding_increment, rounding_mode, FALSE)
+}
+
+#' @rdname temporal_until
+#' @export
+temporal_since.zutempo_zoned_date_time <- function(
+  x,
+  other,
+  ...,
+  largest_unit = NULL,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "trunc"
+) {
+  ztp_check_dots_empty(...)
+  ztp_zoned_difference(x, other, largest_unit, smallest_unit, rounding_increment, rounding_mode, TRUE)
+}
+
+#' @rdname temporal_round
+#' @export
+temporal_round.zutempo_zoned_date_time <- function(
+  x,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "halfExpand",
+  ...
+) {
+  ztp_check_dots_empty(...)
+  if (is.null(smallest_unit)) {
+    stop_zutempo("`smallest_unit` is required", kind = "type")
+  }
+  opts <- ztp_round_options(smallest_unit, rounding_increment, rounding_mode, allow_day = TRUE)
+  z <- .Call(
+    C_ztp_r_zoned_round,
+    ztp_zdt_instant(x),
+    ztp_zdt_codes(x),
+    ztp_zdt_zones_ready(x),
+    opts$increment,
+    opts$unit,
+    opts$mode
+  )
+  new_zoned_date_time(z, ztp_zdt_codes(x), ztp_zdt_zones(x))
+}
+
+#' Time zone transitions
+#'
+#' Temporal's `getTimeZoneTransition()`: the next or previous instant at
+#' which each value's zone changes its UTC offset, as a `zoned_date_time()`
+#' in that zone, or `NA` when there is none within the representable range
+#' or the zone is a fixed offset.
+#'
+#' @param x A `zoned_date_time()`.
+#' @param direction `"next"` or `"previous"`.
+#' @return A `zoned_date_time()`.
+#' @examples
+#' x <- zoned_date_time("2026-01-15T12:00[America/New_York]")
+#' temporal_get_time_zone_transition(x, "next")
+#' temporal_get_time_zone_transition(x, "previous")
+#' @export
+temporal_get_time_zone_transition <- function(x, direction) {
+  UseMethod("temporal_get_time_zone_transition")
+}
+
+#' @rdname temporal_get_time_zone_transition
+#' @export
+temporal_get_time_zone_transition.zutempo_zoned_date_time <- function(x, direction) {
+  if (missing(direction)) {
+    stop_zutempo("`direction` is required", kind = "type")
+  }
+  dir <- ztp_match_option(direction, c("next", "previous"), "direction")
+  z <- .Call(
+    C_ztp_r_zoned_transition,
+    ztp_zdt_instant(x),
+    ztp_zdt_codes(x),
+    ztp_zdt_zones_ready(x),
+    if (dir == 1L) 1L else -1L
+  )
+  new_zoned_date_time(z, ztp_zdt_codes(x), ztp_zdt_zones(x))
+}

@@ -5,9 +5,7 @@
 # be empty (design 15, criterion 3).
 
 test_that("every in-scope member has an exported function, or is pending", {
-  pending <- c(
-    "temporal_get_time_zone_transition"
-  )
+  pending <- character()
   members <- read.csv(
     system.file("spec", "members.csv", package = "zutempo"),
     stringsAsFactors = FALSE
