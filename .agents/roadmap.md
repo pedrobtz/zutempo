@@ -22,7 +22,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | Stage | Title | Issue | Pull request | Done |
 | --- | --- | --- | --- | --- |
 | 0 | [Package identity](#stage-0--package-identity) | [#3](https://github.com/pedrobtz/zutempo/issues/3) | [#19](https://github.com/pedrobtz/zutempo/pull/19) | 2026-10-15 |
-| 1 | [Engine scaffold, pinned specification and oracle](#stage-1--engine-scaffold-pinned-specification-and-oracle) | [#4](https://github.com/pedrobtz/zutempo/issues/4) | | |
+| 1 | [Engine scaffold, pinned specification and oracle](#stage-1--engine-scaffold-pinned-specification-and-oracle) | [#4](https://github.com/pedrobtz/zutempo/issues/4) | [#20](https://github.com/pedrobtz/zutempo/pull/20) | 2026-10-15 |
 | 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | | |
 | 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | | |
 | 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | | |
@@ -166,6 +166,23 @@ produces cases, and CI runs the suite with and without `__int128`.
   reason naming this roadmap).
 - `expect_error(..., class = "zutempo_<kind>_error")` passes for each
   class in §10, raised through the C glue with an element index.
+
+**Deviations (2026-10-15).**
+- `Suggests: jsonlite`, for `helper-oracle.R` to read the oracle JSON. A
+  test-only dependency; the package's runtime dependencies stay at zero.
+- The oracle holds no case whose expected value the design documents as
+  different from an engine (§2, §6.9), such as a non-ISO calendar
+  annotation: the polyfill rejects it as zutempo does, native engines
+  accept it, and the native diff would carry that difference forever. Such
+  behaviour is tested in the package instead.
+- The `ZUF_NO_INT128` leg is a second `r-cmd-check.yml` job with
+  `ZUTEMPO_CFLAGS=-DZUF_NO_INT128` in its `env`, which `src/Makevars`
+  appends to `PKG_CFLAGS`; `test-info.R` asserts that `zutempo_info()`
+  reports the portable build whenever the variable is set, so a leg that
+  silently lost the flag fails.
+- The tzdata pin is 2026d, the release of the macOS database the design's
+  §0 measurements were made against; the oracle header records the tzdata
+  of the Node binary that generated it (2025b for Node 22.20).
 
 **Design.** §4, §10, §11 (oracle), §14 row 0, §15 criterion 3.
 
