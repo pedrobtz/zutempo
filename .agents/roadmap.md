@@ -24,7 +24,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 0 | [Package identity](#stage-0--package-identity) | [#3](https://github.com/pedrobtz/zutempo/issues/3) | [#19](https://github.com/pedrobtz/zutempo/pull/19) | 2026-10-15 |
 | 1 | [Engine scaffold, pinned specification and oracle](#stage-1--engine-scaffold-pinned-specification-and-oracle) | [#4](https://github.com/pedrobtz/zutempo/issues/4) | [#20](https://github.com/pedrobtz/zutempo/pull/20) | 2026-10-15 |
 | 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | [#21](https://github.com/pedrobtz/zutempo/pull/21) | 2026-10-15 |
-| 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | | |
+| 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | | 2026-10-15 |
 | 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | | |
 | 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | | |
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | | |
@@ -296,6 +296,19 @@ plumbing every later type reuses is in place.
 - Every oracle case for the two types passes.
 - `pending` no longer lists any member of the two types except `add`,
   `subtract`, `since`, `until` and the formatting options.
+
+**Deviations (2026-10-15).**
+- `temporal_to_plain_date()` takes the missing field as a named argument
+  (`day =` for a `plain_year_month()`, `year =` for a `plain_month_day()`)
+  rather than Temporal's one-property object; the generic gained `...` for
+  it.
+- `plain_month_day()` takes the optional `year` that constrains the day as
+  a named argument after `...`, and `plain_year_month()` ignores no `day`:
+  an R call has no extra properties to ignore, so a `day` to
+  `plain_year_month()` is an unused-argument error.
+- `temporal_to_plain_year_month()` and `temporal_to_plain_month_day()`
+  (members of `PlainDate`) land here with their target types, one stage
+  later than stage 2's table row implied.
 
 **Design.** §4.1, §5, §6.10, §14 row 1.
 

@@ -23,16 +23,18 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 2. `plain_date()`, `plain_time()` and
-`plain_date_time()` exist with their fields, `with`, `compare`, `equals`,
-`round`, conversions among them and default `toString()`; strings are read
-without annotations (stage 9 adds them). The engine has the ISO date and
-time records (`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
-(`src/ztp_format.c`) and the parser with its zufast fast path
-(`src/ztp_parse.c`); the glue for the plain types is `src/ztp_r_plain.c`.
-No `Duration`, `Instant`, zone or `ZonedDateTime` yet; arithmetic
-(`add`, `subtract`, `since`, `until`) arrives in stage 4. The oracle has
-cases for the three plain types. See the roadmap's stage table.
+Verified 2026-10-15: stages 0 to 3. The five plain types exist:
+`plain_date()`, `plain_time()`, `plain_date_time()`, `plain_year_month()`
+and `plain_month_day()`, with their fields, `with`, `compare`, `equals`,
+`round` (time types), conversions among them and default `toString()`;
+strings are read without annotations (stage 9 adds them). The engine has
+the ISO date and time records (`src/ztp_iso.c`), rounding
+(`src/ztp_round.c`), formatting (`src/ztp_format.c`) and the parser with
+its four goals and the zufast fast path (`src/ztp_parse.c`); the glue for
+the plain types is `src/ztp_r_plain.c`. No `Duration`, `Instant`, zone or
+`ZonedDateTime` yet; arithmetic (`add`, `subtract`, `since`, `until`)
+arrives in stage 4. The oracle has cases for the five plain types. See the
+roadmap's stage table.
 
 ## Stage tracking
 
