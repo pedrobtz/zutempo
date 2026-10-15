@@ -1713,6 +1713,215 @@
       "on": "00:00",
       "args": [],
       "result": "00:00:00"
+    },
+    {
+      "id": "from-annotation-calendar-ignored",
+      "op": "from",
+      "args": [
+        "12:30[u-ca=hebrew]"
+      ],
+      "result": {
+        "string": "12:30:00",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 12,
+          "minute": 30,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "from-annotation-designator",
+      "op": "from",
+      "args": [
+        "T12:30[!u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "12:30:00",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 12,
+          "minute": 30,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "from-annotation-critical-unknown",
+      "op": "from",
+      "args": [
+        "12:30[!foo=bar]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-date-time",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30[Europe/Lisbon][u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "12:30:00",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 12,
+          "minute": 30,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "to-string-digits-0",
+      "op": "toString",
+      "on": "23:59:59.987654321",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 0
+      },
+      "result": "23:59:59"
+    },
+    {
+      "id": "to-string-digits-1",
+      "op": "toString",
+      "on": "23:59:59.987654321",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 1
+      },
+      "result": "23:59:59.9"
+    },
+    {
+      "id": "to-string-digits-4",
+      "op": "toString",
+      "on": "23:59:59.987654321",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 4
+      },
+      "result": "23:59:59.9876"
+    },
+    {
+      "id": "to-string-digits-9",
+      "op": "toString",
+      "on": "12:30",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 9
+      },
+      "result": "12:30:00.000000000"
+    },
+    {
+      "id": "to-string-digits-auto",
+      "op": "toString",
+      "on": "12:30:00.5",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": "auto"
+      },
+      "result": "12:30:00.5"
+    },
+    {
+      "id": "to-string-smallest-minute",
+      "op": "toString",
+      "on": "12:30:45",
+      "args": [],
+      "options": {
+        "smallestUnit": "minute"
+      },
+      "result": "12:30"
+    },
+    {
+      "id": "to-string-smallest-second",
+      "op": "toString",
+      "on": "12:30",
+      "args": [],
+      "options": {
+        "smallestUnit": "seconds"
+      },
+      "result": "12:30:00"
+    },
+    {
+      "id": "to-string-smallest-microsecond",
+      "op": "toString",
+      "on": "12:30:45.123456789",
+      "args": [],
+      "options": {
+        "smallestUnit": "microsecond"
+      },
+      "result": "12:30:45.123456"
+    },
+    {
+      "id": "to-string-wraps-midnight",
+      "op": "toString",
+      "on": "23:59:59.999",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "ceil"
+      },
+      "result": "00:00:00"
+    },
+    {
+      "id": "to-string-half-even",
+      "op": "toString",
+      "on": "12:30:44.5",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "halfEven"
+      },
+      "result": "12:30:44"
+    },
+    {
+      "id": "to-string-half-floor",
+      "op": "toString",
+      "on": "12:30:45.5",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "halfFloor"
+      },
+      "result": "12:30:45"
+    },
+    {
+      "id": "to-string-expand",
+      "op": "toString",
+      "on": "12:30:45.000000001",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 3,
+        "roundingMode": "expand"
+      },
+      "result": "12:30:45.001"
+    },
+    {
+      "id": "to-string-smallest-hour",
+      "op": "toString",
+      "on": "12:30",
+      "args": [],
+      "options": {
+        "smallestUnit": "hour"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-string-smallest-day",
+      "op": "toString",
+      "on": "12:30",
+      "args": [],
+      "options": {
+        "smallestUnit": "day"
+      },
+      "throws": "RangeError"
     }
   ]
 }

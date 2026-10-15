@@ -1150,6 +1150,154 @@
           "calendarId": "iso8601"
         }
       }
+    },
+    {
+      "id": "from-annotation-calendar",
+      "op": "from",
+      "args": [
+        "2026-02[u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-calendar-critical",
+      "op": "from",
+      "args": [
+        "2026-02[!u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-partial-other-calendar",
+      "op": "from",
+      "args": [
+        "2026-02[u-ca=gregory]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-elective",
+      "op": "from",
+      "args": [
+        "2026-02[Europe/Lisbon][foo=bar]"
+      ],
+      "result": {
+        "string": "2026-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-critical-unknown",
+      "op": "from",
+      "args": [
+        "2026-02[!foo=bar]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-full-date",
+      "op": "from",
+      "args": [
+        "2026-02-15T12:00[u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "to-string-calendar-always",
+      "op": "toString",
+      "on": "2026-02",
+      "args": [],
+      "options": {
+        "calendarName": "always"
+      },
+      "result": "2026-02-01[u-ca=iso8601]"
+    },
+    {
+      "id": "to-string-calendar-never",
+      "op": "toString",
+      "on": "2026-02",
+      "args": [],
+      "options": {
+        "calendarName": "never"
+      },
+      "result": "2026-02"
+    },
+    {
+      "id": "to-string-calendar-critical",
+      "op": "toString",
+      "on": "2026-02",
+      "args": [],
+      "options": {
+        "calendarName": "critical"
+      },
+      "result": "2026-02-01[!u-ca=iso8601]"
+    },
+    {
+      "id": "to-string-calendar-always-expanded",
+      "op": "toString",
+      "on": "-001000-12",
+      "args": [],
+      "options": {
+        "calendarName": "always"
+      },
+      "result": "-001000-12-01[u-ca=iso8601]"
     }
   ]
 }

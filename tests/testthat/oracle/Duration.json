@@ -2163,6 +2163,295 @@
         "P30D"
       ],
       "throws": "RangeError"
+    },
+    {
+      "id": "to-string-digits-0",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 0
+      },
+      "result": "PT1S"
+    },
+    {
+      "id": "to-string-digits-2",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 2
+      },
+      "result": "PT1.98S"
+    },
+    {
+      "id": "to-string-digits-5",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 5
+      },
+      "result": "PT1.98765S"
+    },
+    {
+      "id": "to-string-digits-9",
+      "op": "toString",
+      "on": "PT1S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 9
+      },
+      "result": "PT1.000000000S"
+    },
+    {
+      "id": "to-string-digits-auto",
+      "op": "toString",
+      "on": "PT1.5S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": "auto"
+      },
+      "result": "PT1.5S"
+    },
+    {
+      "id": "to-string-digits-zero-duration",
+      "op": "toString",
+      "on": "PT0S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 2
+      },
+      "result": "PT0.00S"
+    },
+    {
+      "id": "to-string-digits-fraction",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 2.7
+      },
+      "result": "PT1.98S"
+    },
+    {
+      "id": "to-string-digits-out-of-range",
+      "op": "toString",
+      "on": "PT1S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 10
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-string-smallest-second",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second"
+      },
+      "result": "PT1S"
+    },
+    {
+      "id": "to-string-smallest-millisecond",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "smallestUnit": "millisecond"
+      },
+      "result": "PT1.987S"
+    },
+    {
+      "id": "to-string-smallest-microsecond",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "smallestUnit": "microseconds"
+      },
+      "result": "PT1.987654S"
+    },
+    {
+      "id": "to-string-smallest-nanosecond",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "smallestUnit": "nanosecond"
+      },
+      "result": "PT1.987654321S"
+    },
+    {
+      "id": "to-string-smallest-minute",
+      "op": "toString",
+      "on": "PT1M1S",
+      "args": [],
+      "options": {
+        "smallestUnit": "minute"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-string-smallest-hour",
+      "op": "toString",
+      "on": "PT1H",
+      "args": [],
+      "options": {
+        "smallestUnit": "hour"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-string-round-carry",
+      "op": "toString",
+      "on": "PT59.9S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "ceil"
+      },
+      "result": "PT60S"
+    },
+    {
+      "id": "to-string-round-carry-minutes",
+      "op": "toString",
+      "on": "PT1M59.9S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "ceil"
+      },
+      "result": "PT2M0S"
+    },
+    {
+      "id": "to-string-round-carry-hours",
+      "op": "toString",
+      "on": "PT1H59M59.9S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "halfExpand"
+      },
+      "result": "PT2H0S"
+    },
+    {
+      "id": "to-string-round-with-date",
+      "op": "toString",
+      "on": "P1Y2DT1H59.5999S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "halfExpand"
+      },
+      "result": "P1Y2DT1H1M0S"
+    },
+    {
+      "id": "to-string-round-days-unbalanced",
+      "op": "toString",
+      "on": "P1DT47H59M59.9S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "ceil"
+      },
+      "result": "P3DT0S"
+    },
+    {
+      "id": "to-string-round-negative",
+      "op": "toString",
+      "on": "-PT1.5S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "halfExpand"
+      },
+      "result": "-PT2S"
+    },
+    {
+      "id": "to-string-round-negative-floor",
+      "op": "toString",
+      "on": "-PT1.2S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "floor"
+      },
+      "result": "-PT2S"
+    },
+    {
+      "id": "to-string-round-negative-trunc",
+      "op": "toString",
+      "on": "-PT1.987S",
+      "args": [],
+      "options": {
+        "fractionalSecondDigits": 1
+      },
+      "result": "-PT1.9S"
+    },
+    {
+      "id": "to-string-round-half-even",
+      "op": "toString",
+      "on": "PT2.5S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "halfEven"
+      },
+      "result": "PT2S"
+    },
+    {
+      "id": "to-string-round-out-of-range",
+      "op": "toString",
+      "on": "PT9007199254740991.999999999S",
+      "args": [],
+      "options": {
+        "smallestUnit": "second",
+        "roundingMode": "ceil"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-string-unit-wins-over-digits",
+      "op": "toString",
+      "on": "PT1.987654321S",
+      "args": [],
+      "options": {
+        "smallestUnit": "millisecond",
+        "fractionalSecondDigits": 7
+      },
+      "result": "PT1.987S"
+    },
+    {
+      "id": "round-relative-annotated",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-07[u-ca=iso8601]"
+        }
+      ],
+      "result": {
+        "string": "P1DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
     }
   ]
 }

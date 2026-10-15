@@ -109,6 +109,9 @@ const knownNative = {
   "Duration.json round-month-relative":
     "P1Y rounded to months relative to a date gives P1Y1M; test262's " +
     "Duration/prototype/round/exact-multiple-of-larger-unit-plaindate.js wants P1Y",
+  "PlainDate.json from-annotation-many":
+    "[x=1] is rejected for its one-character key; the AnnotationKey " +
+    "grammar allows one character, as it does one-character values",
   "PlainTime.json from-string-basic":
     '"123045" is rejected as ambiguous with a month-day; it is not, since ' +
     "a DateSpecMonthDay has four digits (AnnotatedTime early errors)",
