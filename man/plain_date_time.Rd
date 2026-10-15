@@ -61,6 +61,55 @@ Values may lie up to a day beyond the range of a \code{plain_date()}, from
 just after -271821-04-19T00:00 to the end of +275760-09-13. A result
 outside that range is a \code{zutempo_range_error}, never \code{NA}.
 }
+\section{Members}{
+
+Every member of \code{Temporal.PlainDateTime} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \verb{new Temporal.PlainDateTime()} \tab \code{\link[=plain_date_time]{plain_date_time()}} \cr
+   \code{Temporal.PlainDateTime.from()} \tab \code{\link[=plain_date_time]{plain_date_time()}} \cr
+   \code{Temporal.PlainDateTime.compare()} \tab \code{\link[=plain_date_time_compare]{plain_date_time_compare()}} \cr
+   \code{.calendarId} \tab \code{\link[=calendar_id]{calendar_id()}} \cr
+   \code{.era} \tab \code{\link[=era]{era()}} \cr
+   \code{.eraYear} \tab \code{\link[=era_year]{era_year()}} \cr
+   \code{.year} \tab \code{\link[=year]{year()}} \cr
+   \code{.month} \tab \code{\link[=month]{month()}} \cr
+   \code{.monthCode} \tab \code{\link[=month_code]{month_code()}} \cr
+   \code{.day} \tab \code{\link[=day]{day()}} \cr
+   \code{.hour} \tab \code{\link[=hour]{hour()}} \cr
+   \code{.minute} \tab \code{\link[=minute]{minute()}} \cr
+   \code{.second} \tab \code{\link[=second]{second()}} \cr
+   \code{.millisecond} \tab \code{\link[=millisecond]{millisecond()}} \cr
+   \code{.microsecond} \tab \code{\link[=microsecond]{microsecond()}} \cr
+   \code{.nanosecond} \tab \code{\link[=nanosecond]{nanosecond()}} \cr
+   \code{.dayOfWeek} \tab \code{\link[=day_of_week]{day_of_week()}} \cr
+   \code{.dayOfYear} \tab \code{\link[=day_of_year]{day_of_year()}} \cr
+   \code{.weekOfYear} \tab \code{\link[=week_of_year]{week_of_year()}} \cr
+   \code{.yearOfWeek} \tab \code{\link[=year_of_week]{year_of_week()}} \cr
+   \code{.daysInWeek} \tab \code{\link[=days_in_week]{days_in_week()}} \cr
+   \code{.daysInMonth} \tab \code{\link[=days_in_month]{days_in_month()}} \cr
+   \code{.daysInYear} \tab \code{\link[=days_in_year]{days_in_year()}} \cr
+   \code{.monthsInYear} \tab \code{\link[=months_in_year]{months_in_year()}} \cr
+   \code{.inLeapYear} \tab \code{\link[=in_leap_year]{in_leap_year()}} \cr
+   \code{.with()} \tab \code{\link[=temporal_with]{temporal_with()}} \cr
+   \code{.withPlainTime()} \tab \code{\link[=temporal_with_plain_time]{temporal_with_plain_time()}} \cr
+   \code{.withCalendar()} \tab \code{\link[=temporal_with_calendar]{temporal_with_calendar()}} \cr
+   \code{.add()} \tab \code{\link[=temporal_add]{temporal_add()}} \cr
+   \code{.subtract()} \tab \code{\link[=temporal_subtract]{temporal_subtract()}} \cr
+   \code{.until()} \tab \code{\link[=temporal_until]{temporal_until()}} \cr
+   \code{.since()} \tab \code{\link[=temporal_since]{temporal_since()}} \cr
+   \code{.round()} \tab \code{\link[=temporal_round]{temporal_round()}} \cr
+   \code{.equals()} \tab \code{\link[=temporal_equals]{temporal_equals()}} \cr
+   \code{.toString()} \tab \code{\link[=temporal_to_string]{temporal_to_string()}} \cr
+   \code{.toLocaleString()} \tab none: ECMA-402 (locale formatting) is out of scope \cr
+   \code{.toJSON()} \tab none: format() covers it \cr
+   \code{.valueOf()} \tab none: throws in JavaScript; no R counterpart \cr
+   \code{.toZonedDateTime()} \tab \code{\link[=temporal_to_zoned_date_time]{temporal_to_zoned_date_time()}} \cr
+   \code{.toPlainDate()} \tab \code{\link[=temporal_to_plain_date]{temporal_to_plain_date()}} \cr
+   \code{.toPlainTime()} \tab \code{\link[=temporal_to_plain_time]{temporal_to_plain_time()}} \cr
+}
+}
+
 \examples{
 plain_date_time("2026-01-31T12:30:45.5")
 plain_date_time(2026, 1, 31, 12, 30)

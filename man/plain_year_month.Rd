@@ -49,6 +49,38 @@ The constructor is \code{Temporal.PlainYearMonth} and
 Months run from -271821-04 to +275760-09, every month that holds a
 representable \code{plain_date()}.
 }
+\section{Members}{
+
+Every member of \code{Temporal.PlainYearMonth} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \verb{new Temporal.PlainYearMonth()} \tab \code{\link[=plain_year_month]{plain_year_month()}} \cr
+   \code{Temporal.PlainYearMonth.from()} \tab \code{\link[=plain_year_month]{plain_year_month()}} \cr
+   \code{Temporal.PlainYearMonth.compare()} \tab \code{\link[=plain_year_month_compare]{plain_year_month_compare()}} \cr
+   \code{.calendarId} \tab \code{\link[=calendar_id]{calendar_id()}} \cr
+   \code{.era} \tab \code{\link[=era]{era()}} \cr
+   \code{.eraYear} \tab \code{\link[=era_year]{era_year()}} \cr
+   \code{.year} \tab \code{\link[=year]{year()}} \cr
+   \code{.month} \tab \code{\link[=month]{month()}} \cr
+   \code{.monthCode} \tab \code{\link[=month_code]{month_code()}} \cr
+   \code{.daysInYear} \tab \code{\link[=days_in_year]{days_in_year()}} \cr
+   \code{.daysInMonth} \tab \code{\link[=days_in_month]{days_in_month()}} \cr
+   \code{.monthsInYear} \tab \code{\link[=months_in_year]{months_in_year()}} \cr
+   \code{.inLeapYear} \tab \code{\link[=in_leap_year]{in_leap_year()}} \cr
+   \code{.with()} \tab \code{\link[=temporal_with]{temporal_with()}} \cr
+   \code{.add()} \tab \code{\link[=temporal_add]{temporal_add()}} \cr
+   \code{.subtract()} \tab \code{\link[=temporal_subtract]{temporal_subtract()}} \cr
+   \code{.until()} \tab \code{\link[=temporal_until]{temporal_until()}} \cr
+   \code{.since()} \tab \code{\link[=temporal_since]{temporal_since()}} \cr
+   \code{.equals()} \tab \code{\link[=temporal_equals]{temporal_equals()}} \cr
+   \code{.toString()} \tab \code{\link[=temporal_to_string]{temporal_to_string()}} \cr
+   \code{.toLocaleString()} \tab none: ECMA-402 (locale formatting) is out of scope \cr
+   \code{.toJSON()} \tab none: format() covers it \cr
+   \code{.valueOf()} \tab none: throws in JavaScript; no R counterpart \cr
+   \code{.toPlainDate()} \tab \code{\link[=temporal_to_plain_date]{temporal_to_plain_date()}} \cr
+}
+}
+
 \examples{
 plain_year_month("2026-03")
 plain_year_month(2026, 3)

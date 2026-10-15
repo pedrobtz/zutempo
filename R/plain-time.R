@@ -25,6 +25,7 @@
 #' plain_time(25, overflow = "constrain")
 #' plain_time()
 #' plain_time_compare("12:30", "12:31")
+#' @eval ztp_doc_members("PlainTime")
 #' @export
 plain_time <- function(
   hour = 0,

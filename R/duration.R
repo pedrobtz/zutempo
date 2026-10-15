@@ -24,6 +24,7 @@
 #' duration(milliseconds = 2^53 + 2)
 #' duration_compare("PT1H", "PT60M")
 #' duration_compare("P1M", "P30D", relative_to = "2026-02-01")
+#' @eval ztp_doc_members("Duration")
 #' @export
 duration <- function(
   years = 0,

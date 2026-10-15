@@ -23,6 +23,7 @@
 #' instant_from_epoch_nanoseconds("8640000000000000000000")
 #' epoch_nanoseconds(instant("+275760-09-13T00:00Z"))
 #' instant_compare("1969-12-31T23:59:59Z", "1970-01-01T00:00Z")
+#' @eval ztp_doc_members("Instant")
 #' @export
 instant <- function(x) {
   if (inherits(x, "zutempo_instant")) {

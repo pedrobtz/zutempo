@@ -43,6 +43,26 @@ constructor is \code{Temporal.PlainMonthDay} and
 \code{Temporal.PlainMonthDay.from()} in one: it reads fields, strings or a
 \code{plain_date()} or \code{plain_date_time()}.
 }
+\section{Members}{
+
+Every member of \code{Temporal.PlainMonthDay} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \verb{new Temporal.PlainMonthDay()} \tab \code{\link[=plain_month_day]{plain_month_day()}} \cr
+   \code{Temporal.PlainMonthDay.from()} \tab \code{\link[=plain_month_day]{plain_month_day()}} \cr
+   \code{.calendarId} \tab \code{\link[=calendar_id]{calendar_id()}} \cr
+   \code{.monthCode} \tab \code{\link[=month_code]{month_code()}} \cr
+   \code{.day} \tab \code{\link[=day]{day()}} \cr
+   \code{.with()} \tab \code{\link[=temporal_with]{temporal_with()}} \cr
+   \code{.equals()} \tab \code{\link[=temporal_equals]{temporal_equals()}} \cr
+   \code{.toString()} \tab \code{\link[=temporal_to_string]{temporal_to_string()}} \cr
+   \code{.toLocaleString()} \tab none: ECMA-402 (locale formatting) is out of scope \cr
+   \code{.toJSON()} \tab none: format() covers it \cr
+   \code{.valueOf()} \tab none: throws in JavaScript; no R counterpart \cr
+   \code{.toPlainDate()} \tab \code{\link[=temporal_to_plain_date]{temporal_to_plain_date()}} \cr
+}
+}
+
 \examples{
 plain_month_day("02-29")
 plain_month_day(2, 29, year = 2025)

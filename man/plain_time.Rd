@@ -46,6 +46,34 @@ or time zone, stored as a double count of nanoseconds since midnight
 \code{Temporal.PlainTime.from()} in one: it reads fields, strings or another
 zutempo value.
 }
+\section{Members}{
+
+Every member of \code{Temporal.PlainTime} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \verb{new Temporal.PlainTime()} \tab \code{\link[=plain_time]{plain_time()}} \cr
+   \code{Temporal.PlainTime.from()} \tab \code{\link[=plain_time]{plain_time()}} \cr
+   \code{Temporal.PlainTime.compare()} \tab \code{\link[=plain_time_compare]{plain_time_compare()}} \cr
+   \code{.hour} \tab \code{\link[=hour]{hour()}} \cr
+   \code{.minute} \tab \code{\link[=minute]{minute()}} \cr
+   \code{.second} \tab \code{\link[=second]{second()}} \cr
+   \code{.millisecond} \tab \code{\link[=millisecond]{millisecond()}} \cr
+   \code{.microsecond} \tab \code{\link[=microsecond]{microsecond()}} \cr
+   \code{.nanosecond} \tab \code{\link[=nanosecond]{nanosecond()}} \cr
+   \code{.add()} \tab \code{\link[=temporal_add]{temporal_add()}} \cr
+   \code{.subtract()} \tab \code{\link[=temporal_subtract]{temporal_subtract()}} \cr
+   \code{.with()} \tab \code{\link[=temporal_with]{temporal_with()}} \cr
+   \code{.until()} \tab \code{\link[=temporal_until]{temporal_until()}} \cr
+   \code{.since()} \tab \code{\link[=temporal_since]{temporal_since()}} \cr
+   \code{.round()} \tab \code{\link[=temporal_round]{temporal_round()}} \cr
+   \code{.equals()} \tab \code{\link[=temporal_equals]{temporal_equals()}} \cr
+   \code{.toString()} \tab \code{\link[=temporal_to_string]{temporal_to_string()}} \cr
+   \code{.toLocaleString()} \tab none: ECMA-402 (locale formatting) is out of scope \cr
+   \code{.toJSON()} \tab none: format() covers it \cr
+   \code{.valueOf()} \tab none: throws in JavaScript; no R counterpart \cr
+}
+}
+
 \examples{
 plain_time("12:30:45.5")
 plain_time(12, 30)

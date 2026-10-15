@@ -30,6 +30,20 @@ reads it (\code{Sys.timezone()}, falling back to \code{"UTC"}), and the current
 time as a \code{zoned_date_time()}, \code{plain_date_time()}, \code{plain_date()} or
 \code{plain_time()} in that zone or in \code{time_zone}.
 }
+\section{Members}{
+
+Every member of \code{Temporal.Now} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \code{Temporal.Now.timeZoneId()} \tab \code{\link[=now_time_zone_id]{now_time_zone_id()}} \cr
+   \code{Temporal.Now.instant()} \tab \code{\link[=now_instant]{now_instant()}} \cr
+   \code{Temporal.Now.plainDateTimeISO()} \tab \code{\link[=now_plain_date_time_iso]{now_plain_date_time_iso()}} \cr
+   \code{Temporal.Now.zonedDateTimeISO()} \tab \code{\link[=now_zoned_date_time_iso]{now_zoned_date_time_iso()}} \cr
+   \code{Temporal.Now.plainDateISO()} \tab \code{\link[=now_plain_date_iso]{now_plain_date_iso()}} \cr
+   \code{Temporal.Now.plainTimeISO()} \tab \code{\link[=now_plain_time_iso]{now_plain_time_iso()}} \cr
+}
+}
+
 \examples{
 now_time_zone_id()
 now_zoned_date_time_iso()

@@ -29,6 +29,7 @@
 #' plain_date(2026, month_code = "M02", day = 29, overflow = "constrain")
 #' plain_date(c("2026-01-31", NA, "+275760-09-13"))
 #' plain_date_compare(plain_date("2026-01-31"), "2026-02-01")
+#' @eval ztp_doc_members("PlainDate")
 #' @export
 plain_date <- function(
   year,
