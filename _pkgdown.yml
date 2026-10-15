@@ -2,3 +2,55 @@ url: https://pedrobtz.github.io/zutempo/
 template:
   bootstrap: 5
 
+reference:
+  - title: Types
+    desc: >
+      Temporal's eight types, each built by the function named after it from
+      fields, strings or other values. Each topic lists every member of the
+      type and the R function that implements it.
+    contents:
+      - instant
+      - zoned_date_time
+      - plain_date_time
+      - plain_date
+      - plain_time
+      - plain_year_month
+      - plain_month_day
+      - duration
+  - title: Properties
+    desc: Temporal's properties, as accessors named after them.
+    contents:
+      - temporal_fields
+  - title: Methods
+    desc: Temporal's prototype methods, as `temporal_` and the method name.
+    contents:
+      - temporal_add
+      - temporal_until
+      - temporal_round
+      - temporal_total
+      - temporal_with
+      - temporal_equals
+      - temporal_negated
+      - temporal_start_of_day
+      - temporal_get_time_zone_transition
+      - temporal_to_instant
+      - temporal_to_plain_date
+      - temporal_to_string
+  - title: Now
+    desc: "`Temporal.Now`: the system time zone and the current time."
+    contents:
+      - now_time_zone_id
+      - now_instant
+  - title: Conversions and reading
+    contents:
+      - base-r
+      - zutempo_parse
+      - zutempo_parse_errors
+  - title: Options
+    contents:
+      - zutempo_options
+  - title: The package
+    contents:
+      - zutempo-package
+      - zutempo_info
+      - zutempo_tz_reset
