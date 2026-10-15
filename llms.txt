@@ -30,6 +30,13 @@ library(zutempo)
 - [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
   [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
   : Durations: Temporal's Duration
+- [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  [`instant_from_epoch_milliseconds()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  [`instant_from_epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  [`instant_compare()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  : Exact times: Temporal's Instant
+- [`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md)
+  : The current time
 - [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
   [`plain_date_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
   : Calendar dates: Temporal's PlainDate
@@ -83,6 +90,8 @@ library(zutempo)
   [`nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
   [`blank()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
   [`Math(`*`<zutempo_duration>`*`)`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
+  [`epoch_milliseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
+  [`epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
   : Fields of a Temporal value
 - [`temporal_negated()`](https://pedrobtz.github.io/zutempo/reference/temporal_negated.md)
   [`temporal_abs()`](https://pedrobtz.github.io/zutempo/reference/temporal_negated.md)

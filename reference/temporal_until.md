@@ -116,6 +116,28 @@ temporal_since(
   rounding_increment = 1,
   rounding_mode = "trunc"
 )
+
+# S3 method for class 'zutempo_instant'
+temporal_until(
+  x,
+  other,
+  ...,
+  largest_unit = NULL,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "trunc"
+)
+
+# S3 method for class 'zutempo_instant'
+temporal_since(
+  x,
+  other,
+  ...,
+  largest_unit = NULL,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "trunc"
+)
 ```
 
 ## Arguments

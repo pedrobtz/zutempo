@@ -47,6 +47,12 @@ temporal_add(x, other, ...)
 
 # S3 method for class 'zutempo_duration'
 temporal_subtract(x, other, ...)
+
+# S3 method for class 'zutempo_instant'
+temporal_add(x, other, ...)
+
+# S3 method for class 'zutempo_instant'
+temporal_subtract(x, other, ...)
 ```
 
 ## Arguments

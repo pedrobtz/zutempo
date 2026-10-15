@@ -10,6 +10,9 @@ arguments and propagate `NA`.
 ``` r
 temporal_equals(x, other)
 
+# S3 method for class 'zutempo_instant'
+temporal_equals(x, other)
+
 # S3 method for class 'zutempo_plain_date_time'
 temporal_equals(x, other)
 

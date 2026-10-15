@@ -2,6 +2,27 @@
 
 ## zutempo 0.0.0.9000
 
+- [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md):
+  Temporal’s `Instant` over its full range, from strings with `Z` or an
+  offset,
+  [`instant_from_epoch_milliseconds()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  and
+  [`instant_from_epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  (numbers or decimal strings), with
+  [`epoch_milliseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
+  [`epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
+  as a decimal string,
+  [`instant_compare()`](https://pedrobtz.github.io/zutempo/reference/instant.md),
+  [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md),
+  [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
+  [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
+  [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md),
+  [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md),
+  [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md)
+  as if positive, and
+  [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
+  with a `time_zone` of `"UTC"` or a fixed offset;
+  [`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md).
 - [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md):
   Temporal’s `Duration` as an R vector of ten exact fields, from fields
   or ISO 8601 strings, with

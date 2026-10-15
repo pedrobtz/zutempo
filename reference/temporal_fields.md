@@ -380,6 +380,22 @@ blank(x, ...)
 
 # S3 method for class 'zutempo_duration'
 Math(x, ...)
+
+epoch_milliseconds(x, ...)
+
+# Default S3 method
+epoch_milliseconds(x, ...)
+
+# S3 method for class 'zutempo_instant'
+epoch_milliseconds(x, ...)
+
+epoch_nanoseconds(x, ...)
+
+# Default S3 method
+epoch_nanoseconds(x, ...)
+
+# S3 method for class 'zutempo_instant'
+epoch_nanoseconds(x, ...)
 ```
 
 ## Arguments

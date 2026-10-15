@@ -30,6 +30,15 @@ temporal_round(
   relative_to = NULL
 )
 
+# S3 method for class 'zutempo_instant'
+temporal_round(
+  x,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "halfExpand",
+  ...
+)
+
 # S3 method for class 'zutempo_plain_date_time'
 temporal_round(
   x,
