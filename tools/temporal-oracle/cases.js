@@ -1,39 +1,78 @@
 // The oracle cases, one array per Temporal type (design 11). A case is
 //
-//   { id, op, args, options? }
+//   { id, op, args?, options?, on? }
 //
-// where `op` is the Temporal member run (`from`, `compare`, ...) and `args`
-// its arguments, as plain JSON. generate.js runs each case through an
-// engine and records either the result (its toString() and, for a value,
-// the properties listed in `fields` below) or the class of the error it
-// threw. Everything here is data: a case says what to run, never what to
-// expect. The expectation comes from the engine.
-//
-// Stage 1 holds a handful of PlainDate cases so the loop is proven; stage 2
-// onwards fills each type (roadmap).
+// `op` is the Temporal member run and `args` its arguments as JSON. With
+// `on`, the case is a prototype method: `Temporal[type].from(on)[op]
+// (...args, options?)`; without it a static: `Temporal[type][op](...args,
+// options?)`. An argument `{ "$type": "PlainTime", "value": "12:30" }` is
+// built with `Temporal.PlainTime.from(value)` first. generate.js records
+// either the result (its toString() and, for a Temporal value, the
+// properties listed in `fields`) or the class of the error thrown.
+// Everything here is data: a case says what to run, never what to expect.
+// The expectation comes from the engine.
 //
 // Not here: behaviour the design documents as different from an engine
 // (design 2 and 6.9), such as a non-ISO calendar annotation, which native
-// engines accept and zutempo rejects. Those are tested in the package.
+// engines accept and zutempo rejects, or invalid option strings, which are
+// a RangeError in JavaScript and a zutempo_type_error in R. Those are
+// tested in the package. Annotations in brackets wait for stage 9.
+
+const dateFields = [
+  "year", "month", "monthCode", "day", "dayOfWeek", "dayOfYear",
+  "weekOfYear", "yearOfWeek", "daysInWeek", "daysInMonth", "daysInYear",
+  "monthsInYear", "inLeapYear", "era", "eraYear", "calendarId",
+];
+const timeFields = [
+  "hour", "minute", "second", "millisecond", "microsecond", "nanosecond",
+];
 
 export const fields = {
-  PlainDate: [
-    "year", "month", "monthCode", "day", "dayOfWeek", "dayOfYear",
-    "weekOfYear", "yearOfWeek", "daysInWeek", "daysInMonth", "daysInYear",
-    "monthsInYear", "inLeapYear", "era", "eraYear", "calendarId",
-  ],
+  PlainDate: dateFields,
+  PlainTime: timeFields,
+  PlainDateTime: [...dateFields, ...timeFields],
 };
+
+const roundingModes = [
+  "ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand",
+  "halfTrunc", "halfEven",
+];
 
 export const cases = {
   PlainDate: [
     { id: "from-string", op: "from", args: ["2026-01-31"] },
     { id: "from-string-leap-day", op: "from", args: ["2024-02-29"] },
     { id: "from-string-not-leap-day", op: "from", args: ["2026-02-29"] },
+    { id: "from-string-basic", op: "from", args: ["20260131"] },
+    { id: "from-string-mixed-date", op: "from", args: ["2026-0131"] },
+    { id: "from-string-with-time", op: "from", args: ["2026-01-31T23:59:59.999999999"] },
+    { id: "from-string-with-space-time", op: "from", args: ["2026-01-31 12:30"] },
+    { id: "from-string-with-offset", op: "from", args: ["2026-01-31T12:30+05:30"] },
+    { id: "from-string-with-z", op: "from", args: ["2026-01-31T12:30Z"] },
+    { id: "from-string-trailing-t", op: "from", args: ["2026-01-31T"] },
+    { id: "from-string-five-digit-year", op: "from", args: ["10000-01-01"] },
+    { id: "from-string-year-zero", op: "from", args: ["0000-01-01"] },
+    { id: "from-string-year-minus-one", op: "from", args: ["-000001-01-01"] },
+    { id: "from-string-year-ten-thousand", op: "from", args: ["+010000-01-01"] },
     { id: "from-fields", op: "from", args: [{ year: 2026, month: 3, day: 7 }] },
+    { id: "from-fields-month-code", op: "from", args: [{ year: 2026, monthCode: "M03", day: 7 }] },
     { id: "from-fields-constrain", op: "from",
       args: [{ year: 2026, month: 2, day: 31 }] },
+    { id: "from-fields-constrain-month", op: "from",
+      args: [{ year: 2026, month: 13, day: 1 }] },
     { id: "from-fields-reject", op: "from",
       args: [{ year: 2026, month: 2, day: 31 }], options: { overflow: "reject" } },
+    { id: "from-fields-day-zero", op: "from", args: [{ year: 2026, month: 1, day: 0 }] },
+    { id: "from-fields-month-code-mismatch", op: "from",
+      args: [{ year: 2026, month: 2, monthCode: "M01", day: 1 }] },
+    { id: "from-fields-bad-month-code", op: "from",
+      args: [{ year: 2026, monthCode: "M13", day: 1 }] },
+    { id: "from-fields-fraction-truncates", op: "from",
+      args: [{ year: 2026.9, month: 1.9, day: 1.9 }] },
+    { id: "from-fields-max", op: "from", args: [{ year: 275760, month: 9, day: 13 }] },
+    { id: "from-fields-past-max", op: "from", args: [{ year: 275760, month: 9, day: 14 }] },
+    { id: "from-fields-min", op: "from", args: [{ year: -271821, month: 4, day: 19 }] },
+    { id: "from-fields-past-min", op: "from", args: [{ year: -271821, month: 4, day: 18 }] },
     { id: "from-expanded-max", op: "from", args: ["+275760-09-13"] },
     { id: "from-expanded-past-max", op: "from", args: ["+275760-09-14"] },
     { id: "from-expanded-min", op: "from", args: ["-271821-04-19"] },
@@ -41,8 +80,154 @@ export const cases = {
     { id: "from-negative-zero-year", op: "from", args: ["-000000-01-01"] },
     { id: "from-year-end-week-1", op: "from", args: ["2024-12-31"] },
     { id: "from-year-start-week-53", op: "from", args: ["2027-01-01"] },
+    { id: "from-week-53-friday-jan1", op: "from", args: ["2021-01-01"] },
+    { id: "from-leap-year-week-53", op: "from", args: ["2020-12-31"] },
+    { id: "from-plain-date-time", op: "from",
+      args: [{ $type: "PlainDateTime", value: "2026-01-31T12:30" }] },
     { id: "compare-less", op: "compare", args: ["2026-01-31", "2026-02-01"] },
     { id: "compare-equal", op: "compare", args: ["2026-01-31", "2026-01-31"] },
     { id: "compare-greater", op: "compare", args: ["2026-02-01", "2026-01-31"] },
+    { id: "compare-years", op: "compare", args: ["-000001-12-31", "0000-01-01"] },
+    { id: "equals-true", on: "2026-01-31", op: "equals", args: ["2026-01-31"] },
+    { id: "equals-false", on: "2026-01-31", op: "equals", args: ["2026-02-01"] },
+    { id: "with-month", on: "2026-01-31", op: "with", args: [{ month: 2 }] },
+    { id: "with-month-reject", on: "2026-01-31", op: "with", args: [{ month: 2 }],
+      options: { overflow: "reject" } },
+    { id: "with-month-code", on: "2026-01-31", op: "with", args: [{ monthCode: "M02", day: 29 }] },
+    { id: "with-year-day", on: "2024-02-29", op: "with", args: [{ year: 2026 }] },
+    { id: "with-day-constrain", on: "2026-02-10", op: "with", args: [{ day: 31 }] },
+    { id: "with-nothing", on: "2026-01-31", op: "with", args: [{}] },
+    { id: "with-past-max", on: "+275760-09-13", op: "with", args: [{ day: 14 }] },
+    { id: "to-plain-date-time-midnight", on: "2026-01-31", op: "toPlainDateTime", args: [] },
+    { id: "to-plain-date-time-with-time", on: "2026-01-31", op: "toPlainDateTime",
+      args: [{ $type: "PlainTime", value: "08:30:15" }] },
+    { id: "to-plain-date-time-at-min", on: "-271821-04-19", op: "toPlainDateTime", args: [] },
+    { id: "to-string", on: "2026-01-31", op: "toString", args: [] },
+    { id: "to-string-expanded", on: "+010000-01-01", op: "toString", args: [] },
+    { id: "with-calendar-iso", on: "2026-01-31", op: "withCalendar", args: ["iso8601"] },
+    { id: "with-calendar-iso-upper", on: "2026-01-31", op: "withCalendar", args: ["ISO8601"] },
+  ],
+  PlainTime: [
+    { id: "from-string", op: "from", args: ["12:30:45.123456789"] },
+    { id: "from-string-hour", op: "from", args: ["12"] },
+    { id: "from-string-designator", op: "from", args: ["T12:30"] },
+    { id: "from-string-basic", op: "from", args: ["123045"] },
+    { id: "from-string-basic-ambiguous", op: "from", args: ["1230"] },
+    { id: "from-string-designator-disambiguates", op: "from", args: ["T1230"] },
+    { id: "from-string-month-day-shape", op: "from", args: ["12-14"] },
+    { id: "from-string-year-month-shape", op: "from", args: ["2026-03"] },
+    { id: "from-string-date-only", op: "from", args: ["2026-01-31"] },
+    { id: "from-string-comma", op: "from", args: ["12:30:45,5"] },
+    { id: "from-string-offset", op: "from", args: ["12:30-05:00"] },
+    { id: "from-string-offset-basic", op: "from", args: ["12:30+0530"] },
+    { id: "from-string-z", op: "from", args: ["12:30Z"] },
+    { id: "from-string-date-time", op: "from", args: ["2026-01-31T12:30"] },
+    { id: "from-string-date-time-z", op: "from", args: ["2026-01-31T12:30Z"] },
+    { id: "from-string-date-time-subminute-offset", op: "from",
+      args: ["2026-01-31T12:30+01:00:30.5"] },
+    { id: "from-string-leap-second", op: "from", args: ["12:30:60"] },
+    { id: "from-string-hour-24", op: "from", args: ["24:00"] },
+    { id: "from-string-ten-fraction-digits", op: "from", args: ["12:30:45.1234567890"] },
+    { id: "from-string-empty", op: "from", args: [""] },
+    { id: "from-string-leading-space", op: "from", args: [" 12:30"] },
+    { id: "from-fields", op: "from",
+      args: [{ hour: 12, minute: 30, second: 45, millisecond: 1, microsecond: 2, nanosecond: 3 }] },
+    { id: "from-fields-partial", op: "from", args: [{ hour: 7 }] },
+    { id: "from-fields-constrain", op: "from", args: [{ hour: 24, minute: -1, second: 99 }] },
+    { id: "from-fields-reject", op: "from", args: [{ hour: 24 }], options: { overflow: "reject" } },
+    { id: "from-fields-truncate", op: "from", args: [{ hour: 12.9, minute: 30.1 }] },
+    { id: "from-plain-date-time", op: "from",
+      args: [{ $type: "PlainDateTime", value: "2026-01-31T12:30:45.5" }] },
+    { id: "compare-less", op: "compare", args: ["12:30", "12:30:00.000000001"] },
+    { id: "compare-equal", op: "compare", args: ["12:30", "T12:30:00.000"] },
+    { id: "compare-greater", op: "compare", args: ["23:59:59.999999999", "00:00"] },
+    { id: "equals", on: "12:30:45.5", op: "equals", args: ["12:30:45.500000000"] },
+    { id: "with-minute", on: "12:30:45.5", op: "with", args: [{ minute: 0 }] },
+    { id: "with-nanosecond-reject", on: "12:30", op: "with", args: [{ nanosecond: 1000 }],
+      options: { overflow: "reject" } },
+    { id: "with-nothing", on: "12:30", op: "with", args: [{}] },
+    { id: "round-hour-wraps", on: "23:59", op: "round", args: ["hour"] },
+    { id: "round-minute", on: "12:34:56", op: "round", args: ["minute"] },
+    { id: "round-plural", on: "12:34:56", op: "round", args: ["minutes"] },
+    { id: "round-two-hours", on: "12:30", op: "round",
+      args: [{ smallestUnit: "hour", roundingIncrement: 2 }] },
+    { id: "round-twenty-four-hours", on: "12:30", op: "round",
+      args: [{ smallestUnit: "hour", roundingIncrement: 24 }] },
+    { id: "round-seven-minutes", on: "12:30", op: "round",
+      args: [{ smallestUnit: "minute", roundingIncrement: 7 }] },
+    { id: "round-fifteen-minutes", on: "12:37:30", op: "round",
+      args: [{ smallestUnit: "minute", roundingIncrement: 15 }] },
+    { id: "round-day", on: "13:30", op: "round", args: [{ smallestUnit: "day" }] },
+    { id: "round-week", on: "13:30", op: "round", args: [{ smallestUnit: "week" }] },
+    { id: "round-500-nanoseconds-half-even", on: "12:00:00.000000500", op: "round",
+      args: [{ smallestUnit: "microsecond", roundingMode: "halfEven" }] },
+    ...roundingModes.map((mode) => ({
+      id: `round-mode-${mode}-tie`, on: "12:30", op: "round",
+      args: [{ smallestUnit: "hour", roundingMode: mode }],
+    })),
+    ...roundingModes.map((mode) => ({
+      id: `round-mode-${mode}-odd-tie`, on: "13:30", op: "round",
+      args: [{ smallestUnit: "hour", roundingMode: mode }],
+    })),
+    ...roundingModes.map((mode) => ({
+      id: `round-mode-${mode}-below`, on: "13:29:59", op: "round",
+      args: [{ smallestUnit: "hour", roundingMode: mode }],
+    })),
+    { id: "to-string", on: "12:30:45.5", op: "toString", args: [] },
+    { id: "to-string-whole", on: "12:30:45", op: "toString", args: [] },
+    { id: "to-string-nanoseconds", on: "12:30:45.000000001", op: "toString", args: [] },
+    { id: "to-string-midnight", on: "00:00", op: "toString", args: [] },
+  ],
+  PlainDateTime: [
+    { id: "from-string", op: "from", args: ["2026-01-31T12:30:45.5"] },
+    { id: "from-string-date-only", op: "from", args: ["2026-01-31"] },
+    { id: "from-string-basic", op: "from", args: ["20260131T123045"] },
+    { id: "from-string-offset", op: "from", args: ["2026-01-31T12:30+05:30"] },
+    { id: "from-string-z", op: "from", args: ["2026-01-31T12:30Z"] },
+    { id: "from-string-max", op: "from", args: ["+275760-09-13T23:59:59.999999999"] },
+    { id: "from-string-past-max", op: "from", args: ["+275760-09-14T00:00"] },
+    { id: "from-string-min", op: "from", args: ["-271821-04-19T00:00:00.000000001"] },
+    { id: "from-string-at-min-midnight", op: "from", args: ["-271821-04-19T00:00"] },
+    { id: "from-string-past-min", op: "from", args: ["-271821-04-18T23:59"] },
+    { id: "from-fields", op: "from",
+      args: [{ year: 2026, month: 1, day: 31, hour: 12, minute: 30, second: 45,
+               millisecond: 123, microsecond: 456, nanosecond: 789 }] },
+    { id: "from-fields-date-only", op: "from", args: [{ year: 2026, month: 1, day: 31 }] },
+    { id: "from-fields-constrain", op: "from",
+      args: [{ year: 2026, month: 2, day: 31, hour: 24 }] },
+    { id: "from-fields-reject", op: "from",
+      args: [{ year: 2026, month: 2, day: 31, hour: 12 }], options: { overflow: "reject" } },
+    { id: "from-fields-reject-time", op: "from",
+      args: [{ year: 2026, month: 2, day: 28, hour: 24 }], options: { overflow: "reject" } },
+    { id: "from-plain-date", op: "from", args: [{ $type: "PlainDate", value: "2026-01-31" }] },
+    { id: "compare-date", op: "compare", args: ["2026-01-31T23:59", "2026-02-01T00:00"] },
+    { id: "compare-time", op: "compare", args: ["2026-01-31T12:30:00.000000001", "2026-01-31T12:30"] },
+    { id: "compare-equal", op: "compare", args: ["2026-01-31T12:30", "2026-01-31T12:30:00.000"] },
+    { id: "equals", on: "2026-01-31T12:30", op: "equals", args: ["2026-01-31T12:30:00"] },
+    { id: "with-time-field", on: "2026-01-31T12:30:45.5", op: "with", args: [{ hour: 0 }] },
+    { id: "with-date-and-time", on: "2026-01-31T12:30", op: "with", args: [{ month: 2, minute: 59 }] },
+    { id: "with-month-code", on: "2026-01-31T12:30", op: "with", args: [{ monthCode: "M02" }] },
+    { id: "with-nothing", on: "2026-01-31T12:30", op: "with", args: [{}] },
+    { id: "with-plain-time", on: "2026-01-31T12:30", op: "withPlainTime",
+      args: [{ $type: "PlainTime", value: "01:02:03.004" }] },
+    { id: "with-plain-time-midnight", on: "2026-01-31T12:30", op: "withPlainTime", args: [] },
+    { id: "with-plain-time-string", on: "2026-01-31T12:30", op: "withPlainTime", args: ["23:00"] },
+    { id: "round-hour-carries", on: "2026-01-31T23:59", op: "round", args: ["hour"] },
+    { id: "round-day-up", on: "2026-01-31T12:00", op: "round", args: ["day"] },
+    { id: "round-day-down", on: "2026-01-31T11:59:59", op: "round", args: ["day"] },
+    { id: "round-day-increment-2", on: "2026-01-31T12:00", op: "round",
+      args: [{ smallestUnit: "day", roundingIncrement: 2 }] },
+    { id: "round-day-past-max", on: "+275760-09-13T12:00", op: "round", args: ["day"] },
+    { id: "round-ten-minutes-floor", on: "2026-01-31T12:39:59", op: "round",
+      args: [{ smallestUnit: "minute", roundingIncrement: 10, roundingMode: "floor" }] },
+    { id: "round-nanosecond-identity", on: "2026-01-31T12:30:45.123456789", op: "round",
+      args: ["nanosecond"] },
+    { id: "round-week", on: "2026-01-31T12:30", op: "round", args: ["week"] },
+    { id: "to-plain-date", on: "2026-01-31T12:30", op: "toPlainDate", args: [] },
+    { id: "to-plain-time", on: "2026-01-31T12:30:45.5", op: "toPlainTime", args: [] },
+    { id: "to-string", on: "2026-01-31T12:30:45.5", op: "toString", args: [] },
+    { id: "to-string-midnight", on: "2026-01-31", op: "toString", args: [] },
+    { id: "to-string-expanded", on: "-000001-01-01T00:00:00.000000001", op: "toString", args: [] },
+    { id: "with-calendar-iso", on: "2026-01-31T12:30", op: "withCalendar", args: ["iso8601"] },
   ],
 };
