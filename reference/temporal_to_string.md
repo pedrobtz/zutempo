@@ -17,7 +17,13 @@ temporal_to_string(x)
 # S3 method for class 'zutempo_plain_date'
 temporal_to_string(x)
 
+# S3 method for class 'zutempo_plain_month_day'
+temporal_to_string(x)
+
 # S3 method for class 'zutempo_plain_time'
+temporal_to_string(x)
+
+# S3 method for class 'zutempo_plain_year_month'
 temporal_to_string(x)
 ```
 

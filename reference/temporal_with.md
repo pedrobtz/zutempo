@@ -27,7 +27,13 @@ temporal_with(x, ..., overflow = "constrain")
 # S3 method for class 'zutempo_plain_date'
 temporal_with_calendar(x, calendar)
 
+# S3 method for class 'zutempo_plain_month_day'
+temporal_with(x, ..., overflow = "constrain")
+
 # S3 method for class 'zutempo_plain_time'
+temporal_with(x, ..., overflow = "constrain")
+
+# S3 method for class 'zutempo_plain_year_month'
 temporal_with(x, ..., overflow = "constrain")
 
 temporal_with_plain_time(x, time = NULL)

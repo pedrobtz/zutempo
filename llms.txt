@@ -33,9 +33,14 @@ library(zutempo)
 - [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
   [`plain_date_time_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
   : Calendar dates with clock times: Temporal's PlainDateTime
+- [`plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/plain_month_day.md)
+  : Days of the year: Temporal's PlainMonthDay
 - [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
   [`plain_time_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
   : Clock times: Temporal's PlainTime
+- [`plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md)
+  [`plain_year_month_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md)
+  : Months: Temporal's PlainYearMonth
 - [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md)
   : Compare Temporal values
 - [`calendar_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
@@ -66,6 +71,8 @@ library(zutempo)
 - [`temporal_to_plain_date()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   [`temporal_to_plain_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   [`temporal_to_plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
+  [`temporal_to_plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
+  [`temporal_to_plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   : Convert between the plain types
 - [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
   : Format a Temporal value as an ISO 8601 string

@@ -250,6 +250,45 @@ nanosecond(x, ...)
 
 # S3 method for class 'zutempo_plain_date_time'
 nanosecond(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+calendar_id(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+era(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+era_year(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+year(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+month(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+month_code(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+days_in_year(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+days_in_month(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+months_in_year(x, ...)
+
+# S3 method for class 'zutempo_plain_year_month'
+in_leap_year(x, ...)
+
+# S3 method for class 'zutempo_plain_month_day'
+calendar_id(x, ...)
+
+# S3 method for class 'zutempo_plain_month_day'
+month_code(x, ...)
+
+# S3 method for class 'zutempo_plain_month_day'
+day(x, ...)
 ```
 
 ## Arguments

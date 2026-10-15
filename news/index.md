@@ -2,6 +2,23 @@
 
 ## zutempo 0.0.0.9000
 
+- [`plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md)
+  and
+  [`plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/plain_month_day.md):
+  Temporal’s `PlainYearMonth` and `PlainMonthDay` as R vectors, from
+  fields, strings or dates, with their fields,
+  [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md),
+  [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md),
+  [`plain_year_month_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md),
+  [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
+  and
+  [`temporal_to_plain_date()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
+  taking the missing `day` or `year`;
+  [`temporal_to_plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
+  and
+  [`temporal_to_plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
+  on a
+  [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md).
 - [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md),
   [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
   and

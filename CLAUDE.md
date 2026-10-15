@@ -25,21 +25,23 @@ roadmap says what each stage builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 2.
+Verified 2026-10-15: stages 0 to 3. The five plain types exist:
 [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md),
-[`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
+[`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md),
+[`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
+[`plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md)
 and
-[`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
-exist with their fields, `with`, `compare`, `equals`, `round`,
+[`plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/plain_month_day.md),
+with their fields, `with`, `compare`, `equals`, `round` (time types),
 conversions among them and default
 [`toString()`](https://rdrr.io/r/base/toString.html); strings are read
 without annotations (stage 9 adds them). The engine has the ISO date and
 time records (`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
-(`src/ztp_format.c`) and the parser with its zufast fast path
-(`src/ztp_parse.c`); the glue for the plain types is
+(`src/ztp_format.c`) and the parser with its four goals and the zufast
+fast path (`src/ztp_parse.c`); the glue for the plain types is
 `src/ztp_r_plain.c`. No `Duration`, `Instant`, zone or `ZonedDateTime`
 yet; arithmetic (`add`, `subtract`, `since`, `until`) arrives in stage
-4. The oracle has cases for the three plain types. See the roadmap’s
+4. The oracle has cases for the five plain types. See the roadmap’s
 stage table.
 
 ## Stage tracking
