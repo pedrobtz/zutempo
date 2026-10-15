@@ -1,14 +1,7 @@
 # Conversions with base R (design 6.10). One test per row of the table,
 # named for the row, in both directions. The rows with named zones compare
 # with base R, which reads the machine's database, so zutempo reads it too
-# and they skip without one.
-
-skip_without_tzdb <- function() {
-  skip_if(
-    is.na(zutempo_info()[["tzdir"]]),
-    "no time zone database on this machine"
-  )
-}
+# and they skip without one (skip_without_tzdb(), helper-tz.R).
 
 test_that("PlainDate <-> Date is exact", {
   x <- plain_date(c("2026-03-07", "1970-01-01", "-000001-12-31", NA))
