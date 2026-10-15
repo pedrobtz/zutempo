@@ -617,8 +617,11 @@ tarball) consumes it the way `zucbor`'s tag 0 decoder would.
 1. option `zutempo.tzdir`, then environment variable `TZDIR`, with R's
    special values `"internal"` and `"macOS"`;
 2. on Windows, `R.home("share")/zoneinfo`;
-3. on macOS, whichever of `/var/db/timezone/zoneinfo` and
-   `R.home("share")/zoneinfo` is newer, as R does;
+3. on macOS, `R.home("share")/zoneinfo`, then
+   `/var/db/timezone/zoneinfo`, as R does (amended 2026-10-15: R's
+   `?timezones` says R takes whichever is newer, but R 4.6 reads its own
+   copy even when the system's is newer, and agreeing with `POSIXct` is
+   the point of this list);
 4. elsewhere, `/usr/share/zoneinfo`, then `R.home("share")/zoneinfo`.
 
 `zutempo_info()` reports the directory, the version (from `+VERSION`,

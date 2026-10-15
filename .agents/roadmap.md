@@ -854,6 +854,13 @@ recorded.
   the full run before submission (the CI policy of stage 13). On macOS the
   exhaustive run found no difference, so `agreement/differences.csv`
   starts empty; the first full run adds what Linux finds.
+- On macOS zutempo now reads R's own tzdata before the system's, where
+  design §8.1 said the newer of the two (amended there, with the
+  maintainer's approval, in #44). R 4.6 does not do what its `?timezones`
+  says: with the system at 2026e and R's copy at 2026b, base R read 2026b,
+  and zutempo and `POSIXct` disagreed on Africa/Casablanca from 2026 on.
+  The agreement test also points `TZDIR` at zutempo's database, so it
+  compares like with like whatever the defaults.
 - Every §12 target is missed, by 1.2 to 5 times, and three operations are
   slower than `clock`: issues #35 to #42, labelled `performance`
   (`tools/bench/RESULTS.md`).

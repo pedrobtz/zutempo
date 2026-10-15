@@ -43,8 +43,9 @@ ztp_tz_find <- function() {
   if (.Platform$OS.type == "windows") {
     tried <- c(tried, r_copy)
   } else if (identical(sysname, "Darwin")) {
-    mac <- "/var/db/timezone/zoneinfo"
-    tried <- c(tried, ztp_tz_newer(mac, r_copy))
+    # R's own copy first, as base R reads it (and OlsonNames() lists it)
+    # even when the system's is newer, though ?timezones says otherwise.
+    tried <- c(tried, r_copy, "/var/db/timezone/zoneinfo")
   } else {
     tried <- c(tried, "/usr/share/zoneinfo", r_copy)
   }
@@ -64,20 +65,6 @@ ztp_tz_special_dir <- function(x) {
     macOS = "/var/db/timezone/zoneinfo",
     x
   )
-}
-
-# The newer of two databases by version, as R chooses on macOS; a copy
-# without a version file ranks after one with it.
-ztp_tz_newer <- function(a, b) {
-  va <- ztp_tz_version(a)
-  vb <- ztp_tz_version(b)
-  if (is.na(va) && !is.na(vb)) {
-    return(c(b, a))
-  }
-  if (!is.na(va) && !is.na(vb) && vb > va) {
-    return(c(b, a))
-  }
-  c(a, b)
 }
 
 # The tzdata version of a database: +VERSION (macOS), VERSION (R's copy)
