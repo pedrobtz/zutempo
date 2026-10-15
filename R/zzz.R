@@ -6,6 +6,7 @@
     ztp_register_vctrs(cls)
   }
   ztp_register_vctrs_duration()
+  ztp_register_vctrs_zoned()
   invisible()
 }
 
@@ -72,6 +73,29 @@ ztp_register_vctrs_duration <- function() {
   ztp_s3_register("vctrs::vec_ptype2", self, function(x, y, ...) new_duration())
   ztp_s3_register("vctrs::vec_cast", self, function(x, to, ...) x)
   ztp_s3_register("vctrs::vec_ptype_abbr", cls, function(x, ...) "duration")
+  ztp_s3_register("vctrs::vec_ptype_full", cls, function(x, ...) cls)
+  ztp_s3_register("pillar::pillar_shaft", cls, function(x, ...) {
+    pillar::new_pillar_shaft_simple(format(x), align = "right")
+  })
+}
+
+# A zoned_date_time() is a record for vctrs: its proxy is a data frame of
+# the instant and the identifier of each element (design 4.2).
+ztp_register_vctrs_zoned <- function() {
+  cls <- "zutempo_zoned_date_time"
+  self <- paste0(cls, ".", cls)
+  ztp_s3_register("vctrs::vec_proxy", cls, function(x, ...) {
+    vctrs::new_data_frame(
+      list(instant = ztp_zdt_instant(x), zone = ztp_zdt_ids(x)),
+      n = length(x)
+    )
+  })
+  ztp_s3_register("vctrs::vec_restore", cls, function(x, to, ...) {
+    ztp_zoned_build(as.complex(x[["instant"]]), as.character(x[["zone"]]))
+  })
+  ztp_s3_register("vctrs::vec_ptype2", self, function(x, y, ...) new_zoned_date_time())
+  ztp_s3_register("vctrs::vec_cast", self, function(x, to, ...) x)
+  ztp_s3_register("vctrs::vec_ptype_abbr", cls, function(x, ...) "zdt")
   ztp_s3_register("vctrs::vec_ptype_full", cls, function(x, ...) cls)
   ztp_s3_register("pillar::pillar_shaft", cls, function(x, ...) {
     pillar::new_pillar_shaft_simple(format(x), align = "right")

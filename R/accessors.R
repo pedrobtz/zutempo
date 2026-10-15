@@ -559,3 +559,137 @@ month_code.zutempo_plain_month_day <- function(x, ...) {
 day.zutempo_plain_month_day <- function(x, ...) {
   ztp_restore_na(as.integer(ztp_month_day_day(x)), x)
 }
+
+# --- ZonedDateTime: every calendar and clock field is the local date-time's ---
+
+#' @rdname temporal_fields
+#' @export
+calendar_id.zutempo_zoned_date_time <- function(x, ...) {
+  calendar_id(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+era.zutempo_zoned_date_time <- function(x, ...) {
+  era(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+era_year.zutempo_zoned_date_time <- function(x, ...) {
+  era_year(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+year.zutempo_zoned_date_time <- function(x, ...) {
+  year(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+month.zutempo_zoned_date_time <- function(x, ...) {
+  month(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+month_code.zutempo_zoned_date_time <- function(x, ...) {
+  month_code(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+day.zutempo_zoned_date_time <- function(x, ...) {
+  day(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+day_of_week.zutempo_zoned_date_time <- function(x, ...) {
+  day_of_week(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+day_of_year.zutempo_zoned_date_time <- function(x, ...) {
+  day_of_year(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+week_of_year.zutempo_zoned_date_time <- function(x, ...) {
+  week_of_year(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+year_of_week.zutempo_zoned_date_time <- function(x, ...) {
+  year_of_week(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+days_in_week.zutempo_zoned_date_time <- function(x, ...) {
+  days_in_week(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+days_in_month.zutempo_zoned_date_time <- function(x, ...) {
+  days_in_month(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+days_in_year.zutempo_zoned_date_time <- function(x, ...) {
+  days_in_year(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+months_in_year.zutempo_zoned_date_time <- function(x, ...) {
+  months_in_year(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+in_leap_year.zutempo_zoned_date_time <- function(x, ...) {
+  in_leap_year(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+hour.zutempo_zoned_date_time <- function(x, ...) {
+  hour(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+minute.zutempo_zoned_date_time <- function(x, ...) {
+  minute(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+second.zutempo_zoned_date_time <- function(x, ...) {
+  second(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+millisecond.zutempo_zoned_date_time <- function(x, ...) {
+  millisecond(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+microsecond.zutempo_zoned_date_time <- function(x, ...) {
+  microsecond(temporal_to_plain_date_time(x), ...)
+}
+
+#' @rdname temporal_fields
+#' @export
+nanosecond.zutempo_zoned_date_time <- function(x, ...) {
+  nanosecond(temporal_to_plain_date_time(x), ...)
+}

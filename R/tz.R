@@ -118,15 +118,13 @@ ztp_tz_index <- function(dir) {
   data.frame(id = rel, lower = tolower(rel), stringsAsFactors = FALSE)
 }
 
-# The current state, rebuilt when the option or TZDIR points elsewhere
-# (design 8.4).
+# The current state, rebuilt when the option or TZDIR makes the lookup
+# land on another directory (design 8.4). The key is the directory found,
+# not the settings: base R's Sys.timezone() sets TZDIR as a side effect,
+# which must not throw away a cache that still reads the same files.
 ztp_tz_current <- function() {
   found <- ztp_tz_candidates()
-  key <- paste(
-    getOption("zutempo.tzdir", ""),
-    Sys.getenv("TZDIR", ""),
-    sep = "\r"
-  )
+  key <- if (is.na(found$dir)) "" else found$dir
   if (!identical(ztp_tz_state$key, key)) {
     ztp_tz_reset_state()
     ztp_tz_state$key <- key
@@ -200,6 +198,16 @@ ztp_tz_ensure <- function(id, index = NULL) {
     .Call(C_ztp_r_tz_load, canonical, bytes)
   }
   canonical
+}
+
+# The zone table of a zoned_date_time(), with every identifier loaded: the
+# cache may have been cleared since the vector was made.
+ztp_zdt_zones_ready <- function(x) {
+  zones <- ztp_zdt_zones(x)
+  if (length(zones)) {
+    ztp_tz_ensure_all(zones)
+  }
+  zones
 }
 
 # Every distinct identifier of a character vector, resolved; NA stays NA.
