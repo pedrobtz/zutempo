@@ -26,7 +26,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | [#21](https://github.com/pedrobtz/zutempo/pull/21) | 2026-10-15 |
 | 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | [#22](https://github.com/pedrobtz/zutempo/pull/22) | 2026-10-15 |
 | 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | [#23](https://github.com/pedrobtz/zutempo/pull/23) | 2026-10-15 |
-| 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | | |
+| 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | | 2026-10-15 |
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | | |
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | | |
 | 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | | |
@@ -427,6 +427,27 @@ works.
 - `pending` no longer lists any member of `Instant` except
   `toZonedDateTimeISO` and the formatting options.
 - `now_instant()` is within one second of `Sys.time()` in a test.
+
+**Deviations (2026-10-15).**
+- `temporal_to_string()`'s generic gained `...` so the `instant()` method
+  can take `time_zone`; the other methods reject extra arguments. Stage 9
+  adds the remaining string options on the same generic.
+- A named zone given to `temporal_to_string()` is a `zutempo_tz_error`
+  naming stage 6, not a parse error: the identifier is well formed and
+  the database is what is missing.
+- `now_instant()` reads `Sys.time()`, so its precision is the platform's
+  double seconds (about a microsecond today); the engine has no clock of
+  its own.
+- `instant_from_epoch_nanoseconds()` takes doubles that are exact
+  integers as well as decimal strings; `zuint` arrives in stage 10.
+- `temporal-polyfill` 1.0.6 rounds a negative epoch value away from zero
+  with `trunc`, `halfExpand` and `halfTrunc`, where `RoundTemporalInstant`
+  rounds "as if positive" (design §6.4; test262's
+  `Instant/prototype/round/rounding-direction.js`). The package follows
+  the specification; those three cases left the oracle and live in
+  `test-instant.R`. The native run of the oracle on Node 26 (stage 11)
+  should show the same difference against the polyfill; worth reporting
+  to `fullcalendar/temporal-polyfill`.
 
 **Design.** §4.1, §4.3, §6.1, §6.4, §6.6, §6.7, §14 row 3.
 
