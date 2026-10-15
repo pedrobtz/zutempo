@@ -324,7 +324,7 @@ This package calls:
   `rchk.yml` (with `github-packages: pedrobtz/zufast`, since the rchk
   image ignores `Remotes:`), `analyzers.yml` and `cran-special.yml` in full
   on every run, two or three minutes each; `valgrind.yml` (about eleven
-  minutes) only with `full-ci`; `gctorture.yml` at step 500 over the
+  minutes) only with `full-ci`; `gctorture.yml` at step 1000 over the
   sampled oracle, and at step 20 (about an hour) with `full-ci` or the
   `gctorture` label.
 - `gctorture.yaml`: the long gctorture run alone, on demand (`gh workflow

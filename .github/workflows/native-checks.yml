@@ -13,7 +13,7 @@ concurrency:
 # Every run is the quick one, each job under five minutes: UBSan and the
 # ASan containers, rchk, LTO, the analyzers and CRAN's special checks run
 # in full, since they take two or three minutes; valgrind is skipped and
-# gctorture runs at step 500 over a sample of the oracle. The `full-ci`
+# gctorture runs at step 1000 over a sample of the oracle. The `full-ci`
 # label is the full run before submission (stage 13 of the roadmap):
 # valgrind too, and gctorture at step 20. The `gctorture` label, or
 # gctorture.yaml, runs the long gctorture alone.
@@ -36,8 +36,10 @@ jobs:
     uses: pedrobtz/r-actions/.github/workflows/gctorture.yml@v1
     with:
       profile: ${{ (contains(github.event.pull_request.labels.*.name, 'full-ci') || contains(github.event.pull_request.labels.*.name, 'gctorture')) && 'full' || 'quick' }}
-      # The sampled oracle in both runs keeps the quick one under five
-      # minutes and the long one inside its budget.
+      # The sampled oracle in both runs, and step 1000 for the quick one,
+      # keep it under five minutes (298 s at step 500 on 2026-10-15) and
+      # the long one inside its budget.
+      quick-step: 1000
       env: ZUTEMPO_GCTORTURE_SAMPLE=true
 
   rchk:

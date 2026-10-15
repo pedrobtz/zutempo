@@ -872,7 +872,7 @@ knows base R finds the way in.
 - The long gctorture run (step 20) took 89 to 99 minutes of its
   120-minute budget by stage 8, and valgrind and the nightly fuzz ran
   long too. From stage 10 on, every run is the quick one, each job under
-  five minutes: gctorture at step 500 over a sample of the oracle (one
+  five minutes: gctorture at step 1000 over a sample of the oracle (one
   case per shape), valgrind skipped, two minutes of fuzzing per target.
   The "CI green on every leg" and "gctorture clean" criteria of stages 10
   to 12 mean the quick run. The full run happens here, once, with the
