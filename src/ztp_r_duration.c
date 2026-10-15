@@ -10,6 +10,7 @@
 #include "ztp_r.h"
 #include "ztp_format.h"
 #include "ztp_relative.h"
+#include "ztp_zoned.h"
 
 #include <math.h>
 #include <string.h>
@@ -193,11 +194,42 @@ static bool ztp_r_relative_na(SEXP relative_days, R_xlen_t i)
     return relative_days != R_NilValue && INTEGER(relative_days)[i] == NA_INTEGER;
 }
 
+/* A zoned relativeTo (design 6.5): its instants, codes and zone table
+   arrive beside the plain one; at most one of the two is given. */
+typedef struct {
+    SEXP zoned, codes;
+    const ztp_zone *zones;
+} ztp_r_zoned_relative;
+
+static ztp_r_zoned_relative ztp_r_zoned_relative_open(SEXP zoned, SEXP codes, SEXP zones)
+{
+    ztp_r_zoned_relative r = {zoned, codes, NULL};
+    if (zoned != R_NilValue) r.zones = ztp_r_zones_open(zones);
+    return r;
+}
+
+static bool ztp_r_zoned_relative_na(const ztp_r_zoned_relative *r, R_xlen_t i)
+{
+    return r->zoned != R_NilValue &&
+           (ISNAN(COMPLEX(r->zoned)[i].r) || INTEGER(r->codes)[i] == NA_INTEGER);
+}
+
+static bool ztp_r_zoned_relative_get(const ztp_r_zoned_relative *r, R_xlen_t i,
+                                     zuf_i128 *epoch, const ztp_zone **zone)
+{
+    if (r->zoned == R_NilValue) return false;
+    *epoch = ztp_epoch_ns_join(COMPLEX(r->zoned)[i].r, COMPLEX(r->zoned)[i].i);
+    *zone = &r->zones[INTEGER(r->codes)[i] - 1];
+    return true;
+}
+
 /* Duration.prototype.round, with the per-element parts of its option
    validation. `largest` is a unit code or -1 for auto. */
 SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
-                          SEXP mode, SEXP smallest_present, SEXP relative_days)
+                          SEXP mode, SEXP smallest_present, SEXP relative_days,
+                          SEXP relative_zoned, SEXP relative_codes, SEXP relative_zones)
 {
+    ztp_r_zoned_relative zrel = ztp_r_zoned_relative_open(relative_zoned, relative_codes, relative_zones);
     R_xlen_t n = ztp_r_duration_length(dur);
     int largest_code = ztp_r_int(largest);
     ztp_unit smallest_unit = (ztp_unit)ztp_r_int(smallest);
@@ -213,8 +245,11 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
         ztp_unit existing, largest_unit;
         size_t idx = (size_t)i + 1;
         int32_t rel;
+        zuf_i128 zepoch;
+        const ztp_zone *zzone;
 
-        if (!ztp_r_duration_get(dur, i, &d) || ztp_r_relative_na(relative_days, i)) {
+        if (!ztp_r_duration_get(dur, i, &d) || ztp_r_relative_na(relative_days, i) ||
+            ztp_r_zoned_relative_na(&zrel, i)) {
             ztp_r_duration_put_na(out, i);
             continue;
         }
@@ -239,7 +274,21 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
                      "a `rounding_increment` above 1 on a date unit needs `largest_unit` equal to `smallest_unit`");
             ztp_r_raise(&ctx);
         }
-        if (ztp_r_relative(relative_days, i, &rel)) {
+        if (ztp_r_zoned_relative_get(&zrel, i, &zepoch, &zzone)) {
+            ztp_internal_duration internal = ztp_duration_to_internal(&d), rounded;
+            zuf_i128 target;
+
+            if (ztp_add_zoned_date_time(&ctx, idx, zepoch, zzone, &internal, ZTP_OVERFLOW_CONSTRAIN,
+                                        &target) != ZTP_OK)
+                ztp_r_raise(&ctx);
+            if (ztp_difference_zoned_rounded(&ctx, idx, zepoch, target, zzone, largest_unit, inc,
+                                             smallest_unit, rmode, &rounded) != ZTP_OK)
+                ztp_r_raise(&ctx);
+            if (ztp_duration_from_internal(&ctx, idx, &rounded,
+                                           largest_unit <= ZTP_UNIT_DAY ? ZTP_UNIT_HOUR : largest_unit,
+                                           &result) != ZTP_OK)
+                ztp_r_raise(&ctx);
+        } else if (ztp_r_relative(relative_days, i, &rel)) {
             ztp_internal_duration internal = ztp_duration_to_internal_24h(&d), rounded;
             int64_t target_ns, target_days;
             ztp_date_duration dd;
@@ -287,10 +336,12 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
     return out;
 }
 
-SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days)
+SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days, SEXP relative_zoned,
+                          SEXP relative_codes, SEXP relative_zones)
 {
     R_xlen_t n = ztp_r_duration_length(dur);
     ztp_unit u = (ztp_unit)ztp_r_int(unit);
+    ztp_r_zoned_relative zrel = ztp_r_zoned_relative_open(relative_zoned, relative_codes, relative_zones);
     SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
     double *po = REAL(out);
     ztp_ctx ctx;
@@ -300,12 +351,24 @@ SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days)
         ztp_duration d;
         size_t idx = (size_t)i + 1;
         int32_t rel;
+        zuf_i128 zepoch;
+        const ztp_zone *zzone;
 
-        if (!ztp_r_duration_get(dur, i, &d) || ztp_r_relative_na(relative_days, i)) {
+        if (!ztp_r_duration_get(dur, i, &d) || ztp_r_relative_na(relative_days, i) ||
+            ztp_r_zoned_relative_na(&zrel, i)) {
             po[i] = NA_REAL;
             continue;
         }
-        if (ztp_r_relative(relative_days, i, &rel)) {
+        if (ztp_r_zoned_relative_get(&zrel, i, &zepoch, &zzone)) {
+            ztp_internal_duration internal = ztp_duration_to_internal(&d);
+            zuf_i128 target;
+
+            if (ztp_add_zoned_date_time(&ctx, idx, zepoch, zzone, &internal, ZTP_OVERFLOW_CONSTRAIN,
+                                        &target) != ZTP_OK)
+                ztp_r_raise(&ctx);
+            if (ztp_difference_zoned_total(&ctx, idx, zepoch, target, zzone, u, &po[i]) != ZTP_OK)
+                ztp_r_raise(&ctx);
+        } else if (ztp_r_relative(relative_days, i, &rel)) {
             ztp_internal_duration internal = ztp_duration_to_internal_24h(&d);
             int64_t target_ns, target_days;
             ztp_date_duration dd;
@@ -353,9 +416,11 @@ static ztp_status ztp_r_date_duration_days(ztp_ctx *ctx, size_t idx,
     return ZTP_OK;
 }
 
-SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days)
+SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days, SEXP relative_zoned,
+                            SEXP relative_codes, SEXP relative_zones)
 {
     R_xlen_t n = ztp_r_duration_length(a);
+    ztp_r_zoned_relative zrel = ztp_r_zoned_relative_open(relative_zoned, relative_codes, relative_zones);
     SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
     int *po = INTEGER(out);
     ztp_ctx ctx;
@@ -368,10 +433,11 @@ SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days)
         int32_t rel;
         ztp_internal_duration d1, d2;
         double days1, days2;
-        zuf_i128 t1, t2;
+        zuf_i128 t1, t2, zepoch;
+        const ztp_zone *zzone;
 
         if (!ztp_r_duration_get(a, i, &da) || !ztp_r_duration_get(b, i, &db) ||
-            ztp_r_relative_na(relative_days, i)) {
+            ztp_r_relative_na(relative_days, i) || ztp_r_zoned_relative_na(&zrel, i)) {
             po[i] = NA_INTEGER;
             continue;
         }
@@ -383,6 +449,16 @@ SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days)
         }
         d1 = ztp_duration_to_internal(&da);
         d2 = ztp_duration_to_internal(&db);
+        if (ztp_r_zoned_relative_get(&zrel, i, &zepoch, &zzone) &&
+            (ztp_duration_default_largest_unit(&da) <= ZTP_UNIT_DAY ||
+             ztp_duration_default_largest_unit(&db) <= ZTP_UNIT_DAY)) {
+            zuf_i128 after1, after2;
+            if (ztp_add_zoned_date_time(&ctx, idx, zepoch, zzone, &d1, ZTP_OVERFLOW_CONSTRAIN, &after1) != ZTP_OK ||
+                ztp_add_zoned_date_time(&ctx, idx, zepoch, zzone, &d2, ZTP_OVERFLOW_CONSTRAIN, &after2) != ZTP_OK)
+                ztp_r_raise(&ctx);
+            po[i] = zuf_i128_cmp(after1, after2);
+            continue;
+        }
         if (ztp_duration_default_largest_unit(&da) <= ZTP_UNIT_WEEK ||
             ztp_duration_default_largest_unit(&db) <= ZTP_UNIT_WEEK) {
             if (!ztp_r_relative(relative_days, i, &rel)) {
@@ -469,7 +545,8 @@ SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
         ztp_calendar_date_until(p1[i], p2[i], largest_unit, &diff.date);
         diff.time = zuf_i128_from_i64(0);
         if (p1[i] != p2[i] && (smallest_unit != ZTP_UNIT_DAY || inc != 1)) {
-            if (ztp_round_relative_duration(&ctx, idx, &diff, p1[i], 0, p2[i], 0, largest_unit,
+            if (ztp_round_relative_duration(&ctx, idx, &diff, p1[i], 0, ztp_epoch_ns_of(p1[i], 0),
+                                            ztp_epoch_ns_of(p2[i], 0), NULL, largest_unit,
                                             inc, smallest_unit, rmode, &rounded) != ZTP_OK)
                 ztp_r_raise(&ctx);
             diff = rounded;
@@ -697,7 +774,9 @@ SEXP ztp_r_plain_year_month_until(SEXP ym1, SEXP ym2, SEXP largest, SEXP smalles
         diff.date.days = 0;
         diff.time = zuf_i128_from_i64(0);
         if (p1[i] != p2[i] && (smallest_unit != ZTP_UNIT_MONTH || inc != 1)) {
-            if (ztp_round_relative_duration(&ctx, idx, &diff, this_day, 0, other_day, 0,
+            if (ztp_round_relative_duration(&ctx, idx, &diff, this_day, 0,
+                                            ztp_epoch_ns_of(this_day, 0),
+                                            ztp_epoch_ns_of(other_day, 0), NULL,
                                             largest_unit, inc, smallest_unit, rmode,
                                             &rounded) != ZTP_OK)
                 ztp_r_raise(&ctx);

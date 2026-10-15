@@ -129,29 +129,58 @@ ztp_negate_duration_data <- function(data) {
   })
 }
 
-# relative_to as recycled epoch days, or NULL.
-ztp_relative_days <- function(relative_to, n) {
+# The common length of a duration and its relative_to (an option in
+# Temporal, a vector recycled by R's rules here).
+ztp_relative_length <- function(x, relative_to) {
+  if (is.null(relative_to)) length(x) else ztp_common_length(x, relative_to)
+}
+
+# GetTemporalRelativeToOption: relative_to as a list of the four arguments
+# the duration glue takes, recycled to n: plain epoch days (or NULL), and
+# the instants, codes and zone table of a zoned value (or NULLs). A string
+# with a zone in brackets is zoned, any other reads as a date-time.
+ztp_relative_to <- function(relative_to, n) {
+  none <- list(days = NULL, zoned = NULL, codes = NULL, zones = NULL)
   if (is.null(relative_to)) {
-    return(NULL)
+    return(none)
+  }
+  if (is.character(relative_to)) {
+    zoned <- grepl("[", relative_to, fixed = TRUE)
+    zoned[is.na(zoned)] <- all(zoned, na.rm = TRUE)
+    if (all(zoned) && length(zoned)) {
+      relative_to <- zoned_date_time(relative_to)
+    } else if (any(zoned)) {
+      stop_zutempo(
+        "`relative_to` strings must all carry a time zone in brackets, or none",
+        kind = "type"
+      )
+    } else {
+      relative_to <- temporal_to_plain_date(plain_date_time(relative_to))
+    }
+  }
+  if (inherits(relative_to, "zutempo_zoned_date_time")) {
+    idx <- rep_len(seq_along(relative_to), n)
+    if (length(relative_to) == 0L && n > 0L) {
+      idx <- rep_len(NA_integer_, n)
+    }
+    return(list(
+      days = NULL,
+      zoned = ztp_zdt_instant(relative_to)[idx],
+      codes = ztp_zdt_codes(relative_to)[idx],
+      zones = ztp_zdt_zones_ready(relative_to)
+    ))
   }
   if (inherits(relative_to, "zutempo_plain_date_time")) {
     relative_to <- temporal_to_plain_date(relative_to)
   }
   if (!inherits(relative_to, "zutempo_plain_date")) {
-    if (!is.character(relative_to)) {
-      stop_zutempo(
-        "`relative_to` must be a plain_date(), a plain_date_time() or a string",
-        kind = "type"
-      )
-    }
-    relative_to <- ztp_relative_from_string(relative_to)
+    stop_zutempo(
+      "`relative_to` must be a plain_date(), a plain_date_time(), a zoned_date_time() or a string",
+      kind = "type"
+    )
   }
-  rep_len(unclass(relative_to), n)
-}
-
-# A relativeTo string reads as a date-time (Z and zones arrive in stage 8).
-ztp_relative_from_string <- function(x) {
-  temporal_to_plain_date(plain_date_time(x))
+  none$days <- rep_len(unclass(relative_to), n)
+  none
 }
 
 #' @rdname duration
@@ -169,11 +198,15 @@ duration_compare <- function(x, y, relative_to = NULL) {
       kind = "type"
     )
   }
+  rel <- ztp_relative_to(relative_to, n)
   .Call(
     C_ztp_r_duration_compare,
     ztp_duration_data(x, n),
     ztp_duration_data(y, n),
-    ztp_relative_days(relative_to, n)
+    rel$days,
+    rel$zoned,
+    rel$codes,
+    rel$zones
   )
 }
 
@@ -465,16 +498,20 @@ temporal_round.zutempo_duration <- function(
       kind = "range"
     )
   }
-  n <- length(x)
+  n <- ztp_relative_length(x, relative_to)
+  rel <- ztp_relative_to(relative_to, n)
   new_duration(.Call(
     C_ztp_r_duration_round,
-    unclass(x),
+    ztp_duration_data(x, n),
     largest,
     smallest,
     increment,
     mode,
     smallest_given,
-    ztp_relative_days(relative_to, n)
+    rel$days,
+    rel$zoned,
+    rel$codes,
+    rel$zones
   ))
 }
 
@@ -486,8 +523,9 @@ temporal_round.zutempo_duration <- function(
 #'
 #' @param x A `duration()`.
 #' @param unit A Temporal unit, singular or plural.
-#' @param relative_to A `plain_date()`, `plain_date_time()` or a string
-#'   either reads.
+#' @param relative_to A `plain_date()`, `plain_date_time()`,
+#'   `zoned_date_time()` or a string one of them reads (a zone in brackets
+#'   makes it zoned); with a zoned value, days follow the zone (design 6.5).
 #' @return A double vector.
 #' @examples
 #' temporal_total(duration(hours = 25), "day")
@@ -504,12 +542,16 @@ temporal_total.zutempo_duration <- function(x, unit, relative_to = NULL) {
     stop_zutempo("`unit` is required", kind = "type")
   }
   code <- ztp_unit_code(unit, "datetime", name = "unit")
-  n <- length(x)
+  n <- ztp_relative_length(x, relative_to)
+  rel <- ztp_relative_to(relative_to, n)
   .Call(
     C_ztp_r_duration_total,
-    unclass(x),
+    ztp_duration_data(x, n),
     code,
-    ztp_relative_days(relative_to, n)
+    rel$days,
+    rel$zoned,
+    rel$codes,
+    rel$zones
   )
 }
 
@@ -638,7 +680,7 @@ ztp_duration_order_key <- function(x) {
       index = which(calendar)[1L]
     )
   }
-  .Call(C_ztp_r_duration_total, data, 9L, NULL)
+  .Call(C_ztp_r_duration_total, data, 9L, NULL, NULL, NULL, NULL)
 }
 
 #' @export

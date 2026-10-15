@@ -6,8 +6,11 @@
 #' Temporal's `add()` and `subtract()`. On a `plain_date()` or
 #' `plain_year_month()` the time part of the duration counts in 24-hour
 #' days; on a `plain_time()` only the time part applies and the result
-#' wraps within the day. On a `duration()` the result is a balanced
-#' duration, and calendar units are an error (design 6.5).
+#' wraps within the day. On a `zoned_date_time()` the date part moves
+#' through the calendar in the value's zone, resolved as `"compatible"`,
+#' and the time part moves the exact time, so a day across a clock change
+#' is not 24 hours (design 6.5). On a `duration()` the result is a
+#' balanced duration, and calendar units are an error.
 #'
 #' @param x A zutempo value.
 #' @param other A `duration()`, or a string that `duration()` reads.
@@ -37,8 +40,9 @@ temporal_subtract <- function(x, other, ...) {
 #' Temporal's `until()` and `since()`: the duration from `x` to `other`
 #' (`until`), or from `other` to `x` (`since`), balanced up to
 #' `largest_unit` and rounded to `smallest_unit` (design 6.6). Defaults
-#' follow the type: days for dates and date-times, hours for times, years
-#' for year-months.
+#' follow the type: days for dates and date-times, hours for times, zoned
+#' values and instants, years for year-months. Two `zoned_date_time()`
+#' values in different zones can only be differenced in time units.
 #'
 #' @param x A zutempo value.
 #' @param other A value of the same class, or a string its constructor

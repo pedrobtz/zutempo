@@ -1,5 +1,29 @@
 # zutempo 0.0.0.9000
 
+* Zone-aware arithmetic: `temporal_add()`, `temporal_subtract()`,
+  `temporal_since()`, `temporal_until()` and `temporal_round()` on a
+  `zoned_date_time()`, with date units through the calendar in the value's
+  zone and time units on the exact time, so a day across a clock change is
+  not 24 hours; `temporal_get_time_zone_transition()`; and
+  `temporal_round()`, `temporal_total()` and `duration_compare()` with a
+  `zoned_date_time()` as `relative_to`, where days follow the zone
+  (`PT25H` rounded to days relative to 2026-03-07 in New York is `P1DT2H`).
+* `zoned_date_time()`: Temporal's `ZonedDateTime` as an R vector with a
+  time zone per element, from RFC 9557 strings with the zone in brackets
+  (`"2026-03-07T12:00[America/New_York]"`) or from fields with `time_zone`,
+  resolving clock gaps and folds with `disambiguation` and a disagreeing
+  UTC offset with `offset`. Every calendar and clock field, `offset()`,
+  `offset_nanoseconds()`, `time_zone_id()`, `hours_in_day()`,
+  `temporal_start_of_day()`, `temporal_with()`,
+  `temporal_with_plain_time()`, `temporal_with_time_zone()`,
+  `temporal_to_instant()`, the conversions to the plain types,
+  `temporal_equals()` through `TimeZoneEquals`, `zoned_date_time_compare()`
+  and `temporal_to_string()`; `temporal_to_zoned_date_time_iso()` on an
+  `instant()` and `temporal_to_zoned_date_time()` on a `plain_date()` or
+  `plain_date_time()`; `now_time_zone_id()`, `now_zoned_date_time_iso()`,
+  `now_plain_date_time_iso()`, `now_plain_date_iso()` and
+  `now_plain_time_iso()`. Mixed zones combine, subset, sort and sit in
+  data frames; `vctrs` sees a record of instant and zone.
 * Named IANA time zones resolve from the time zone database base R reads,
   in base R's lookup order (option `zutempo.tzdir`, `TZDIR`, then the
   platform's copies), on fat and slim files alike, with case-insensitive

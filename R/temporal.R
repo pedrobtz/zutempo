@@ -5,16 +5,23 @@
 #'
 #' `temporal_with()` is Temporal's `with()`: it returns a copy of `x` with
 #' the named fields replaced and the rest kept, resolving the result with
-#' `overflow`. `temporal_with_plain_time()` is `withPlainTime()`, and
-#' `temporal_with_calendar()` is `withCalendar()`, which accepts only
-#' `"iso8601"` in this version (design D7).
+#' `overflow`. `temporal_with_plain_time()` is `withPlainTime()`,
+#' `temporal_with_time_zone()` is `withTimeZone()` (the same instant read
+#' in another zone), and `temporal_with_calendar()` is `withCalendar()`,
+#' which accepts only `"iso8601"` in this version (design D7).
 #'
 #' @param x A zutempo value.
 #' @param ... Fields to replace, named: `year`, `month`, `month_code`,
 #'   `day`, `hour`, `minute`, `second`, `millisecond`, `microsecond`,
-#'   `nanosecond`, as the type allows. At least one is required. Giving
-#'   `month` or `month_code` discards the other from `x`; giving both
-#'   requires them to agree.
+#'   `nanosecond`, as the type allows, and `offset_string` for a
+#'   `zoned_date_time()`. At least one is required. Giving `month` or
+#'   `month_code` discards the other from `x`; giving both requires them
+#'   to agree.
+#' @param disambiguation,offset For a `zoned_date_time()`: how to resolve
+#'   the new local time, as for [zoned_date_time()]; `offset` defaults to
+#'   `"prefer"` here.
+#' @param time_zone For `temporal_with_time_zone()`: the new zone of each
+#'   value, recycled.
 #' @param overflow `"constrain"` (the default) clamps out-of-range fields,
 #'   `"reject"` raises a `zutempo_range_error` for them (design 6.2).
 #' @param time A `plain_time()`, a string a `plain_time()` reads, or `NULL`
@@ -128,15 +135,18 @@ temporal_equals <- function(x, other) {
 #' @param x A zutempo value.
 #' @param smallest_unit The unit to round to: `"hour"`, `"minute"`,
 #'   `"second"`, `"millisecond"`, `"microsecond"` or `"nanosecond"`, or
-#'   their plurals; `"day"` for a `plain_date_time()`; any unit for a
-#'   `duration()`, which may instead give only `largest_unit`.
+#'   their plurals; `"day"` for a `plain_date_time()` or a
+#'   `zoned_date_time()`, where a day is that calendar day in the zone,
+#'   however long; any unit for a `duration()`, which may instead give only
+#'   `largest_unit`.
 #' @param ... Must be empty, except for a `duration()`'s `largest_unit`
 #'   and `relative_to`.
 #' @param largest_unit For a `duration()`: the unit to balance up to,
 #'   `"auto"` or `NULL` for the duration's own largest unit.
 #' @param relative_to For a `duration()`: a `plain_date()`,
-#'   `plain_date_time()` or a string either reads, required to round years,
-#'   months or weeks (design 6.5).
+#'   `plain_date_time()`, `zoned_date_time()` or a string one of them
+#'   reads, required to round years, months or weeks; with a zoned value,
+#'   days follow the zone (design 6.5).
 #' @param rounding_increment A positive integer that divides the next
 #'   larger unit evenly: 24 hours, 60 minutes or seconds, 1000 of the
 #'   sub-second units, and 1 for `"day"`.
@@ -171,9 +181,10 @@ temporal_round <- function(
 #'
 #' @param x A zutempo value.
 #' @param ... Must be empty, except for an `instant()`'s `time_zone`.
-#' @param time_zone For an `instant()`: `"UTC"` or a fixed offset such as
-#'   `"+05:30"` to show the time in; `NULL` (the default) writes the time
-#'   in UTC with `Z`. Named zones arrive with the time zone database.
+#' @param time_zone For an `instant()`: a time zone to show the time in,
+#'   `"UTC"`, a fixed offset such as `"+05:30"` or an IANA identifier such
+#'   as `"Europe/Lisbon"`; `NULL` (the default) writes the time in UTC
+#'   with `Z`.
 #' @return A character vector, `NA` where `x` is `NA`.
 #' @examples
 #' temporal_to_string(plain_date(c(2026, 275760), c(1, 9), c(31, 13)))

@@ -881,6 +881,256 @@
           "epochNanoseconds": "-1"
         }
       }
+    },
+    {
+      "id": "to-zoned-iso-named",
+      "op": "toZonedDateTimeISO",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        "America/New_York"
+      ],
+      "result": {
+        "string": "2026-03-07T12:00:00-05:00[America/New_York]",
+        "type": "ZonedDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "day": 7,
+          "dayOfWeek": 6,
+          "dayOfYear": 66,
+          "weekOfYear": 10,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 12,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0,
+          "offset": "-05:00",
+          "offsetNanoseconds": -18000000000000,
+          "timeZoneId": "America/New_York",
+          "epochMilliseconds": 1772902800000,
+          "epochNanoseconds": "1772902800000000000",
+          "hoursInDay": 24
+        }
+      }
+    },
+    {
+      "id": "to-zoned-iso-offset",
+      "op": "toZonedDateTimeISO",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        "+05:30"
+      ],
+      "result": {
+        "string": "2026-03-07T22:30:00+05:30[+05:30]",
+        "type": "ZonedDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "day": 7,
+          "dayOfWeek": 6,
+          "dayOfYear": 66,
+          "weekOfYear": 10,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 22,
+          "minute": 30,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0,
+          "offset": "+05:30",
+          "offsetNanoseconds": 19800000000000,
+          "timeZoneId": "+05:30",
+          "epochMilliseconds": 1772902800000,
+          "epochNanoseconds": "1772902800000000000",
+          "hoursInDay": 24
+        }
+      }
+    },
+    {
+      "id": "to-zoned-iso-utc",
+      "op": "toZonedDateTimeISO",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        "UTC"
+      ],
+      "result": {
+        "string": "2026-03-07T17:00:00+00:00[UTC]",
+        "type": "ZonedDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "day": 7,
+          "dayOfWeek": 6,
+          "dayOfYear": 66,
+          "weekOfYear": 10,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 17,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0,
+          "offset": "+00:00",
+          "offsetNanoseconds": 0,
+          "timeZoneId": "UTC",
+          "epochMilliseconds": 1772902800000,
+          "epochNanoseconds": "1772902800000000000",
+          "hoursInDay": 24
+        }
+      }
+    },
+    {
+      "id": "to-zoned-iso-case",
+      "op": "toZonedDateTimeISO",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        "europe/lisbon"
+      ],
+      "result": {
+        "string": "2026-03-07T17:00:00+00:00[Europe/Lisbon]",
+        "type": "ZonedDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "day": 7,
+          "dayOfWeek": 6,
+          "dayOfYear": 66,
+          "weekOfYear": 10,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 17,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0,
+          "offset": "+00:00",
+          "offsetNanoseconds": 0,
+          "timeZoneId": "Europe/Lisbon",
+          "epochMilliseconds": 1772902800000,
+          "epochNanoseconds": "1772902800000000000",
+          "hoursInDay": 24
+        }
+      }
+    },
+    {
+      "id": "to-zoned-iso-link",
+      "op": "toZonedDateTimeISO",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        "Asia/Calcutta"
+      ],
+      "result": {
+        "string": "2026-03-07T22:30:00+05:30[Asia/Calcutta]",
+        "type": "ZonedDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "day": 7,
+          "dayOfWeek": 6,
+          "dayOfYear": 66,
+          "weekOfYear": 10,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 22,
+          "minute": 30,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0,
+          "offset": "+05:30",
+          "offsetNanoseconds": 19800000000000,
+          "timeZoneId": "Asia/Calcutta",
+          "epochMilliseconds": 1772902800000,
+          "epochNanoseconds": "1772902800000000000",
+          "hoursInDay": 24
+        }
+      }
+    },
+    {
+      "id": "to-zoned-iso-unknown",
+      "op": "toZonedDateTimeISO",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        "Mars/Olympus_Mons"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-zoned-iso-subminute",
+      "op": "toZonedDateTimeISO",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        "+05:30:15"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-string-named-zone",
+      "op": "toString",
+      "on": "2026-03-07T17:00Z",
+      "args": [
+        {
+          "timeZone": "America/New_York"
+        }
+      ],
+      "result": "2026-03-07T12:00:00-05:00"
+    },
+    {
+      "id": "to-string-named-zone-lmt",
+      "op": "toString",
+      "on": "1883-11-18T16:00Z",
+      "args": [
+        {
+          "timeZone": "America/New_York"
+        }
+      ],
+      "result": "1883-11-18T11:03:58-04:56"
     }
   ]
 }

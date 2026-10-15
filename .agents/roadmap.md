@@ -28,8 +28,8 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | [#23](https://github.com/pedrobtz/zutempo/pull/23) | 2026-10-15 |
 | 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | [#24](https://github.com/pedrobtz/zutempo/pull/24) | 2026-10-15 |
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | [#25](https://github.com/pedrobtz/zutempo/pull/25) | 2026-10-15 |
-| 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | | |
-| 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | | |
+| 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | [#26](https://github.com/pedrobtz/zutempo/pull/26) | 2026-10-15 |
+| 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | | 2026-10-15 |
 | 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | | |
 | 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | | |
 | 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | | |
@@ -579,6 +579,39 @@ remaining `Now` functions work.
 
 **Design.** §4.2, §5, §6.3, §6.7, §14 row 5.
 
+**Deviations (2026-10-15).**
+- Storage: the vector is the `instant()` complex vector itself with the
+  integer zone code per element as the attribute `zone` and the identifier
+  table as `zones`, rather than a two-field record. The information is the
+  same and `unclass()` still shows the epoch seconds; the table is kept in
+  order of first use, so equal vectors are `identical()` whatever their
+  history. `vctrs` sees the two-field record through `vec_proxy()`.
+- Temporal's `offset` *field* (the UTC offset the wall-clock fields are
+  given in) is the argument `offset_string` of `zoned_date_time()` and
+  `temporal_with()`, because `offset` is the option of §6.3 (`"use"`,
+  `"ignore"`, `"prefer"`, `"reject"`) and R cannot take both under one
+  name. The property accessor stays `offset()`.
+- `temporal_to_zoned_date_time()` on a `plain_date()` takes the time as
+  `plain_time`, Temporal's property name, so the oracle's field bags map
+  onto it.
+- `now_time_zone_id()` reads `TZ` before `Sys.timezone()`: base R formats
+  with the C library, which reads `TZ`, while `Sys.timezone()` caches its
+  first answer for the session. A zone the database does not have falls
+  back to `"UTC"`, as `SystemTimeZoneIdentifier` does.
+- Oracle cases whose result lies on the first or last day of the instant
+  range are not recorded: the generator reads `hoursInDay` on every
+  result, which throws there because the neighbouring day has no start,
+  and the oracle cannot tell that from the operation throwing. Those
+  values are tested against the specification in
+  `test-zoned-date-time.R`, including
+  `-271821-04-19T19:03:58[America/New_York]`, the minimum instant read
+  in New York's local mean time, which `temporal-polyfill` 1.0.6 rejects
+  and the specification's `GetPossibleEpochNanoseconds` accepts.
+- Strings with a `[u-ca=...]` or other non-zone annotation stay a parse
+  error until stage 9, as planned; the time zone annotation itself is
+  read by every type (and ignored by the plain types and `instant()`), as
+  the grammar allows.
+
 ## Stage 8 — Zone-aware arithmetic and transitions
 
 **Issue.** [#11](https://github.com/pedrobtz/zutempo/issues/11), sub-issue of
@@ -610,6 +643,27 @@ specification, and `Duration` rounds relative to zoned values.
   formatting options remain.
 
 **Design.** §0 (oracle table), §6.5, §6.6, §8.2, §14 row 5.
+
+**Deviations (2026-10-15).**
+- `relative_to` recycles with the duration by R's rules (a vector of
+  zoned values gives one result per element), where Temporal's option is a
+  single value; a scalar behaves as in Temporal.
+- `temporal_get_time_zone_transition()` returns `NA` where Temporal
+  returns `null`: for a fixed-offset zone, for `UTC`, and when no
+  transition lies within the representable range.
+- `ComputeNudgeWindow` takes the origin's exact time when the whole start
+  duration is zero rather than when its rounded unit alone is zero (the
+  stage 4 reading), so a zoned origin inside a fold keeps its offset.
+- Oracle cases whose result lies on the last day of the range stay out
+  (the generator reads `hoursInDay`, as in stage 7); rounding up to the
+  very last instant is tested in `test-zoned-date-time.R`. An invalid
+  `direction` is a `zutempo_type_error` as every invalid option value is
+  (design 10), not the oracle's `RangeError`, so that case is tested in
+  the package.
+- Equal instants in two zones with a date largest unit stay out of the
+  oracle: `temporal-polyfill` 1.0.6 returns `PT0S`, where the pinned
+  `DifferenceTemporalZonedDateTime` checks the zones first and throws. The
+  engine follows the specification, and `test-zoned-date-time.R` tests it.
 
 ## Stage 9 — RFC 9557 annotations and formatting options
 

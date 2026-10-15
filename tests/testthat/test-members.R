@@ -5,25 +5,7 @@
 # be empty (design 15, criterion 3).
 
 test_that("every in-scope member has an exported function, or is pending", {
-  pending <- c(
-    "hours_in_day",
-    "now_plain_date_iso",
-    "now_plain_date_time_iso",
-    "now_plain_time_iso",
-    "now_time_zone_id",
-    "now_zoned_date_time_iso",
-    "offset",
-    "offset_nanoseconds",
-    "temporal_get_time_zone_transition",
-    "temporal_start_of_day",
-    "temporal_to_instant",
-    "temporal_to_zoned_date_time",
-    "temporal_to_zoned_date_time_iso",
-    "temporal_with_time_zone",
-    "time_zone_id",
-    "zoned_date_time",
-    "zoned_date_time_compare"
-  )
+  pending <- character()
   members <- read.csv(
     system.file("spec", "members.csv", package = "zutempo"),
     stringsAsFactors = FALSE

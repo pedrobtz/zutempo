@@ -14,8 +14,9 @@ temporal_total(x, unit, relative_to = NULL)
 
 \item{unit}{A Temporal unit, singular or plural.}
 
-\item{relative_to}{A \code{plain_date()}, \code{plain_date_time()} or a string
-either reads.}
+\item{relative_to}{A \code{plain_date()}, \code{plain_date_time()},
+\code{zoned_date_time()} or a string one of them reads (a zone in brackets
+makes it zoned); with a zoned value, days follow the zone (design 6.5).}
 }
 \value{
 A double vector.
