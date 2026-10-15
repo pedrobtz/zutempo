@@ -71,14 +71,15 @@ test_that("-000000 is a parse error and the error names the element", {
   expect_match(conditionMessage(cond), "byte")
 })
 
-test_that("strings with annotations are a parse error until stage 9", {
+test_that("annotations other than the time zone are a parse error until stage 9", {
   expect_error(
     plain_date("2026-01-31[u-ca=iso8601]"),
     class = "zutempo_parse_error"
   )
-  expect_error(
+  # The time zone annotation is read (stage 7) and ignored by a plain type.
+  expect_identical(
     plain_date("2026-01-31[America/New_York]"),
-    class = "zutempo_parse_error"
+    plain_date("2026-01-31")
   )
 })
 

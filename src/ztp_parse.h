@@ -3,8 +3,9 @@
  * ParseISODateTime (13.36), for the goals the plain types use. Engine
  * side: no R.
  *
- * Stage 2 reads dates, times and offsets. Annotations ("[...]") are a
- * parse error until stage 9 (roadmap).
+ * Stage 2 reads dates, times and offsets; stage 7 the time zone
+ * annotation ("[America/New_York]", "[+05:30]"). Other annotations
+ * ("[u-ca=...]") are a parse error until stage 9 (roadmap).
  */
 #ifndef ZTP_PARSE_H
 #define ZTP_PARSE_H
@@ -16,8 +17,11 @@ typedef enum {
     ZTP_PARSE_TIME = 1,        /* TemporalTimeString */
     ZTP_PARSE_YEAR_MONTH = 2,  /* TemporalYearMonthString */
     ZTP_PARSE_MONTH_DAY = 3,   /* TemporalMonthDayString */
-    ZTP_PARSE_INSTANT = 4      /* TemporalInstantString */
+    ZTP_PARSE_INSTANT = 4,     /* TemporalInstantString */
+    ZTP_PARSE_ZONED = 5        /* TemporalDateTimeString[+Zoned] */
 } ztp_parse_goal;
+
+#define ZTP_TZ_ANNOTATION_CAP 48
 
 /* An ISO Date-Time Parse Record. The date is always present; a year-month
    string sets day to 1 with has_day false, a month-day string sets year to
@@ -31,7 +35,11 @@ typedef struct {
     ztp_iso_time time;
     bool has_offset;        /* a numeric UTC offset was present */
     int64_t offset_ns;      /* meaningful when has_offset */
+    bool offset_has_seconds;    /* the offset had a seconds part (ToTemporalZonedDateTime's ~match-exactly~) */
     bool has_z;             /* the UTC designator was present */
+    bool has_tz;            /* a time zone annotation was present */
+    bool tz_critical;       /* ... with the "!" flag */
+    char tz[ZTP_TZ_ANNOTATION_CAP];   /* its identifier as written */
 } ztp_parsed;
 
 /* Parse s[0, n) against the goal. A failure is ZTP_ERR_PARSE with the

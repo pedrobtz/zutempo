@@ -14,9 +14,11 @@ test_that("instant() stores whole seconds and nanoseconds with the floor convent
   expect_true(is.na(instant(NA_character_)))
   expect_identical(epoch_milliseconds(instant(NA_character_)), NA_real_)
   expect_error(instant(5), class = "zutempo_type_error")
-  for (s in c("2026-01-31T12:30", "2026-01-31", "2026-01-31T12:30Z[UTC]", "")) {
+  for (s in c("2026-01-31T12:30", "2026-01-31", "2026-01-31T12:30Z[u-ca=iso8601]", "")) {
     expect_error(instant(s), class = "zutempo_parse_error", info = s)
   }
+  # A time zone annotation is read and ignored (ParseTemporalInstantString).
+  expect_identical(instant("2026-01-31T12:30Z[UTC]"), instant("2026-01-31T12:30Z"))
 })
 
 test_that("the range of an instant is ten to the eighth days either side of the epoch", {

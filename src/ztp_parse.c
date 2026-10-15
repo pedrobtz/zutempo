@@ -168,13 +168,14 @@ static bool ztp_parse_time(ztp_cursor *c, ztp_iso_time *t)
 
 /* UTCOffset[+SubMinutePrecision]: a sign, hours, then optionally minutes,
    seconds and a fraction, extended or basic. */
-static bool ztp_parse_offset(ztp_cursor *c, int64_t *offset_ns)
+static bool ztp_parse_offset(ztp_cursor *c, int64_t *offset_ns, bool *has_seconds)
 {
     int sign = ztp_peek(c, 0);
     uint32_t h, m = 0, s = 0, frac = 0;
     size_t at;
     bool extended;
 
+    if (has_seconds) *has_seconds = false;
     c->pos++;
     at = c->pos;
     if (!ztp_digits(c, 2, &h, "expected two offset hour digits")) return false;
@@ -193,6 +194,7 @@ static bool ztp_parse_offset(ztp_cursor *c, int64_t *offset_ns)
                 return false;
             if (s > 59) return ztp_fail_at(c, at, "offset second must be 00 to 59");
             if (!ztp_parse_fraction(c, &frac)) return false;
+            if (has_seconds) *has_seconds = true;
         }
     }
     *offset_ns = ((int64_t)h * 3600 + (int64_t)m * 60 + s) * ZTP_NS_PER_SECOND + frac;
@@ -201,9 +203,10 @@ static bool ztp_parse_offset(ztp_cursor *c, int64_t *offset_ns)
 }
 
 /* After a time: an optional offset, where "Z" is never allowed for the
-   plain types; then no annotations (stage 9) and the end of the string. */
+   plain types; then an optional time zone annotation and the end of the
+   string (other annotations are stage 9). */
 static bool ztp_is_separator(int ch);
-static bool ztp_parse_tail(ztp_cursor *c);
+static bool ztp_parse_tail(ztp_cursor *c, ztp_parsed *out);
 
 static bool ztp_parse_time_suffix_z(ztp_cursor *c, ztp_parsed *out, bool allow_z)
 {
@@ -218,7 +221,7 @@ static bool ztp_parse_time_suffix_z(ztp_cursor *c, ztp_parsed *out, bool allow_z
         return true;
     }
     if (ch == '+' || ch == '-') {
-        if (!ztp_parse_offset(c, &out->offset_ns)) return false;
+        if (!ztp_parse_offset(c, &out->offset_ns, &out->offset_has_seconds)) return false;
         out->has_offset = true;
     }
     return true;
@@ -243,14 +246,83 @@ static bool ztp_parse_goal_instant(ztp_cursor *c, ztp_parsed *out)
     if (!ztp_parse_time_suffix_z(c, out, true)) return false;
     if (!out->has_z && !out->has_offset)
         return ztp_fail_at(c, c->pos, "an instant needs 'Z' or a UTC offset");
-    return ztp_parse_tail(c);
+    return ztp_parse_tail(c, out);
 }
 
-static bool ztp_parse_tail(ztp_cursor *c)
+/* TimeZoneAnnotation: "[", an optional "!", a TimeZoneIdentifier (an
+   offset to the minute or an IANA name), "]". The cursor is on "[". */
+static bool ztp_parse_tz_annotation(ztp_cursor *c, ztp_parsed *out)
 {
-    if (ztp_peek(c, 0) == '[')
-        return ztp_fail_at(c, c->pos,
-                           "annotations in brackets are not supported yet");
+    size_t start, len;
+    int ch;
+
+    c->pos++;
+    if (ztp_peek(c, 0) == '!') {
+        out->tz_critical = true;
+        c->pos++;
+    }
+    start = c->pos;
+    ch = ztp_peek(c, 0);
+    if (ch == '+' || ch == '-') {
+        /* UTCOffset[~SubMinutePrecision]: sign, HH, optionally ":MM" or
+           "MM". */
+        uint32_t h, m;
+        c->pos++;
+        if (!ztp_digits(c, 2, &h, "expected two offset hour digits")) return false;
+        if (h > 23) return ztp_fail_at(c, start + 1, "offset hour must be 00 to 23");
+        if (ztp_peek(c, 0) == ':') c->pos++;
+        if (ztp_is_digit(ztp_peek(c, 0))) {
+            size_t at = c->pos;
+            if (!ztp_digits(c, 2, &m, "expected two offset minute digits")) return false;
+            if (m > 59) return ztp_fail_at(c, at, "offset minute must be 00 to 59");
+        } else if (c->pos > start + 3) {
+            return ztp_fail_at(c, c->pos, "expected offset minutes after ':'");
+        }
+    } else {
+        /* TimeZoneIANAName: components of TZLeadingChar then TZChar,
+           joined by "/". */
+        bool lead = true;
+        for (;;) {
+            ch = ztp_peek(c, 0);
+            bool alpha = (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+            bool digit = ch >= '0' && ch <= '9';
+            if (lead) {
+                if (!(alpha || ch == '.' || ch == '_'))
+                    return ztp_fail_at(c, c->pos, "expected a time zone identifier");
+                lead = false;
+            } else if (ch == '/') {
+                lead = true;
+            } else if (!(alpha || digit || ch == '.' || ch == '_' || ch == '-' || ch == '+')) {
+                break;
+            }
+            c->pos++;
+        }
+    }
+    len = c->pos - start;
+    if (ztp_peek(c, 0) != ']') {
+        /* "[u-ca=iso8601]" and other annotations have a key and "=". */
+        if (ztp_peek(c, 0) == '=')
+            return ztp_fail_at(c, start, "annotations other than the time zone are not supported yet");
+        return ztp_fail_at(c, c->pos, "expected ']' after the time zone identifier");
+    }
+    if (len == 0) return ztp_fail_at(c, start, "expected a time zone identifier");
+    if (len >= ZTP_TZ_ANNOTATION_CAP)
+        return ztp_fail_at(c, start, "the time zone identifier is too long");
+    memcpy(out->tz, c->s + start, len);
+    out->tz[len] = '\0';
+    out->has_tz = true;
+    c->pos++;
+    return true;
+}
+
+static bool ztp_parse_tail(ztp_cursor *c, ztp_parsed *out)
+{
+    if (ztp_peek(c, 0) == '[') {
+        if (!ztp_parse_tz_annotation(c, out)) return false;
+        if (ztp_peek(c, 0) == '[')
+            return ztp_fail_at(c, c->pos,
+                               "annotations other than the time zone are not supported yet");
+    }
     if (!ztp_at_end(c))
         return ztp_fail_at(c, c->pos, "unexpected character");
     return true;
@@ -291,7 +363,7 @@ static bool ztp_looks_like_year_month(const unsigned char *s, size_t n)
 /* TemporalDateTimeString[~Zoned]: a date, optionally followed by a
    separator, a time and an offset. */
 static bool ztp_parse_goal_date_time(ztp_cursor *c, ztp_parsed *out,
-                                     bool time_required)
+                                     bool time_required, bool allow_z)
 {
     if (!ztp_parse_date(c, &out->year, &out->month, &out->day)) return false;
     out->has_year = true;
@@ -300,11 +372,21 @@ static bool ztp_parse_goal_date_time(ztp_cursor *c, ztp_parsed *out,
         c->pos++;
         if (!ztp_parse_time(c, &out->time)) return false;
         out->has_time = true;
-        if (!ztp_parse_time_suffix(c, out)) return false;
+        if (!ztp_parse_time_suffix_z(c, out, allow_z)) return false;
     } else if (time_required) {
         return ztp_fail_at(c, c->pos, "expected a time after the date");
     }
-    return ztp_parse_tail(c);
+    return ztp_parse_tail(c, out);
+}
+
+/* TemporalDateTimeString[+Zoned]: a date-time, "Z" allowed, and the time
+   zone annotation required. */
+static bool ztp_parse_goal_zoned(ztp_cursor *c, ztp_parsed *out)
+{
+    if (!ztp_parse_goal_date_time(c, out, false, true)) return false;
+    if (!out->has_tz)
+        return ztp_fail_at(c, c->pos, "a zoned date-time needs a time zone in brackets");
+    return true;
 }
 
 /* AnnotatedTime: an optional "T", a time, an optional offset; without the
@@ -331,7 +413,7 @@ static bool ztp_parse_goal_time_only(ztp_cursor *c, ztp_parsed *out)
     out->year = 1972;
     out->month = 1;
     out->day = 1;
-    return ztp_parse_tail(c);
+    return ztp_parse_tail(c, out);
 }
 
 /* DateSpecYearMonth: a year, an optional "-", a month. */
@@ -347,7 +429,7 @@ static bool ztp_parse_goal_year_month_only(ztp_cursor *c, ztp_parsed *out)
     out->has_year = true;
     out->has_day = false;
     out->day = 1;
-    return ztp_parse_tail(c);
+    return ztp_parse_tail(c, out);
 }
 
 /* DateSpecMonthDay: an optional "--", a month, an optional "-", a day,
@@ -369,7 +451,7 @@ static bool ztp_parse_goal_month_day_only(ztp_cursor *c, ztp_parsed *out)
     out->has_year = false;
     out->has_day = true;
     out->year = 1972;
-    return ztp_parse_tail(c);
+    return ztp_parse_tail(c, out);
 }
 
 /* A goal with two forms: a full date-time (time optional) or the partial
@@ -386,7 +468,7 @@ static bool ztp_parse_goal_partial(ztp_cursor *c, ztp_parsed *out,
 
     if (date_shaped) {
         memset(&tmp, 0, sizeof tmp);
-        if (ztp_parse_goal_date_time(&attempt, &tmp, false)) {
+        if (ztp_parse_goal_date_time(&attempt, &tmp, false, false)) {
             *c = attempt;
             *out = tmp;
             return true;
@@ -404,7 +486,8 @@ static bool ztp_parse_goal_partial(ztp_cursor *c, ztp_parsed *out,
 static bool ztp_parse_slow(ztp_cursor *c, ztp_parse_goal goal, ztp_parsed *out)
 {
     memset(out, 0, sizeof *out);
-    if (goal == ZTP_PARSE_DATE_TIME) return ztp_parse_goal_date_time(c, out, false);
+    if (goal == ZTP_PARSE_DATE_TIME) return ztp_parse_goal_date_time(c, out, false, false);
+    if (goal == ZTP_PARSE_ZONED) return ztp_parse_goal_zoned(c, out);
     if (goal == ZTP_PARSE_YEAR_MONTH)
         return ztp_parse_goal_partial(c, out, ztp_parse_goal_year_month_only);
     if (goal == ZTP_PARSE_MONTH_DAY)
@@ -422,7 +505,7 @@ static bool ztp_parse_slow(ztp_cursor *c, ztp_parse_goal goal, ztp_parsed *out)
 
         if (date_shaped) {
             memset(&tmp, 0, sizeof tmp);
-            if (ztp_parse_goal_date_time(&attempt, &tmp, true)) {
+            if (ztp_parse_goal_date_time(&attempt, &tmp, true, false)) {
                 *c = attempt;
                 *out = tmp;
                 return true;
@@ -455,7 +538,7 @@ static bool ztp_parse_fast(const char *s, size_t n, ztp_parse_goal goal,
     zuf_datetime dt;
     zuf_result r;
 
-    if (goal == ZTP_PARSE_TIME || n == 0) return false;
+    if (goal == ZTP_PARSE_TIME || goal == ZTP_PARSE_ZONED || n == 0) return false;
     if (memchr(s, '[', n) != NULL) return false;
     r = zuf_parse_datetime_opt(s, s + n, &dt, ZUF_DT_EXPANDED_YEAR);
     if (r.status != ZUF_OK || r.ptr != s + n) return false;
@@ -525,6 +608,7 @@ ztp_status ztp_parse_path(ztp_ctx *ctx, size_t index, const char *s, size_t n,
                         : goal == ZTP_PARSE_INSTANT ? "instant"
                         : goal == ZTP_PARSE_YEAR_MONTH ? "year-month"
                         : goal == ZTP_PARSE_MONTH_DAY ? "month-day"
+                        : goal == ZTP_PARSE_ZONED ? "zoned date-time"
                         : "date or date-time",
                         c.reason ? c.reason : "invalid",
                         (unsigned long)(c.fail_pos + 1));
