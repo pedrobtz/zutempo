@@ -41,14 +41,14 @@ now_time_zone_id()
 #> [1] "UTC"
 now_zoned_date_time_iso()
 #> <zutempo_zoned_date_time[1]>
-#> [1] 2026-10-15T09:26:54.205065012+00:00[UTC]
+#> [1] 2026-10-15T11:17:22.746098757+00:00[UTC]
 now_plain_date_time_iso("Asia/Tokyo")
 #> <zutempo_plain_date_time[1]>
-#> [1] 2026-10-15T18:26:54.245872259
+#> [1] 2026-10-15T20:17:22.781756163
 now_plain_date_iso("Pacific/Auckland")
 #> <zutempo_plain_date[1]>
-#> [1] 2026-10-15
+#> [1] 2026-10-16
 now_plain_time_iso("UTC")
 #> <zutempo_plain_time[1]>
-#> [1] 09:26:54.2514925
+#> [1] 11:17:22.787072897
 ```
