@@ -1,5 +1,17 @@
 # zutempo 0.0.0.9000
 
+* `duration()`: Temporal's `Duration` as an R vector of ten exact fields,
+  from fields or ISO 8601 strings, with `years()` to `nanoseconds()`,
+  `blank()`, `sign()` and `abs()`, `temporal_with()`, `temporal_negated()`,
+  `temporal_abs()`, `temporal_add()`, `temporal_subtract()`,
+  `temporal_round()`, `temporal_total()`, `duration_compare()` and
+  `temporal_to_string()`; calendar units take `relative_to`. `==` compares
+  fields, and `<` and `sort()` order durations free of calendar units.
+* `temporal_add()`, `temporal_subtract()`, `temporal_since()` and
+  `temporal_until()` on `plain_date()`, `plain_time()`,
+  `plain_date_time()` and `plain_year_month()`, with `overflow`,
+  `largest_unit`, `smallest_unit`, `rounding_increment` and
+  `rounding_mode`.
 * `plain_year_month()` and `plain_month_day()`: Temporal's `PlainYearMonth`
   and `PlainMonthDay` as R vectors, from fields, strings or dates, with
   their fields, `temporal_with()`, `temporal_equals()`,
