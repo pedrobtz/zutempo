@@ -43,7 +43,7 @@
 </div>
 <div class="section level2">
 <h2 id="current-state">Current state<a class="anchor" aria-label="anchor" href="#current-state"></a></h2>
-<p>Verified 2026-10-15: stages 0 and 1. The layering of design §4 exists end to end for one probe (<code>src/ztp_probe.c</code>, reached through the internal <code>ztp_probe_*()</code> functions): engine context and status codes (<code>src/ztp.h</code>), R glue that raises classed conditions with the failing element’s index (<code>src/ztp_r_common.c</code>, <code>R/conditions.R</code>), and <code><a href="reference/zutempo_info.html">zutempo_info()</a></code> with the pins of <code>inst/spec/PINS</code>. The member list of the pinned specification is in <code>inst/spec/members.csv</code>, and <code>tests/testthat/test-members.R</code> lists every member as pending. The oracle loop runs for <code>PlainDate</code> and skips until stage 2. No Temporal type is implemented yet; the engine’s real operations and the time zone reader are not built. See the roadmap’s stage table.</p>
+<p>Verified 2026-10-15: stages 0 to 2. <code><a href="reference/plain_date.html">plain_date()</a></code>, <code><a href="reference/plain_time.html">plain_time()</a></code> and <code><a href="reference/plain_date_time.html">plain_date_time()</a></code> exist with their fields, <code>with</code>, <code>compare</code>, <code>equals</code>, <code>round</code>, conversions among them and default <code><a href="https://rdrr.io/r/base/toString.html" class="external-link">toString()</a></code>; strings are read without annotations (stage 9 adds them). The engine has the ISO date and time records (<code>src/ztp_iso.c</code>), rounding (<code>src/ztp_round.c</code>), formatting (<code>src/ztp_format.c</code>) and the parser with its zufast fast path (<code>src/ztp_parse.c</code>); the glue for the plain types is <code>src/ztp_r_plain.c</code>. No <code>Duration</code>, <code>Instant</code>, zone or <code>ZonedDateTime</code> yet; arithmetic (<code>add</code>, <code>subtract</code>, <code>since</code>, <code>until</code>) arrives in stage 4. The oracle has cases for the three plain types. See the roadmap’s stage table.</p>
 </div>
 <div class="section level2">
 <h2 id="stage-tracking">Stage tracking<a class="anchor" aria-label="anchor" href="#stage-tracking"></a></h2>
@@ -100,6 +100,12 @@
 <li>
 <code>src/init.c</code>: the only exported symbol, <code>R_init_zutempo</code>. R reaches the registered routines as <code>C_&lt;name&gt;</code> (<code>useDynLib(..., .fixes = "C_")</code>).</li>
 <li>
+<code>R/plumbing.R</code> holds every base method that keeps the class through <code>[</code>, <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>, <code><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep()</a></code>, <code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code>, printing and data frames: base R’s defaults drop the class attribute of a classed atomic vector. A new class needs each of them. <code>R/zzz.R</code> registers the <code>vctrs</code> and <code>pillar</code> methods lazily.</li>
+<li>
+<code>R/accessors.R</code> is generated code in spirit: one generic, one default and one method per class for every Temporal property. The default finds the function the generic masks on the search path (<code>lubridate::year()</code>).</li>
+<li>
+<code>R/options.R</code> turns option strings into the integer codes the glue reads; the enumerations in <code>src/ztp_round.h</code> and <code>src/ztp_format.h</code> fix the codes, so both sides change together.</li>
+<li>
 <code>src/ztp.h</code>: <code>ztp_status</code> and <code>ztp_ctx</code>. An engine function takes a context and returns a status; on failure <code>ztp_fail()</code> records the status, the 1-based element index and a message. <code>src/ztp_r.h</code>: <code>ztp_r_raise()</code> turns a failed context into a condition by evaluating <code>stop_zutempo()</code> in the namespace.</li>
 <li>
 <code>inst/spec/PINS</code>: the specification, test262 and tzdata pins (DCF). <code>inst/spec/members.csv</code>: every member of the pinned specification with its R name, written by <code>tools/spec/members.R</code>.</li>
@@ -124,6 +130,10 @@
 <strong>The pinned specification moves only on purpose.</strong> <code>inst/spec/PINS</code> records the <code>tc39/proposal-temporal</code> and test262 commits; changing either needs its own <code>NEWS.md</code> entry.</li>
 <li>
 <strong>The suite must build and pass with <code>ZUF_NO_INT128</code></strong> as well as with <code>__int128</code>. CI runs both.</li>
+<li>
+<strong>Index lists with <code>[[</code>, never <code>$</code>.</strong> <code>$</code> partial-matches names, so <code>fields$month</code> finds <code>month_code</code> when <code>month</code> is absent. This bit once in <code><a href="reference/temporal_with.html">temporal_with()</a></code>.</li>
+<li>
+<strong>An invalid option value is a <code>zutempo_type_error</code></strong> (design 10), where JavaScript throws a RangeError; a value of the right kind that fails a range check (an increment that does not divide, a calendar other than ISO) is a <code>zutempo_range_error</code>. The oracle holds no invalid-option cases for that reason.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="testing-conventions">Testing conventions<a class="anchor" aria-label="anchor" href="#testing-conventions"></a></h2>
