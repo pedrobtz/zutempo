@@ -135,6 +135,22 @@ test_that("the ends of the instant range hold in any zone", {
       temporal_with_plain_time(top, "00:00:00.000000001"),
       class = "zutempo_range_error"
     )
+    # Rounding up to the very last instant is allowed; past it is not.
+    expect_identical(
+      temporal_round(
+        zoned_date_time("+275760-09-12T23:59:59.9Z[UTC]"),
+        "second"
+      ),
+      top
+    )
+    expect_error(
+      temporal_round(
+        zoned_date_time("+275760-09-12T23:59:59.9Z[-01:00]"),
+        "day"
+      ),
+      class = "zutempo_range_error"
+    )
+    expect_error(temporal_add(top, "PT1S"), class = "zutempo_range_error")
     expect_identical(
       temporal_to_zoned_date_time(plain_date("+275760-09-13"), "UTC"),
       top
@@ -433,5 +449,188 @@ test_that("strings with a zone annotation are read by the other types and ignore
       zoned_date_time(paste0("2026-03-07T12:00[", strrep("A", 60), "]")),
       class = "zutempo_parse_error"
     )
+  })
+})
+
+test_that("zoned arithmetic recycles, propagates NA and keeps each element's zone", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-28T12:00[Europe/Lisbon]",
+      NA
+    ))
+    added <- temporal_add(x, "P1D")
+    expect_identical(
+      format(added),
+      c(
+        "2026-03-08T12:00:00-04:00[America/New_York]",
+        "2026-03-29T12:00:00+01:00[Europe/Lisbon]",
+        NA
+      )
+    )
+    expect_identical(time_zone_id(added), time_zone_id(x))
+    expect_identical(temporal_subtract(added, "P1D"), x)
+    expect_identical(
+      format(temporal_add(x[1], c("PT1H", "PT2H"))),
+      c(
+        "2026-03-07T13:00:00-05:00[America/New_York]",
+        "2026-03-07T14:00:00-05:00[America/New_York]"
+      )
+    )
+    expect_error(
+      temporal_add(x[1:2], duration(hours = 1:3)),
+      class = "zutempo_type_error"
+    )
+    expect_error(temporal_add(x, "P1D", "extra"), class = "zutempo_type_error")
+    # The §5 example.
+    expect_identical(
+      format(temporal_add(
+        zoned_date_time("2026-03-07T12:00[America/New_York]"),
+        duration(hours = 25)
+      )),
+      "2026-03-08T14:00:00-04:00[America/New_York]"
+    )
+    expect_identical(
+      format(temporal_round(
+        duration(hours = 25),
+        largest_unit = "day",
+        relative_to = x[1]
+      )),
+      "P1DT2H"
+    )
+    expect_identical(
+      temporal_total(duration(hours = 25), "day", relative_to = x[1]),
+      26 / 24
+    )
+    expect_identical(duration_compare("P1D", "PT24H", relative_to = x[1]), -1L)
+    expect_identical(
+      duration_compare(
+        "P1D",
+        "PT24H",
+        relative_to = "2026-06-07T12:00[America/New_York]"
+      ),
+      0L
+    )
+    # A zoned relative_to recycles and propagates NA. Lisbon's clocks also
+    # change on the night after x[2], so both days are 23 hours; the
+    # fraction of a day is measured on the following, 24-hour day.
+    expect_identical(
+      format(temporal_round(
+        duration(hours = 25),
+        largest_unit = "day",
+        relative_to = x
+      )),
+      c("P1DT2H", "P1DT2H", NA)
+    )
+    expect_identical(
+      temporal_total(duration(hours = 25), "day", relative_to = x),
+      c(26 / 24, 26 / 24, NA)
+    )
+    expect_identical(
+      format(temporal_round(
+        duration(hours = 25),
+        largest_unit = "day",
+        relative_to = "2026-06-07T12:00[America/New_York]"
+      )),
+      "P1DT1H"
+    )
+    expect_error(
+      temporal_round(
+        duration(hours = 25),
+        largest_unit = "day",
+        relative_to = c("2026-03-07T12:00[UTC]", "2026-03-07")
+      ),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      temporal_round(
+        duration(hours = 25),
+        largest_unit = "day",
+        relative_to = 1
+      ),
+      class = "zutempo_type_error"
+    )
+    # until and since across elements.
+    y <- temporal_add(x, "P1DT2H")
+    d <- temporal_until(x, y, largest_unit = "day")
+    expect_identical(format(d), c("P1DT2H", "P1DT2H", NA))
+    expect_identical(
+      format(temporal_since(y, x, largest_unit = "day")),
+      c("P1DT2H", "P1DT2H", NA)
+    )
+    expect_identical(format(temporal_until(x, y)), c("PT25H", "PT25H", NA))
+    expect_identical(format(temporal_until(x[1], y)), c("PT25H", "PT524H", NA))
+    expect_error(
+      temporal_until(x[1], y[2], largest_unit = "day"),
+      class = "zutempo_range_error"
+    )
+    expect_error(
+      temporal_until(x[1], y[1], largest_unit = "day", smallest_unit = "month"),
+      class = "zutempo_range_error"
+    )
+    expect_error(
+      temporal_until(x[1], y[1], "extra"),
+      class = "zutempo_type_error"
+    )
+    # round.
+    expect_identical(
+      format(temporal_round(y, "day")),
+      c(
+        "2026-03-09T00:00:00-04:00[America/New_York]",
+        "2026-03-30T00:00:00+01:00[Europe/Lisbon]",
+        NA
+      )
+    )
+    expect_error(temporal_round(y), class = "zutempo_type_error")
+    expect_error(temporal_round(y, "year"), class = "zutempo_range_error")
+    expect_error(
+      temporal_round(y, "day", rounding_increment = 2),
+      class = "zutempo_range_error"
+    )
+    # transitions.
+    nxt <- temporal_get_time_zone_transition(x, "next")
+    expect_identical(
+      format(nxt),
+      c(
+        "2026-03-08T03:00:00-04:00[America/New_York]",
+        "2026-03-29T02:00:00+01:00[Europe/Lisbon]",
+        NA
+      )
+    )
+    expect_identical(time_zone_id(nxt), time_zone_id(x))
+    expect_true(is.na(temporal_get_time_zone_transition(
+      zoned_date_time("2026-01-01T00:00[+05:30]"),
+      "next"
+    )))
+    expect_true(is.na(temporal_get_time_zone_transition(
+      zoned_date_time("2026-01-01T00:00[Asia/Kolkata]"),
+      "next"
+    )))
+    expect_true(is.na(temporal_get_time_zone_transition(
+      zoned_date_time("+275760-09-13T00:00Z[America/New_York]"),
+      "next"
+    )))
+    expect_true(is.na(temporal_get_time_zone_transition(
+      zoned_date_time("-271821-04-20T00:00Z[America/New_York]"),
+      "previous"
+    )))
+    expect_error(
+      temporal_get_time_zone_transition(x),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      temporal_get_time_zone_transition(x, "sideways"),
+      class = "zutempo_type_error"
+    )
+    # The fat fixture agrees with the slim one on transitions past 2037.
+    far <- zoned_date_time("2050-01-01T00:00[America/New_York]")
+    slim_next <- temporal_get_time_zone_transition(far, "next")
+    withr::with_options(list(zutempo.tzdir = tz_fixture_dir("fat")), {
+      zutempo_tz_reset()
+      expect_identical(
+        format(temporal_get_time_zone_transition(far, "next")),
+        format(slim_next)
+      )
+    })
   })
 })

@@ -135,6 +135,11 @@ oracle_run <- function(type, case) {
 # names the case in any failure. The fields are compared in one go: each
 # expectation costs allocations, and the gctorture job pays for every one.
 oracle_expect_result <- function(value, result, id) {
+  if (is.null(result)) {
+    # JavaScript's null (getTimeZoneTransition with no transition) is NA.
+    expect_true(length(value) == 1L && is.na(value), info = id)
+    return(invisible())
+  }
   if (!is.list(result)) {
     # A number, string or boolean.
     if (is.numeric(result)) {

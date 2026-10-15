@@ -1715,6 +1715,454 @@
           "blank": false
         }
       }
+    },
+    {
+      "id": "round-25-hours-zoned-day",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-07T12:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "P1DT2H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 2,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-25-hours-plain-day",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-07T12:00"
+        }
+      ],
+      "result": {
+        "string": "P1DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-25-hours-zoned-day-no-dst",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-06-07T12:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "P1DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-day-zoned-hours",
+      "op": "round",
+      "on": "P1D",
+      "args": [
+        {
+          "largestUnit": "hour",
+          "relativeTo": "2026-03-07T12:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "PT23H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 23,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-month-zoned-days",
+      "op": "round",
+      "on": "P1M",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-02-15T12:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "P28D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 28,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-zoned-smallest-day-half",
+      "op": "round",
+      "on": "PT35H",
+      "args": [
+        {
+          "smallestUnit": "day",
+          "relativeTo": "2026-03-07T12:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "P2D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 2,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-zoned-weeks",
+      "op": "round",
+      "on": "P30D",
+      "args": [
+        {
+          "largestUnit": "week",
+          "relativeTo": "2026-03-01T00:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "P4W2D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 4,
+          "days": 2,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-zoned-negative",
+      "op": "round",
+      "on": "-PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-08T14:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "-P1DT2H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": -1,
+          "hours": -2,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-zoned-offset-zone",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-07T12:00[+05:30]"
+        }
+      ],
+      "result": {
+        "string": "P1DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-zoned-z-string",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-07T17:00Z[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "P1DT2H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 2,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-zoned-offset-mismatch",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-07T12:00+01:00[America/New_York]"
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-zoned-years-months",
+      "op": "round",
+      "on": "P1Y2M",
+      "args": [
+        {
+          "largestUnit": "month",
+          "relativeTo": "2026-01-31T12:00[America/New_York]"
+        }
+      ],
+      "result": {
+        "string": "P14M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 14,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "total-25-hours-zoned-days",
+      "op": "total",
+      "on": "PT25H",
+      "args": [
+        {
+          "unit": "day",
+          "relativeTo": "2026-03-07T12:00[America/New_York]"
+        }
+      ],
+      "result": 1.0833333333333333
+    },
+    {
+      "id": "total-25-hours-plain-days",
+      "op": "total",
+      "on": "PT25H",
+      "args": [
+        {
+          "unit": "day",
+          "relativeTo": "2026-03-07"
+        }
+      ],
+      "result": 1.0416666666666667
+    },
+    {
+      "id": "total-day-zoned-hours",
+      "op": "total",
+      "on": "P1D",
+      "args": [
+        {
+          "unit": "hour",
+          "relativeTo": "2026-03-07T12:00[America/New_York]"
+        }
+      ],
+      "result": 23
+    },
+    {
+      "id": "total-month-zoned-days",
+      "op": "total",
+      "on": "P1M",
+      "args": [
+        {
+          "unit": "day",
+          "relativeTo": "2026-02-15T12:00[America/New_York]"
+        }
+      ],
+      "result": 28
+    },
+    {
+      "id": "total-zoned-months-fraction",
+      "op": "total",
+      "on": "P45D",
+      "args": [
+        {
+          "unit": "month",
+          "relativeTo": "2026-01-01T00:00[America/New_York]"
+        }
+      ],
+      "result": 1.5
+    },
+    {
+      "id": "compare-day-hours-zoned",
+      "op": "compare",
+      "args": [
+        "P1D",
+        "PT24H"
+      ],
+      "options": {
+        "relativeTo": "2026-03-07T12:00[America/New_York]"
+      },
+      "result": -1
+    },
+    {
+      "id": "compare-day-hours-zoned-no-dst",
+      "op": "compare",
+      "args": [
+        "P1D",
+        "PT24H"
+      ],
+      "options": {
+        "relativeTo": "2026-06-07T12:00[America/New_York]"
+      },
+      "result": 0
+    },
+    {
+      "id": "compare-day-hours-plain",
+      "op": "compare",
+      "args": [
+        "P1D",
+        "PT24H"
+      ],
+      "options": {
+        "relativeTo": "2026-03-07"
+      },
+      "result": 0
+    },
+    {
+      "id": "compare-month-days-zoned",
+      "op": "compare",
+      "args": [
+        "P1M",
+        "P30D"
+      ],
+      "options": {
+        "relativeTo": "2026-02-01T00:00[America/New_York]"
+      },
+      "result": -1
+    },
+    {
+      "id": "compare-month-no-relative",
+      "op": "compare",
+      "args": [
+        "P1M",
+        "P30D"
+      ],
+      "throws": "RangeError"
     }
   ]
 }
