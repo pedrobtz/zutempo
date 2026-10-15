@@ -55,6 +55,12 @@ SEXP ztp_r_plain_date_time_combine(SEXP days, SEXP ns);
 SEXP ztp_r_plain_date_time_field(SEXP x, SEXP field);
 SEXP ztp_r_plain_date_time_round(SEXP x, SEXP increment, SEXP unit, SEXP mode);
 SEXP ztp_r_plain_date_time_format(SEXP x, SEXP precision, SEXP show_calendar);
+SEXP ztp_r_plain_year_month_from_fields(SEXP year, SEXP month, SEXP overflow);
+SEXP ztp_r_plain_year_month_parse(SEXP x);
+SEXP ztp_r_plain_year_month_format(SEXP x, SEXP show_calendar);
+SEXP ztp_r_plain_month_day_from_fields(SEXP year, SEXP month, SEXP day, SEXP overflow);
+SEXP ztp_r_plain_month_day_parse(SEXP x);
+SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar);
 SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path);
 
 #endif /* ZTP_R_H */

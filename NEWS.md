@@ -1,5 +1,12 @@
 # zutempo 0.0.0.9000
 
+* `plain_year_month()` and `plain_month_day()`: Temporal's `PlainYearMonth`
+  and `PlainMonthDay` as R vectors, from fields, strings or dates, with
+  their fields, `temporal_with()`, `temporal_equals()`,
+  `plain_year_month_compare()`, `temporal_to_string()` and
+  `temporal_to_plain_date()` taking the missing `day` or `year`;
+  `temporal_to_plain_year_month()` and `temporal_to_plain_month_day()` on
+  a `plain_date()`.
 * `plain_date()`, `plain_time()` and `plain_date_time()`: Temporal's
   `PlainDate`, `PlainTime` and `PlainDateTime` as R vectors, built from
   fields with `overflow`, from ISO 8601 strings, or from each other, with

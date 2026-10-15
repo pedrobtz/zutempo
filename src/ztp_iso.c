@@ -144,6 +144,14 @@ bool ztp_iso_date_time_within_limits(int64_t epoch_day, int64_t ns_of_day)
     return true;
 }
 
+bool ztp_iso_year_month_within_limits(int64_t year, int64_t month)
+{
+    if (year < -271821 || year > 275760) return false;
+    if (year == -271821 && month < 4) return false;
+    if (year == 275760 && month > 9) return false;
+    return true;
+}
+
 bool ztp_iso_date_within_limits(int64_t epoch_day)
 {
     /* ISODateWithinLimits defers to the date-time check at noon. */

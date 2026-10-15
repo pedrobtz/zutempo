@@ -13,14 +13,19 @@
 
 typedef enum {
     ZTP_PARSE_DATE_TIME = 0,   /* TemporalDateTimeString[~Zoned] */
-    ZTP_PARSE_TIME = 1         /* TemporalTimeString */
+    ZTP_PARSE_TIME = 1,        /* TemporalTimeString */
+    ZTP_PARSE_YEAR_MONTH = 2,  /* TemporalYearMonthString */
+    ZTP_PARSE_MONTH_DAY = 3    /* TemporalMonthDayString */
 } ztp_parse_goal;
 
-/* An ISO Date-Time Parse Record. The date is always present for the goals
-   above; the time is ~start-of-day~ when has_time is false. */
+/* An ISO Date-Time Parse Record. The date is always present; a year-month
+   string sets day to 1 with has_day false, a month-day string sets year to
+   1972 with has_year false. The time is ~start-of-day~ when has_time is
+   false. */
 typedef struct {
     int32_t year;
     uint32_t month, day;
+    bool has_year, has_day;
     bool has_time;
     ztp_iso_time time;
     bool has_offset;        /* a numeric UTC offset was present */

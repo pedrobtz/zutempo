@@ -105,3 +105,36 @@ size_t ztp_format_iso_date_time(char *dst, int32_t epoch_day,
     *end = '\0';
     return (size_t)(end - dst);
 }
+
+size_t ztp_format_iso_year_month(char *dst, int32_t year, uint32_t month,
+                                 ztp_show_calendar show)
+{
+    char *end = ztp_put_year(dst, year);
+
+    *end++ = '-';
+    end = ztp_put_digits(end, month, 2);
+    if (show == ZTP_SHOW_CALENDAR_ALWAYS || show == ZTP_SHOW_CALENDAR_CRITICAL) {
+        *end++ = '-';
+        end = ztp_put_digits(end, 1, 2);
+    }
+    end = ztp_put_calendar(end, show);
+    *end = '\0';
+    return (size_t)(end - dst);
+}
+
+size_t ztp_format_iso_month_day(char *dst, uint32_t month, uint32_t day,
+                                ztp_show_calendar show)
+{
+    char *end = dst;
+
+    if (show == ZTP_SHOW_CALENDAR_ALWAYS || show == ZTP_SHOW_CALENDAR_CRITICAL) {
+        end = ztp_put_year(end, 1972);
+        *end++ = '-';
+    }
+    end = ztp_put_digits(end, month, 2);
+    *end++ = '-';
+    end = ztp_put_digits(end, day, 2);
+    end = ztp_put_calendar(end, show);
+    *end = '\0';
+    return (size_t)(end - dst);
+}

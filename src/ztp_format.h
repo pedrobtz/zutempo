@@ -35,4 +35,12 @@ size_t ztp_format_iso_date_time(char *dst, int32_t epoch_day,
                                 int64_t ns_of_day, int precision,
                                 ztp_show_calendar show);
 
+/* TemporalYearMonthToString and TemporalMonthDayToString: the reference
+   day (01) or year (1972) joins the text only with `always` or
+   `critical`, as the specification writes them. */
+size_t ztp_format_iso_year_month(char *dst, int32_t year, uint32_t month,
+                                 ztp_show_calendar show);
+size_t ztp_format_iso_month_day(char *dst, uint32_t month, uint32_t day,
+                                ztp_show_calendar show);
+
 #endif /* ZTP_FORMAT_H */

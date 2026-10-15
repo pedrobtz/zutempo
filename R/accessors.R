@@ -39,6 +39,30 @@ ztp_month_code <- function(month) {
   ifelse(is.na(month), NA_character_, sprintf("M%02d", month))
 }
 
+# NA codes give NA from integer arithmetic already; this keeps the intent
+# explicit where a code is decoded.
+ztp_restore_na <- function(values, x) {
+  values[is.na(unclass(x))] <- NA
+  values
+}
+
+# MathematicalInLeapYear, MathematicalDaysInYear and ISODaysInMonth over
+# integer vectors, for a month that has no representable first day.
+ztp_in_leap_year <- function(year) {
+  (year %% 4L == 0L & year %% 100L != 0L) | year %% 400L == 0L
+}
+
+ztp_days_in_year <- function(year) {
+  ifelse(ztp_in_leap_year(year), 366L, 365L)
+}
+
+ztp_days_in_month <- function(year, month) {
+  lengths <- c(31L, 28L, 31L, 30L, 31L, 30L, 31L, 31L, 30L, 31L, 30L, 31L)
+  out <- lengths[month]
+  out[!is.na(month) & month == 2L & ztp_in_leap_year(year)] <- 29L
+  out
+}
+
 ztp_constant_field <- function(x, value) {
   out <- rep(value, length(x))
   out[is.na(x)] <- NA
@@ -468,4 +492,70 @@ nanosecond.zutempo_plain_time <- function(x, ...) {
 #' @export
 nanosecond.zutempo_plain_date_time <- function(x, ...) {
   ztp_date_time_field(x, "nanosecond")
+}
+
+# --- PlainYearMonth and PlainMonthDay -----------------------------------------
+
+#' @rdname temporal_fields
+#' @export
+calendar_id.zutempo_plain_year_month <- function(x, ...) {
+  ztp_constant_field(x, "iso8601")
+}
+#' @rdname temporal_fields
+#' @export
+era.zutempo_plain_year_month <- function(x, ...) {
+  ztp_constant_field(x, NA_character_)
+}
+#' @rdname temporal_fields
+#' @export
+era_year.zutempo_plain_year_month <- function(x, ...) {
+  ztp_constant_field(x, NA_integer_)
+}
+#' @rdname temporal_fields
+#' @export
+year.zutempo_plain_year_month <- function(x, ...) {
+  ztp_restore_na(as.integer(1970L + unclass(x) %/% 12L), x)
+}
+#' @rdname temporal_fields
+#' @export
+month.zutempo_plain_year_month <- function(x, ...) {
+  ztp_restore_na(as.integer(unclass(x) %% 12L + 1L), x)
+}
+#' @rdname temporal_fields
+#' @export
+month_code.zutempo_plain_year_month <- function(x, ...) ztp_month_code(month(x))
+#' @rdname temporal_fields
+#' @export
+days_in_year.zutempo_plain_year_month <- function(x, ...) {
+  ztp_days_in_year(year(x))
+}
+#' @rdname temporal_fields
+#' @export
+days_in_month.zutempo_plain_year_month <- function(x, ...) {
+  ztp_days_in_month(year(x), month(x))
+}
+#' @rdname temporal_fields
+#' @export
+months_in_year.zutempo_plain_year_month <- function(x, ...) {
+  ztp_constant_field(x, 12L)
+}
+#' @rdname temporal_fields
+#' @export
+in_leap_year.zutempo_plain_year_month <- function(x, ...) {
+  ztp_in_leap_year(year(x))
+}
+#' @rdname temporal_fields
+#' @export
+calendar_id.zutempo_plain_month_day <- function(x, ...) {
+  ztp_constant_field(x, "iso8601")
+}
+#' @rdname temporal_fields
+#' @export
+month_code.zutempo_plain_month_day <- function(x, ...) {
+  ztp_month_code(ztp_month_day_month(x))
+}
+#' @rdname temporal_fields
+#' @export
+day.zutempo_plain_month_day <- function(x, ...) {
+  ztp_restore_na(as.integer(ztp_month_day_day(x)), x)
 }

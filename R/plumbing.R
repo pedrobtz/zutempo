@@ -5,7 +5,9 @@
 ztp_plain_classes <- c(
   "zutempo_plain_date",
   "zutempo_plain_time",
-  "zutempo_plain_date_time"
+  "zutempo_plain_date_time",
+  "zutempo_plain_year_month",
+  "zutempo_plain_month_day"
 )
 
 new_plain_date <- function(days = integer()) {
@@ -17,10 +19,25 @@ new_plain_time <- function(ns = double()) {
 }
 
 new_plain_date_time <- function(z = complex()) {
+  z[is.na(z)] <- NA_complex_
   structure(z, class = "zutempo_plain_date_time")
 }
 
+new_plain_year_month <- function(months = integer()) {
+  structure(months, class = "zutempo_plain_year_month")
+}
+
+new_plain_month_day <- function(codes = integer()) {
+  structure(codes, class = "zutempo_plain_month_day")
+}
+
+# A missing complex value is NA in both parts: R's coercion of a bare NA
+# leaves the imaginary part 0, which would make two missing date-times
+# differ.
 ztp_restore <- function(data, template) {
+  if (is.complex(data)) {
+    data[is.na(data)] <- NA_complex_
+  }
   class(data) <- oldClass(template)
   data
 }
@@ -113,9 +130,15 @@ ztp_assign <- function(x, i, value) {
   ztp_restore(data, x)
 }
 
+# NULL arguments drop out and a bare NA (a logical of NAs) joins as a
+# missing value, as c() on a Date allows; anything else must share the
+# class.
 ztp_combine <- function(x, dots) {
   dots <- dots[!vapply(dots, is.null, logical(1L))]
   for (d in dots) {
+    if (is.logical(d) && all(is.na(d))) {
+      next
+    }
     ztp_check_same_class(x, d, "every argument of c()")
   }
   ztp_restore(do.call(c, lapply(dots, unclass)), x)
@@ -258,3 +281,75 @@ print.zutempo_plain_date <- function(x, ...) ztp_print(x, ...)
 print.zutempo_plain_time <- function(x, ...) ztp_print(x, ...)
 #' @export
 print.zutempo_plain_date_time <- function(x, ...) ztp_print(x, ...)
+
+# --- the partial-date classes ----------------------------------------------
+
+#' @export
+`[.zutempo_plain_year_month` <- function(x, i, ...) ztp_subset(x, i)
+#' @export
+`[[.zutempo_plain_year_month` <- function(x, i, ...) ztp_subset2(x, i)
+#' @export
+`[<-.zutempo_plain_year_month` <- function(x, i, value) ztp_assign(x, i, value)
+#' @export
+`[[<-.zutempo_plain_year_month` <- function(x, i, value) ztp_assign(x, i, value)
+#' @export
+c.zutempo_plain_year_month <- function(...) ztp_combine(..1, list(...))
+#' @export
+rep.zutempo_plain_year_month <- function(x, ...) {
+  ztp_restore(rep(unclass(x), ...), x)
+}
+#' @export
+unique.zutempo_plain_year_month <- function(x, ...) {
+  ztp_restore(unique(unclass(x), ...), x)
+}
+#' @export
+`length<-.zutempo_plain_year_month` <- function(x, value) {
+  ztp_restore(`length<-`(unclass(x), value), x)
+}
+#' @export
+as.data.frame.zutempo_plain_year_month <- function(x, ...) {
+  as.data.frame.vector(x, ...)
+}
+#' @export
+xtfrm.zutempo_plain_year_month <- function(x) as.vector(unclass(x))
+#' @export
+format.zutempo_plain_year_month <- function(x, ...) temporal_to_string(x)
+#' @export
+as.character.zutempo_plain_year_month <- function(x, ...) temporal_to_string(x)
+#' @export
+print.zutempo_plain_year_month <- function(x, ...) ztp_print(x, ...)
+
+#' @export
+`[.zutempo_plain_month_day` <- function(x, i, ...) ztp_subset(x, i)
+#' @export
+`[[.zutempo_plain_month_day` <- function(x, i, ...) ztp_subset2(x, i)
+#' @export
+`[<-.zutempo_plain_month_day` <- function(x, i, value) ztp_assign(x, i, value)
+#' @export
+`[[<-.zutempo_plain_month_day` <- function(x, i, value) ztp_assign(x, i, value)
+#' @export
+c.zutempo_plain_month_day <- function(...) ztp_combine(..1, list(...))
+#' @export
+rep.zutempo_plain_month_day <- function(x, ...) {
+  ztp_restore(rep(unclass(x), ...), x)
+}
+#' @export
+unique.zutempo_plain_month_day <- function(x, ...) {
+  ztp_restore(unique(unclass(x), ...), x)
+}
+#' @export
+`length<-.zutempo_plain_month_day` <- function(x, value) {
+  ztp_restore(`length<-`(unclass(x), value), x)
+}
+#' @export
+as.data.frame.zutempo_plain_month_day <- function(x, ...) {
+  as.data.frame.vector(x, ...)
+}
+#' @export
+xtfrm.zutempo_plain_month_day <- function(x) as.vector(unclass(x))
+#' @export
+format.zutempo_plain_month_day <- function(x, ...) temporal_to_string(x)
+#' @export
+as.character.zutempo_plain_month_day <- function(x, ...) temporal_to_string(x)
+#' @export
+print.zutempo_plain_month_day <- function(x, ...) ztp_print(x, ...)

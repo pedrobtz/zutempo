@@ -548,6 +548,170 @@ SEXP ztp_r_plain_date_time_format(SEXP x, SEXP precision, SEXP show_calendar)
     return out;
 }
 
+/* --- PlainYearMonth ----------------------------------------------------- */
+
+/* Months since 1970-01, the stored form; the limits are those of
+   ISOYearMonthWithinLimits. */
+static int ztp_r_year_month_code(ztp_ctx *ctx, size_t index, int64_t year,
+                                 int64_t month)
+{
+    if (!ztp_iso_year_month_within_limits(year, month)) {
+        ztp_fail(ctx, ZTP_ERR_RANGE, index,
+                 "%lld-%02lld is outside the range of a PlainYearMonth",
+                 (long long)year, (long long)month);
+        ztp_r_raise(ctx);
+    }
+    return (int)((year - 1970) * 12 + (month - 1));
+}
+
+/* CalendarYearMonthFromFields for the ISO calendar: the day is 1. */
+SEXP ztp_r_plain_year_month_from_fields(SEXP year, SEXP month, SEXP overflow)
+{
+    R_xlen_t n = Rf_xlength(year);
+    const double *py = REAL(year), *pm = REAL(month);
+    ztp_overflow ov = (ztp_overflow)ztp_r_scalar_int(overflow);
+    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
+    int *po = INTEGER(out);
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        int64_t y, m;
+        size_t idx = (size_t)i + 1;
+        ztp_iso_date d;
+
+        if (!ztp_r_integer_field(&ctx, py[i], idx, "year", false, &y) ||
+            !ztp_r_integer_field(&ctx, pm[i], idx, "month", true, &m)) {
+            po[i] = NA_INTEGER;
+            continue;
+        }
+        if (ztp_regulate_iso_date(&ctx, idx, y, m, 1, ov, &d) != ZTP_OK)
+            ztp_r_raise(&ctx);
+        po[i] = ztp_r_year_month_code(&ctx, idx, d.year, d.month);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+SEXP ztp_r_plain_year_month_parse(SEXP x)
+{
+    R_xlen_t n = Rf_xlength(x);
+    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
+    int *po = INTEGER(out);
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        ztp_parsed p;
+        if (!ztp_r_parse_elt(&ctx, x, i, ZTP_PARSE_YEAR_MONTH, &p)) {
+            po[i] = NA_INTEGER;
+            continue;
+        }
+        po[i] = ztp_r_year_month_code(&ctx, (size_t)i + 1, p.year, p.month);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+SEXP ztp_r_plain_year_month_format(SEXP x, SEXP show_calendar)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const int *px = INTEGER(x);
+    ztp_show_calendar show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
+    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+
+    for (R_xlen_t i = 0; i < n; i++) {
+        char buf[ZTP_FORMAT_DATE_CAP];
+        int code, q;
+        if (px[i] == NA_INTEGER) {
+            SET_STRING_ELT(out, i, NA_STRING);
+            continue;
+        }
+        code = px[i];
+        q = code >= 0 ? code / 12 : -((-code + 11) / 12);   /* floor */
+        ztp_format_iso_year_month(buf, (int32_t)(1970 + q),
+                                  (uint32_t)(code - q * 12 + 1), show);
+        SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* --- PlainMonthDay ------------------------------------------------------ */
+
+/* CalendarMonthDayFromFields for the ISO calendar: the month and day are
+   regulated within `year` (1972 when the caller has none) and stored as
+   month * 32 + day in the reference year 1972. */
+SEXP ztp_r_plain_month_day_from_fields(SEXP year, SEXP month, SEXP day,
+                                       SEXP overflow)
+{
+    R_xlen_t n = Rf_xlength(month);
+    const double *py = REAL(year), *pm = REAL(month), *pd = REAL(day);
+    ztp_overflow ov = (ztp_overflow)ztp_r_scalar_int(overflow);
+    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
+    int *po = INTEGER(out);
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        int64_t y, m, d;
+        size_t idx = (size_t)i + 1;
+        ztp_iso_date date;
+
+        if (!ztp_r_integer_field(&ctx, py[i], idx, "year", false, &y) ||
+            !ztp_r_integer_field(&ctx, pm[i], idx, "month", true, &m) ||
+            !ztp_r_integer_field(&ctx, pd[i], idx, "day", true, &d)) {
+            po[i] = NA_INTEGER;
+            continue;
+        }
+        if (ztp_regulate_iso_date(&ctx, idx, y, m, d, ov, &date) != ZTP_OK)
+            ztp_r_raise(&ctx);
+        po[i] = (int)(date.month * 32 + date.day);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+SEXP ztp_r_plain_month_day_parse(SEXP x)
+{
+    R_xlen_t n = Rf_xlength(x);
+    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
+    int *po = INTEGER(out);
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        ztp_parsed p;
+        if (!ztp_r_parse_elt(&ctx, x, i, ZTP_PARSE_MONTH_DAY, &p)) {
+            po[i] = NA_INTEGER;
+            continue;
+        }
+        po[i] = (int)(p.month * 32 + p.day);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const int *px = INTEGER(x);
+    ztp_show_calendar show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
+    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+
+    for (R_xlen_t i = 0; i < n; i++) {
+        char buf[ZTP_FORMAT_DATE_CAP];
+        if (px[i] == NA_INTEGER) {
+            SET_STRING_ELT(out, i, NA_STRING);
+            continue;
+        }
+        ztp_format_iso_month_day(buf, (uint32_t)(px[i] / 32), (uint32_t)(px[i] % 32), show);
+        SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
+    }
+    UNPROTECT(1);
+    return out;
+}
+
 /* --- Parser self-check -------------------------------------------------- */
 
 /* For tests: parse each string through one path and describe the outcome
@@ -576,8 +740,9 @@ SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path)
             snprintf(buf, sizeof buf, "%s", ctx.status == ZTP_ERR_TYPE ? "n/a" : "error");
         } else {
             snprintf(buf, sizeof buf,
-                     "%d-%02u-%02u time=%d %02u:%02u:%02u.%03u%03u%03u offset=%d %lld",
-                     (int)p.year, p.month, p.day, (int)p.has_time, p.time.hour,
+                     "%d-%02u-%02u y=%d d=%d time=%d %02u:%02u:%02u.%03u%03u%03u offset=%d %lld",
+                     (int)p.year, p.month, p.day, (int)p.has_year, (int)p.has_day,
+                     (int)p.has_time, p.time.hour,
                      p.time.minute, p.time.second, p.time.millisecond,
                      p.time.microsecond, p.time.nanosecond, (int)p.has_offset,
                      p.has_offset ? (long long)p.offset_ns : 0LL);
