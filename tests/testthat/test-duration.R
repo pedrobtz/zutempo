@@ -256,7 +256,8 @@ test_that("fields from a 128-bit total are the nearest double, ties to even", {
   d <- duration(seconds = 8692288669465520, microseconds = 373761)
   r <- temporal_round(d, largest_unit = "microseconds")
   expect_identical(format(r), "PT8692288669465520.898048S")
-  # Compared as the double's exact digits: R's parser does not always round
-  # a long decimal literal to the nearest double.
-  expect_identical(sprintf("%.0f", microseconds(r)), "8692288669465520898048")
+  # The double built exactly, as m * 2^20 with m below 2^53: R's parser does
+  # not always round a long literal to the nearest double, and Windows'
+  # C runtime does not print every digit of one.
+  expect_identical(microseconds(r), 8289612454858323 * 2^20)
 })
