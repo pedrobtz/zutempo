@@ -233,13 +233,14 @@ SEXP ztp_r_zoned_hours_in_day(SEXP x, SEXP codes, SEXP zones)
 }
 
 SEXP ztp_r_zoned_format(SEXP x, SEXP codes, SEXP zones, SEXP precision, SEXP show_offset,
-                        SEXP show_zone)
+                        SEXP show_zone, SEXP show_calendar)
 {
     R_xlen_t n = Rf_xlength(x);
     const ztp_zone *tz = ztp_r_zones_open(zones);
     int prec = Rf_asInteger(precision);
     bool offset = Rf_asLogical(show_offset) == TRUE;
     ztp_show_zone zone_mode = (ztp_show_zone)Rf_asInteger(show_zone);
+    ztp_show_calendar calendar_mode = (ztp_show_calendar)Rf_asInteger(show_calendar);
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
 
     for (R_xlen_t i = 0; i < n; i++) {
@@ -250,7 +251,7 @@ SEXP ztp_r_zoned_format(SEXP x, SEXP codes, SEXP zones, SEXP precision, SEXP sho
             SET_STRING_ELT(out, i, NA_STRING);
             continue;
         }
-        ztp_format_zoned(buf, epoch, zone, prec, offset, zone_mode);
+        ztp_format_zoned(buf, epoch, zone, prec, offset, zone_mode, calendar_mode);
         SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
     }
     UNPROTECT(1);

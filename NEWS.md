@@ -1,5 +1,23 @@
 # zutempo 0.0.0.9000
 
+* Strings are read with every RFC 9557 annotation: any number of
+  key-value annotations after the time zone, `[u-ca=iso8601]` in any case,
+  and the `!` critical flag, which makes an unknown annotation or a second
+  calendar an error. A calendar other than ISO 8601 is a
+  `zutempo_range_error` on the types with a date and is ignored by
+  `instant()` and `plain_time()`, as in Temporal. A `zutempo_parse_error`
+  carries `position`, the byte where the string failed. Time zone and
+  calendar arguments take an ISO string that names one
+  (`time_zone = "2026-03-07T12:00+01:00"`).
+* `temporal_to_string()` and `format()` take the options of each type's
+  Temporal `toString()`: `fractional_second_digits`, `smallest_unit` and
+  `rounding_mode` on the types with a time and on durations,
+  `calendar_name` on the types with a date, and `time_zone_name` and
+  `offset` on a `zoned_date_time()`.
+* `zutempo_parse(x, type)` reads a character vector as any of the eight
+  types, with `NA` for the strings it cannot read, and
+  `zutempo_parse_errors()` lists them with their index, byte position,
+  class and message.
 * Zone-aware arithmetic: `temporal_add()`, `temporal_subtract()`,
   `temporal_since()`, `temporal_until()` and `temporal_round()` on a
   `zoned_date_time()`, with date units through the calendar in the value's

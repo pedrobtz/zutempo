@@ -2201,6 +2201,363 @@
           "calendarId": "iso8601"
         }
       }
+    },
+    {
+      "id": "from-annotation-calendar",
+      "op": "from",
+      "args": [
+        "2026-01-31[u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-calendar-critical",
+      "op": "from",
+      "args": [
+        "2026-01-31[!u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-calendar-case",
+      "op": "from",
+      "args": [
+        "2026-01-31[u-ca=ISO8601]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-calendar-unknown",
+      "op": "from",
+      "args": [
+        "2026-01-31[u-ca=not-calendar]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-elective",
+      "op": "from",
+      "args": [
+        "2026-01-31[foo=bar]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-critical-unknown",
+      "op": "from",
+      "args": [
+        "2026-01-31[!foo=bar]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-two-calendars",
+      "op": "from",
+      "args": [
+        "2026-01-31[u-ca=iso8601][u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-second-calendar-critical",
+      "op": "from",
+      "args": [
+        "2026-01-31[u-ca=iso8601][!u-ca=iso8601]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-first-calendar-critical",
+      "op": "from",
+      "args": [
+        "2026-01-31[!u-ca=iso8601][u-ca=iso8601]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-zone-then-calendar",
+      "op": "from",
+      "args": [
+        "2026-01-31[Europe/Lisbon][u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-two-zones",
+      "op": "from",
+      "args": [
+        "2026-01-31[Europe/Lisbon][Europe/Madrid]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-critical-zone",
+      "op": "from",
+      "args": [
+        "2026-01-31[!Europe/Lisbon]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-uppercase-key",
+      "op": "from",
+      "args": [
+        "2026-01-31[U-CA=iso8601]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-many",
+      "op": "from",
+      "args": [
+        "2026-01-31[x=1][y-z=a-b][_k=V0]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-unclosed",
+      "op": "from",
+      "args": [
+        "2026-01-31[u-ca=iso8601"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-date-time",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30+01:00[Europe/Lisbon][u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "2026-01-31",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 1,
+          "monthCode": "M01",
+          "day": 31,
+          "dayOfWeek": 6,
+          "dayOfYear": 31,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "to-string-calendar-auto",
+      "op": "toString",
+      "on": "2026-01-31",
+      "args": [],
+      "options": {
+        "calendarName": "auto"
+      },
+      "result": "2026-01-31"
+    },
+    {
+      "id": "to-string-calendar-always",
+      "op": "toString",
+      "on": "2026-01-31",
+      "args": [],
+      "options": {
+        "calendarName": "always"
+      },
+      "result": "2026-01-31[u-ca=iso8601]"
+    },
+    {
+      "id": "to-string-calendar-never",
+      "op": "toString",
+      "on": "2026-01-31",
+      "args": [],
+      "options": {
+        "calendarName": "never"
+      },
+      "result": "2026-01-31"
+    },
+    {
+      "id": "to-string-calendar-critical",
+      "op": "toString",
+      "on": "2026-01-31",
+      "args": [],
+      "options": {
+        "calendarName": "critical"
+      },
+      "result": "2026-01-31[!u-ca=iso8601]"
     }
   ]
 }

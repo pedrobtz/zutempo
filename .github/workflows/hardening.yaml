@@ -25,3 +25,31 @@ jobs:
       github-packages: pedrobtz/zufast
       cflags: -g -O1 -fno-omit-frame-pointer -I.github-packages/zufast/inst/include
       max-total-time: ${{ github.event_name == 'schedule' && 1800 || 120 }}
+
+  fuzz-rfc9557:
+    uses: pedrobtz/r-actions/.github/workflows/fuzz.yml@v1
+    with:
+      harness: tools/fuzz/rfc9557.c
+      sources: src/*.c
+      exclude-sources: |
+        src/init.c
+        src/ztp_r_*.c
+      # From tools/fuzz/seeds.mjs: the oracle's strings and test262's.
+      seed-corpus: tools/fuzz/corpus/rfc9557
+      github-packages: pedrobtz/zufast
+      cflags: -g -O1 -fno-omit-frame-pointer -I.github-packages/zufast/inst/include
+      max-total-time: ${{ github.event_name == 'schedule' && 1800 || 120 }}
+
+  fuzz-duration:
+    uses: pedrobtz/r-actions/.github/workflows/fuzz.yml@v1
+    with:
+      harness: tools/fuzz/duration.c
+      sources: src/*.c
+      exclude-sources: |
+        src/init.c
+        src/ztp_r_*.c
+      # From tools/fuzz/seeds.mjs: the oracle's strings and test262's.
+      seed-corpus: tools/fuzz/corpus/duration
+      github-packages: pedrobtz/zufast
+      cflags: -g -O1 -fno-omit-frame-pointer -I.github-packages/zufast/inst/include
+      max-total-time: ${{ github.event_name == 'schedule' && 1800 || 120 }}

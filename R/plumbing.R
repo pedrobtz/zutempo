@@ -259,11 +259,11 @@ xtfrm.zutempo_plain_date_time <- function(x) ztp_order_key_complex(x)
 # --- text -------------------------------------------------------------------
 
 #' @export
-format.zutempo_plain_date <- function(x, ...) temporal_to_string(x)
+format.zutempo_plain_date <- function(x, ...) ztp_format(x, ...)
 #' @export
-format.zutempo_plain_time <- function(x, ...) temporal_to_string(x)
+format.zutempo_plain_time <- function(x, ...) ztp_format(x, ...)
 #' @export
-format.zutempo_plain_date_time <- function(x, ...) temporal_to_string(x)
+format.zutempo_plain_date_time <- function(x, ...) ztp_format(x, ...)
 
 #' @export
 as.character.zutempo_plain_date <- function(x, ...) temporal_to_string(x)
@@ -318,7 +318,7 @@ as.data.frame.zutempo_plain_year_month <- function(x, ...) {
 #' @export
 xtfrm.zutempo_plain_year_month <- function(x) as.vector(unclass(x))
 #' @export
-format.zutempo_plain_year_month <- function(x, ...) temporal_to_string(x)
+format.zutempo_plain_year_month <- function(x, ...) ztp_format(x, ...)
 #' @export
 as.character.zutempo_plain_year_month <- function(x, ...) temporal_to_string(x)
 #' @export
@@ -353,7 +353,7 @@ as.data.frame.zutempo_plain_month_day <- function(x, ...) {
 #' @export
 xtfrm.zutempo_plain_month_day <- function(x) as.vector(unclass(x))
 #' @export
-format.zutempo_plain_month_day <- function(x, ...) temporal_to_string(x)
+format.zutempo_plain_month_day <- function(x, ...) ztp_format(x, ...)
 #' @export
 as.character.zutempo_plain_month_day <- function(x, ...) temporal_to_string(x)
 #' @export

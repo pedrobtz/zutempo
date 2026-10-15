@@ -163,11 +163,14 @@ zutempo_tz_reset <- function() {
   invisible(NULL)
 }
 
-# Resolve a time zone identifier: "UTC" and offsets through the engine,
-# named zones through the index, loading the file on first use. Returns
-# the identifier as Temporal writes it; a name not in the database is a
-# zutempo_tz_error naming the directories tried.
+# Resolve a time zone string: ParseTemporalTimeZoneString first, so an
+# ISO string such as "2026-03-07T12:00+01:00" names its zone; then "UTC"
+# and offsets through the engine, named zones through the index, loading
+# the file on first use. Returns the identifier as Temporal writes it; a
+# name not in the database is a zutempo_tz_error naming the directories
+# tried.
 ztp_tz_ensure <- function(id, index = NULL) {
+  id <- .Call(C_ztp_r_time_zone_string, id, index)
   if (grepl("^[+-]", id) || tolower(id) == "utc") {
     return(.Call(C_ztp_r_zone_normalise, id))
   }

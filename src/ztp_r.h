@@ -63,6 +63,9 @@ SEXP ztp_r_plain_month_day_from_fields(SEXP year, SEXP month, SEXP day, SEXP ove
 SEXP ztp_r_plain_month_day_parse(SEXP x);
 SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar);
 SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path);
+SEXP ztp_r_parse_check(SEXP x, SEXP goal);
+SEXP ztp_r_time_zone_string(SEXP x, SEXP index);
+SEXP ztp_r_calendar_string(SEXP x);
 
 /* ztp_r_instant.c */
 SEXP ztp_r_instant_parse(SEXP x);
@@ -88,7 +91,7 @@ SEXP ztp_r_zoned_offset(SEXP x, SEXP codes, SEXP zones);
 SEXP ztp_r_zoned_start_of_day(SEXP x, SEXP codes, SEXP zones);
 SEXP ztp_r_zoned_hours_in_day(SEXP x, SEXP codes, SEXP zones);
 SEXP ztp_r_zoned_format(SEXP x, SEXP codes, SEXP zones, SEXP precision, SEXP show_offset,
-                        SEXP show_zone);
+                        SEXP show_zone, SEXP show_calendar);
 SEXP ztp_r_zone_equals(SEXP a, SEXP b);
 SEXP ztp_r_format_offset_exact(SEXP offset_ns);
 SEXP ztp_r_parse_offset_string(SEXP x);
@@ -114,7 +117,8 @@ SEXP ztp_r_tz_rule_utoff(SEXP rule, SEXP seconds);
 /* ztp_r_duration.c */
 SEXP ztp_r_duration_create(SEXP fields);
 SEXP ztp_r_duration_parse(SEXP x);
-SEXP ztp_r_duration_format(SEXP dur, SEXP precision);
+SEXP ztp_r_duration_format(SEXP dur, SEXP precision, SEXP increment, SEXP unit,
+                           SEXP mode);
 SEXP ztp_r_duration_add(SEXP a, SEXP b);
 SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
                           SEXP mode, SEXP smallest_present, SEXP relative_days,

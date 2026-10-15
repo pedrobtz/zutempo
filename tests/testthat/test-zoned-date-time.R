@@ -425,12 +425,12 @@ test_that("strings with a zone annotation are read by the other types and ignore
       plain_date("2026-03-07[America/New_York"),
       class = "zutempo_parse_error"
     )
-    expect_error(
-      plain_date("2026-03-07[u-ca=iso8601]"),
-      class = "zutempo_parse_error"
+    expect_identical(
+      plain_date("2026-03-07[America/New_York][u-ca=iso8601]"),
+      plain_date("2026-03-07")
     )
     expect_error(
-      plain_date("2026-03-07[America/New_York][u-ca=iso8601]"),
+      plain_date("2026-03-07[u-ca=iso8601][America/New_York]"),
       class = "zutempo_parse_error"
     )
     expect_error(

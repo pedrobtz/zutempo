@@ -36,7 +36,8 @@ test_that("the fast path never accepts what the slow path rejects", {
     "2026-01-31T",
     "10000-01-01",
     "2026-0131",
-    "2026-01-31[u-ca=iso8601]",
+    "2026-01-31[!u-ca=iso8601][u-ca=iso8601]",
+    "2026-01-31[!x-y=z]",
     "",
     " 2026-01-31",
     "2026-01-31 "

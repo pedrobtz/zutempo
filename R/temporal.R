@@ -174,22 +174,58 @@ temporal_round <- function(
 
 #' Format a Temporal value as an ISO 8601 string
 #'
-#' Temporal's `toString()` with its default options; `format()` and
-#' `as.character()` give the same strings. Years outside 0 to 9999 are
-#' written with a sign and six digits, and a time's fraction keeps only its
-#' significant digits.
+#' Temporal's `toString()`. `format()` takes the same options and
+#' `as.character()` gives the default strings. Years outside 0 to 9999 are
+#' written with a sign and six digits. By default a time's fraction keeps
+#' only its significant digits, and a UTC offset is written as `+HH:MM` or
+#' `-HH:MM`, rounded to the minute (design 9).
+#'
+#' Each type takes the options its Temporal `toString()` has: the
+#' precision options on the types with a time, `calendar_name` on the
+#' types with a date, and `time_zone_name` and `offset` on a
+#' `zoned_date_time()`. A value rounded by `smallest_unit` or
+#' `fractional_second_digits` is rounded before it is written: a time wraps
+#' past midnight, a date-time moves to the next day, and a duration
+#' rounds its time part only.
 #'
 #' @param x A zutempo value.
-#' @param ... Must be empty, except for an `instant()`'s `time_zone`.
+#' @param ... Must be empty.
+#' @param fractional_second_digits `"auto"` (the default) for the
+#'   significant digits of the fraction, or 0 to 9 for exactly that many.
+#' @param smallest_unit `NULL` (the default), or the smallest unit to
+#'   write: `"minute"` (not for a duration), `"second"`, `"millisecond"`,
+#'   `"microsecond"` or `"nanosecond"`. It wins over
+#'   `fractional_second_digits`.
+#' @param rounding_mode How a value is rounded to the precision:
+#'   `"trunc"` (the default) or another of the nine Temporal modes, as in
+#'   [temporal_round()].
+#' @param calendar_name Whether to write the `[u-ca=iso8601]` annotation:
+#'   `"auto"` (the default) and `"never"` leave it out, `"always"` writes
+#'   it, `"critical"` writes it with the `!` flag. A year-month or
+#'   month-day written with the annotation also shows its reference day
+#'   or year.
+#' @param time_zone_name For a `zoned_date_time()`: `"auto"` (the default)
+#'   writes the time zone annotation, `"never"` leaves it out, `"critical"`
+#'   writes it with the `!` flag.
+#' @param offset For a `zoned_date_time()`: `"auto"` (the default) writes
+#'   the UTC offset, `"never"` leaves it out.
 #' @param time_zone For an `instant()`: a time zone to show the time in,
-#'   `"UTC"`, a fixed offset such as `"+05:30"` or an IANA identifier such
-#'   as `"Europe/Lisbon"`; `NULL` (the default) writes the time in UTC
-#'   with `Z`.
+#'   `"UTC"`, a fixed offset such as `"+05:30"`, an IANA identifier such
+#'   as `"Europe/Lisbon"`, or an ISO string that names one; `NULL` (the
+#'   default) writes the time in UTC with `Z`.
 #' @return A character vector, `NA` where `x` is `NA`.
 #' @examples
 #' temporal_to_string(plain_date(c(2026, 275760), c(1, 9), c(31, 13)))
 #' temporal_to_string(instant("2026-01-31T12:30Z"), time_zone = "+05:30")
 #' temporal_to_string(plain_time(12, 30, 45, 500))
+#' temporal_to_string(plain_time("23:59:59.987"), fractional_second_digits = 1)
+#' temporal_to_string(
+#'   plain_date_time("2026-01-31T12:30:45.5"),
+#'   smallest_unit = "second",
+#'   rounding_mode = "halfExpand",
+#'   calendar_name = "always"
+#' )
+#' format(duration("PT1M30.25S"), smallest_unit = "second", rounding_mode = "ceil")
 #' @order 1
 #' @export
 temporal_to_string <- function(x, ...) {

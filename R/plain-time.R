@@ -157,7 +157,22 @@ temporal_round.zutempo_plain_time <- function(
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_plain_time <- function(x, ...) {
+temporal_to_string.zutempo_plain_time <- function(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc"
+) {
   ztp_check_dots_empty(...)
-  .Call(C_ztp_r_plain_time_format, unclass(x), -1L)
+  p <- ztp_precision_record(
+    fractional_second_digits,
+    smallest_unit,
+    rounding_mode
+  )
+  ns <- unclass(x)
+  if (p$unit != 9L || p$increment != 1) {
+    ns <- .Call(C_ztp_r_plain_time_round, ns, p$increment, p$unit, p$mode)
+  }
+  .Call(C_ztp_r_plain_time_format, ns, p$precision)
 }

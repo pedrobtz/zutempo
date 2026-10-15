@@ -589,6 +589,100 @@
       "on": "02-29",
       "args": [],
       "result": "02-29"
+    },
+    {
+      "id": "from-annotation-calendar",
+      "op": "from",
+      "args": [
+        "02-29[u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "02-29",
+        "type": "PlainMonthDay",
+        "fields": {
+          "monthCode": "M02",
+          "day": 29,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-dashes",
+      "op": "from",
+      "args": [
+        "--02-29[!u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "02-29",
+        "type": "PlainMonthDay",
+        "fields": {
+          "monthCode": "M02",
+          "day": 29,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-annotation-partial-other-calendar",
+      "op": "from",
+      "args": [
+        "02-29[u-ca=gregory]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-critical-unknown",
+      "op": "from",
+      "args": [
+        "02-29[!foo=bar]"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-annotation-full-date",
+      "op": "from",
+      "args": [
+        "2024-02-29[Europe/Lisbon][u-ca=iso8601]"
+      ],
+      "result": {
+        "string": "02-29",
+        "type": "PlainMonthDay",
+        "fields": {
+          "monthCode": "M02",
+          "day": 29,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "to-string-calendar-always",
+      "op": "toString",
+      "on": "02-29",
+      "args": [],
+      "options": {
+        "calendarName": "always"
+      },
+      "result": "1972-02-29[u-ca=iso8601]"
+    },
+    {
+      "id": "to-string-calendar-never",
+      "op": "toString",
+      "on": "02-29",
+      "args": [],
+      "options": {
+        "calendarName": "never"
+      },
+      "result": "02-29"
+    },
+    {
+      "id": "to-string-calendar-critical",
+      "op": "toString",
+      "on": "02-29",
+      "args": [],
+      "options": {
+        "calendarName": "critical"
+      },
+      "result": "1972-02-29[!u-ca=iso8601]"
     }
   ]
 }

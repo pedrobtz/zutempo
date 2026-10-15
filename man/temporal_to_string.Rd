@@ -16,43 +16,121 @@
 \usage{
 temporal_to_string(x, ...)
 
-\method{temporal_to_string}{zutempo_duration}(x, ...)
+\method{temporal_to_string}{zutempo_duration}(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc"
+)
 
-\method{temporal_to_string}{zutempo_instant}(x, ..., time_zone = NULL)
+\method{temporal_to_string}{zutempo_instant}(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc",
+  time_zone = NULL
+)
 
-\method{temporal_to_string}{zutempo_plain_date_time}(x, ...)
+\method{temporal_to_string}{zutempo_plain_date_time}(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc",
+  calendar_name = "auto"
+)
 
-\method{temporal_to_string}{zutempo_plain_date}(x, ...)
+\method{temporal_to_string}{zutempo_plain_date}(x, ..., calendar_name = "auto")
 
-\method{temporal_to_string}{zutempo_plain_month_day}(x, ...)
+\method{temporal_to_string}{zutempo_plain_month_day}(x, ..., calendar_name = "auto")
 
-\method{temporal_to_string}{zutempo_plain_time}(x, ...)
+\method{temporal_to_string}{zutempo_plain_time}(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc"
+)
 
-\method{temporal_to_string}{zutempo_plain_year_month}(x, ...)
+\method{temporal_to_string}{zutempo_plain_year_month}(x, ..., calendar_name = "auto")
 
-\method{temporal_to_string}{zutempo_zoned_date_time}(x, ...)
+\method{temporal_to_string}{zutempo_zoned_date_time}(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc",
+  calendar_name = "auto",
+  time_zone_name = "auto",
+  offset = "auto"
+)
 }
 \arguments{
 \item{x}{A zutempo value.}
 
-\item{...}{Must be empty, except for an \code{instant()}'s \code{time_zone}.}
+\item{...}{Must be empty.}
+
+\item{fractional_second_digits}{\code{"auto"} (the default) for the
+significant digits of the fraction, or 0 to 9 for exactly that many.}
+
+\item{smallest_unit}{\code{NULL} (the default), or the smallest unit to
+write: \code{"minute"} (not for a duration), \code{"second"}, \code{"millisecond"},
+\code{"microsecond"} or \code{"nanosecond"}. It wins over
+\code{fractional_second_digits}.}
+
+\item{rounding_mode}{How a value is rounded to the precision:
+\code{"trunc"} (the default) or another of the nine Temporal modes, as in
+\code{\link[=temporal_round]{temporal_round()}}.}
 
 \item{time_zone}{For an \code{instant()}: a time zone to show the time in,
-\code{"UTC"}, a fixed offset such as \code{"+05:30"} or an IANA identifier such
-as \code{"Europe/Lisbon"}; \code{NULL} (the default) writes the time in UTC
-with \code{Z}.}
+\code{"UTC"}, a fixed offset such as \code{"+05:30"}, an IANA identifier such
+as \code{"Europe/Lisbon"}, or an ISO string that names one; \code{NULL} (the
+default) writes the time in UTC with \code{Z}.}
+
+\item{calendar_name}{Whether to write the \verb{[u-ca=iso8601]} annotation:
+\code{"auto"} (the default) and \code{"never"} leave it out, \code{"always"} writes
+it, \code{"critical"} writes it with the \code{!} flag. A year-month or
+month-day written with the annotation also shows its reference day
+or year.}
+
+\item{time_zone_name}{For a \code{zoned_date_time()}: \code{"auto"} (the default)
+writes the time zone annotation, \code{"never"} leaves it out, \code{"critical"}
+writes it with the \code{!} flag.}
+
+\item{offset}{For a \code{zoned_date_time()}: \code{"auto"} (the default) writes
+the UTC offset, \code{"never"} leaves it out.}
 }
 \value{
 A character vector, \code{NA} where \code{x} is \code{NA}.
 }
 \description{
-Temporal's \code{toString()} with its default options; \code{format()} and
-\code{as.character()} give the same strings. Years outside 0 to 9999 are
-written with a sign and six digits, and a time's fraction keeps only its
-significant digits.
+Temporal's \code{toString()}. \code{format()} takes the same options and
+\code{as.character()} gives the default strings. Years outside 0 to 9999 are
+written with a sign and six digits. By default a time's fraction keeps
+only its significant digits, and a UTC offset is written as \code{+HH:MM} or
+\code{-HH:MM}, rounded to the minute (design 9).
+}
+\details{
+Each type takes the options its Temporal \code{toString()} has: the
+precision options on the types with a time, \code{calendar_name} on the
+types with a date, and \code{time_zone_name} and \code{offset} on a
+\code{zoned_date_time()}. A value rounded by \code{smallest_unit} or
+\code{fractional_second_digits} is rounded before it is written: a time wraps
+past midnight, a date-time moves to the next day, and a duration
+rounds its time part only.
 }
 \examples{
 temporal_to_string(plain_date(c(2026, 275760), c(1, 9), c(31, 13)))
 temporal_to_string(instant("2026-01-31T12:30Z"), time_zone = "+05:30")
 temporal_to_string(plain_time(12, 30, 45, 500))
+temporal_to_string(plain_time("23:59:59.987"), fractional_second_digits = 1)
+temporal_to_string(
+  plain_date_time("2026-01-31T12:30:45.5"),
+  smallest_unit = "second",
+  rounding_mode = "halfExpand",
+  calendar_name = "always"
+)
+format(duration("PT1M30.25S"), smallest_unit = "second", rounding_mode = "ceil")
 }

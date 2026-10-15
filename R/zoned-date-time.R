@@ -657,16 +657,40 @@ temporal_start_of_day.zutempo_zoned_date_time <- function(x) {
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_zoned_date_time <- function(x, ...) {
+temporal_to_string.zutempo_zoned_date_time <- function(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc",
+  calendar_name = "auto",
+  time_zone_name = "auto",
+  offset = "auto"
+) {
   ztp_check_dots_empty(...)
+  show_calendar <- ztp_show_calendar_code(calendar_name)
+  p <- ztp_precision_record(
+    fractional_second_digits,
+    smallest_unit,
+    rounding_mode
+  )
+  show_offset <- ztp_show_offset(offset)
+  show_zone <- ztp_show_time_zone_code(time_zone_name)
+  v <- ztp_zdt_instant(x)
+  # TemporalZonedDateTimeToString rounds the exact time, not the wall
+  # clock (RoundTemporalInstant).
+  if (p$unit != 9L || p$increment != 1) {
+    v <- .Call(C_ztp_r_instant_round, v, p$increment, p$unit, p$mode)
+  }
   .Call(
     C_ztp_r_zoned_format,
-    ztp_zdt_instant(x),
+    v,
     ztp_zdt_codes(x),
     ztp_zdt_zones_ready(x),
-    -1L,
-    TRUE,
-    0L
+    p$precision,
+    show_offset,
+    show_zone,
+    show_calendar
   )
 }
 
@@ -828,7 +852,7 @@ xtfrm.zutempo_zoned_date_time <- function(x) {
 }
 
 #' @export
-format.zutempo_zoned_date_time <- function(x, ...) temporal_to_string(x)
+format.zutempo_zoned_date_time <- function(x, ...) ztp_format(x, ...)
 #' @export
 as.character.zutempo_zoned_date_time <- function(x, ...) temporal_to_string(x)
 #' @export

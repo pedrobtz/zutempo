@@ -23,16 +23,18 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 8. The eight types exist with every
-member of the pinned specification except the string options of
-`toString()` (stage 9): fields, `with*`, `compare`, `equals`, `round`,
-`add`, `subtract`, `since`, `until`, `total`, `startOfDay`,
-`getTimeZoneTransition`, the conversions among the types and default
-`toString()`; every `Now` function works; strings are read with the time
-zone annotation and without the others (stage 9 adds them). The ledger's
-`pending` list is empty. The engine has the ISO records (`src/ztp_iso.c`), rounding
-(`src/ztp_round.c`), formatting (`src/ztp_format.c`), the parser with its
-five goals and the zufast fast path (`src/ztp_parse.c`), durations on
+Verified 2026-10-15: stages 0 to 9. The eight types exist with every
+member of the pinned specification: fields, `with*`, `compare`,
+`equals`, `round`, `add`, `subtract`, `since`, `until`, `total`,
+`startOfDay`, `getTimeZoneTransition`, the conversions among the types
+and `toString()` with all its options; every `Now` function works;
+strings are read with every RFC 9557 annotation, and
+`zutempo_parse()` (`R/parse.R`) reads them in bulk with `NA` for
+failures. The ledger's `pending` list is empty. The engine has the ISO
+records (`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
+(`src/ztp_format.c`), the parser with its goals, the annotation rules,
+the time zone and calendar string readers and the zufast fast path
+(`src/ztp_parse.c`), durations on
 128-bit time durations (`src/ztp_duration.c`), calendar arithmetic with
 relative rounding with and without a zone and the zoned arithmetic
 (`src/ztp_relative.c`), instants with the UTC,
@@ -166,6 +168,11 @@ Design §4 is the reference. The layers, top down:
   the 1-based element index and a message. `src/ztp_r.h`: `ztp_r_raise()`
   turns a failed context into a condition by evaluating `stop_zutempo()`
   in the namespace.
+- `tools/fuzz/`: libFuzzer harnesses for the TZif reader, the RFC 9557
+  parser and the duration parser, run by `hardening.yaml`. Their seed
+  corpora under `tools/fuzz/corpus/` come from `tools/fuzz/seeds.mjs`
+  (the oracle's strings and test262's); regenerate them when the oracle
+  changes much.
 - `inst/spec/PINS`: the specification, test262 and tzdata pins (DCF).
   `inst/spec/members.csv`: every member of the pinned specification with
   its R name, written by `tools/spec/members.R`.
@@ -320,12 +327,15 @@ This package calls:
   to `gh-pages` because `main` takes no direct pushes.
 - `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with
   `force: false` so it does not overwrite the badge.
-- `hardening.yaml`: `fuzz.yml` with the TZif harness `tools/fuzz/tzif.c`
-  against the engine sources (the glue excluded), seeded from the slim
-  fixtures; two minutes on a pull request, thirty nightly, with the corpus
-  carried between runs. The harness builds without R: `clang
-  -fsanitize=address,undefined` over `src/ztp_*.c` minus `src/ztp_r_*.c`
-  with `zufast`'s headers is the local smoke test.
+- `hardening.yaml`: `fuzz.yml` three times, one job per harness under
+  `tools/fuzz/` (TZif, RFC 9557, duration), against the engine sources
+  (the glue excluded). The TZif job is seeded from the slim fixtures, the
+  others from `tools/fuzz/corpus/`; two minutes each on a pull request,
+  thirty nightly, with the corpus carried between runs. The harnesses
+  build without R: Homebrew's `clang -fsanitize=fuzzer,address,undefined`
+  over `src/ztp_*.c` minus `src/ztp_r_*.c` with `zufast`'s headers is the
+  local smoke test (Apple's clang has no libFuzzer). The engine's strings
+  are length-delimited, so never print one with a plain `%s`.
 
 Small edits get a small run. The shared workflows look at the files a pull
 request changes, compared with its merge base:

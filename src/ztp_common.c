@@ -24,6 +24,7 @@ ztp_status ztp_fail(ztp_ctx *ctx, ztp_status status, size_t index,
 
     ctx->status = status;
     ctx->index = index;
+    ctx->position = 0;
     va_start(ap, fmt);
     vsnprintf(ctx->msg, sizeof ctx->msg, fmt, ap);
     va_end(ap);

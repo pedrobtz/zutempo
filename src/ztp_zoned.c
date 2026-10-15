@@ -240,7 +240,8 @@ size_t ztp_format_offset_exact(char *dst, int64_t offset_ns)
 }
 
 size_t ztp_format_zoned(char *dst, zuf_i128 epoch_ns, const ztp_zone *zone,
-                        int precision, bool show_offset, ztp_show_zone show_zone)
+                        int precision, bool show_offset, ztp_show_zone show_zone,
+                        ztp_show_calendar show_calendar)
 {
     int32_t day;
     int64_t ns_of_day, offset;
@@ -256,6 +257,14 @@ size_t ztp_format_zoned(char *dst, zuf_i128 epoch_ns, const ztp_zone *zone,
         k += strlen(zone->id);
         dst[k++] = ']';
         dst[k] = '\0';
+    }
+    /* FormatCalendarAnnotation: only "always" and "critical" show the ISO
+       calendar. */
+    if (show_calendar == ZTP_SHOW_CALENDAR_ALWAYS || show_calendar == ZTP_SHOW_CALENDAR_CRITICAL) {
+        const char *text = show_calendar == ZTP_SHOW_CALENDAR_CRITICAL ? "[!u-ca=iso8601]"
+                                                                       : "[u-ca=iso8601]";
+        strcpy(dst + k, text);
+        k += strlen(text);
     }
     return k;
 }

@@ -138,15 +138,22 @@ ztp_relative_length <- function(x, relative_to) {
 # GetTemporalRelativeToOption: relative_to as a list of the four arguments
 # the duration glue takes, recycled to n: plain epoch days (or NULL), and
 # the instants, codes and zone table of a zoned value (or NULLs). A string
-# with a zone in brackets is zoned, any other reads as a date-time.
+# that reads as a zoned date-time (it has a time zone annotation) is
+# zoned, any other reads as a date-time (ToRelativeTemporalObject).
 ztp_relative_to <- function(relative_to, n) {
   none <- list(days = NULL, zoned = NULL, codes = NULL, zones = NULL)
   if (is.null(relative_to)) {
     return(none)
   }
   if (is.character(relative_to)) {
-    zoned <- grepl("[", relative_to, fixed = TRUE)
-    zoned[is.na(zoned)] <- all(zoned, na.rm = TRUE)
+    check <- .Call(
+      C_ztp_r_parse_check,
+      relative_to,
+      ztp_parse_goals[["zoned_date_time"]]
+    )
+    missing <- is.na(relative_to)
+    zoned <- !missing & is.na(check[["message"]])
+    zoned[missing] <- any(!missing) && all(zoned[!missing])
     if (all(zoned) && length(zoned)) {
       relative_to <- zoned_date_time(relative_to)
     } else if (any(zoned)) {
@@ -557,9 +564,28 @@ temporal_total.zutempo_duration <- function(x, unit, relative_to = NULL) {
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_duration <- function(x, ...) {
+temporal_to_string.zutempo_duration <- function(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc"
+) {
   ztp_check_dots_empty(...)
-  .Call(C_ztp_r_duration_format, unclass(x), -1L)
+  p <- ztp_precision_record(
+    fractional_second_digits,
+    smallest_unit,
+    rounding_mode,
+    minute = FALSE
+  )
+  .Call(
+    C_ztp_r_duration_format,
+    unclass(x),
+    p$precision,
+    p$increment,
+    p$unit,
+    p$mode
+  )
 }
 
 # --- plumbing for the record class ---------------------------------------
@@ -657,7 +683,7 @@ as.data.frame.zutempo_duration <- function(
   structure(value, row.names = .set_row_names(length(x)), class = "data.frame")
 }
 #' @export
-format.zutempo_duration <- function(x, ...) temporal_to_string(x)
+format.zutempo_duration <- function(x, ...) ztp_format(x, ...)
 #' @export
 as.character.zutempo_duration <- function(x, ...) temporal_to_string(x)
 #' @export

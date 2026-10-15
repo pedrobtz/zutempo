@@ -12,6 +12,7 @@ typedef struct {
     size_t pos;
     const char *reason;     /* set on failure */
     size_t fail_pos;
+    size_t calendar_at;     /* where the first "u-ca" annotation starts */
 } ztp_cursor;
 
 static bool ztp_fail_at(ztp_cursor *c, size_t pos, const char *reason)
@@ -203,8 +204,7 @@ static bool ztp_parse_offset(ztp_cursor *c, int64_t *offset_ns, bool *has_second
 }
 
 /* After a time: an optional offset, where "Z" is never allowed for the
-   plain types; then an optional time zone annotation and the end of the
-   string (other annotations are stage 9). */
+   plain types; then the annotations and the end of the string. */
 static bool ztp_is_separator(int ch);
 static bool ztp_parse_tail(ztp_cursor *c, ztp_parsed *out);
 
@@ -299,12 +299,8 @@ static bool ztp_parse_tz_annotation(ztp_cursor *c, ztp_parsed *out)
         }
     }
     len = c->pos - start;
-    if (ztp_peek(c, 0) != ']') {
-        /* "[u-ca=iso8601]" and other annotations have a key and "=". */
-        if (ztp_peek(c, 0) == '=')
-            return ztp_fail_at(c, start, "annotations other than the time zone are not supported yet");
+    if (ztp_peek(c, 0) != ']')
         return ztp_fail_at(c, c->pos, "expected ']' after the time zone identifier");
-    }
     if (len == 0) return ztp_fail_at(c, start, "expected a time zone identifier");
     if (len >= ZTP_TZ_ANNOTATION_CAP)
         return ztp_fail_at(c, start, "the time zone identifier is too long");
@@ -315,16 +311,121 @@ static bool ztp_parse_tz_annotation(ztp_cursor *c, ztp_parsed *out)
     return true;
 }
 
+/* AKeyLeadingChar, AKeyChar and AnnotationValueComponent's characters. */
+static bool ztp_is_key_lead(int ch) { return (ch >= 'a' && ch <= 'z') || ch == '_'; }
+
+static bool ztp_is_key_char(int ch)
+{
+    return ztp_is_key_lead(ch) || ztp_is_digit(ch) || ch == '-';
+}
+
+static bool ztp_is_alnum(int ch)
+{
+    return ztp_is_digit(ch) || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+}
+
+/* Whether the bracket at the cursor holds a key-value Annotation rather
+   than a TimeZoneAnnotation: an "=" comes before the closing "]". No time
+   zone identifier contains "=". */
+static bool ztp_annotation_has_key(const ztp_cursor *c)
+{
+    for (size_t i = c->pos + 1; i < c->n; i++) {
+        if (c->s[i] == '=') return true;
+        if (c->s[i] == ']') return false;
+    }
+    return false;
+}
+
+/* Annotation: "[", an optional "!", AnnotationKey "=" AnnotationValue, "]",
+   with the rules ParseISODateTime applies to each: the first "u-ca" sets
+   the calendar, a second one is an error when either is critical, and any
+   other key is an error when it is critical. The cursor is on "[". */
+static bool ztp_parse_annotation(ztp_cursor *c, ztp_parsed *out,
+                                 bool *calendar_critical)
+{
+    size_t open = c->pos, key_start, key_len, value_start, value_len;
+    bool critical = false;
+
+    c->pos++;
+    if (ztp_peek(c, 0) == '!') {
+        critical = true;
+        c->pos++;
+    }
+    key_start = c->pos;
+    if (!ztp_is_key_lead(ztp_peek(c, 0)))
+        return ztp_fail_at(c, c->pos, "expected a lowercase annotation key");
+    while (ztp_is_key_char(ztp_peek(c, 0))) c->pos++;
+    key_len = c->pos - key_start;
+    if (ztp_peek(c, 0) != '=')
+        return ztp_fail_at(c, c->pos, "expected '=' after the annotation key");
+    c->pos++;
+    value_start = c->pos;
+    for (;;) {
+        if (!ztp_is_alnum(ztp_peek(c, 0)))
+            return ztp_fail_at(c, c->pos, "expected letters or digits in the annotation value");
+        while (ztp_is_alnum(ztp_peek(c, 0))) c->pos++;
+        if (ztp_peek(c, 0) != '-') break;
+        c->pos++;
+    }
+    value_len = c->pos - value_start;
+    if (ztp_peek(c, 0) != ']')
+        return ztp_fail_at(c, c->pos, "expected ']' after the annotation");
+    c->pos++;
+    if (key_len == 4 && memcmp(c->s + key_start, "u-ca", 4) == 0) {
+        if (!out->has_calendar) {
+            static const char iso[] = "iso8601";
+            size_t k = value_len < ZTP_CALENDAR_CAP - 1 ? value_len : ZTP_CALENDAR_CAP - 1;
+            bool is_iso = value_len == 7;
+            for (size_t i = 0; is_iso && i < 7; i++) {
+                int ch = c->s[value_start + i];
+                if (ch >= 'A' && ch <= 'Z') ch += 'a' - 'A';
+                is_iso = ch == iso[i];
+            }
+            out->has_calendar = true;
+            out->calendar_is_iso = is_iso;
+            memcpy(out->calendar, c->s + value_start, k);
+            out->calendar[k] = '\0';
+            c->calendar_at = open;
+            *calendar_critical = critical;
+        } else if (critical || *calendar_critical) {
+            return ztp_fail_at(c, open,
+                               "a second calendar annotation where one is critical");
+        }
+    } else if (critical) {
+        return ztp_fail_at(c, open, "an unknown annotation is marked critical with '!'");
+    }
+    return true;
+}
+
+/* TimeZoneAnnotation? Annotations?, then the end of the string. */
 static bool ztp_parse_tail(ztp_cursor *c, ztp_parsed *out)
 {
-    if (ztp_peek(c, 0) == '[') {
-        if (!ztp_parse_tz_annotation(c, out)) return false;
-        if (ztp_peek(c, 0) == '[')
+    bool calendar_critical = false, first = true;
+
+    while (ztp_peek(c, 0) == '[') {
+        if (ztp_annotation_has_key(c)) {
+            if (!ztp_parse_annotation(c, out, &calendar_critical)) return false;
+        } else if (first) {
+            if (!ztp_parse_tz_annotation(c, out)) return false;
+        } else {
             return ztp_fail_at(c, c->pos,
-                               "annotations other than the time zone are not supported yet");
+                               out->has_tz ? "a second time zone annotation"
+                                           : "the time zone annotation must come first");
+        }
+        first = false;
     }
     if (!ztp_at_end(c))
         return ztp_fail_at(c, c->pos, "unexpected character");
+    return true;
+}
+
+/* The early rule of ParseISODateTime for a year-month without a day and a
+   month-day without a year: only the ISO 8601 calendar has those forms. */
+static bool ztp_partial_calendar_ok(ztp_cursor *c, const ztp_parsed *out)
+{
+    if (out->has_calendar && !out->calendar_is_iso)
+        return ztp_fail_at(c, c->calendar_at,
+                           "only the ISO 8601 calendar reads a partial date");
     return true;
 }
 
@@ -336,7 +437,7 @@ static bool ztp_is_separator(int ch)
 /* DateSpecMonthDay over s[0, n), with its IsValidMonthDay early error. */
 static bool ztp_looks_like_month_day(const unsigned char *s, size_t n)
 {
-    ztp_cursor c = {s, n, 0, NULL, 0};
+    ztp_cursor c = {s, n, 0, NULL, 0, 0};
     uint32_t m, d;
 
     if (ztp_peek(&c, 0) == '-' && ztp_peek(&c, 1) == '-') c.pos += 2;
@@ -350,7 +451,7 @@ static bool ztp_looks_like_month_day(const unsigned char *s, size_t n)
 /* DateSpecYearMonth over s[0, n). */
 static bool ztp_looks_like_year_month(const unsigned char *s, size_t n)
 {
-    ztp_cursor c = {s, n, 0, NULL, 0};
+    ztp_cursor c = {s, n, 0, NULL, 0, 0};
     int32_t y;
     uint32_t m;
 
@@ -429,7 +530,7 @@ static bool ztp_parse_goal_year_month_only(ztp_cursor *c, ztp_parsed *out)
     out->has_year = true;
     out->has_day = false;
     out->day = 1;
-    return ztp_parse_tail(c, out);
+    return ztp_parse_tail(c, out) && ztp_partial_calendar_ok(c, out);
 }
 
 /* DateSpecMonthDay: an optional "--", a month, an optional "-", a day,
@@ -451,7 +552,7 @@ static bool ztp_parse_goal_month_day_only(ztp_cursor *c, ztp_parsed *out)
     out->has_year = false;
     out->has_day = true;
     out->year = 1972;
-    return ztp_parse_tail(c, out);
+    return ztp_parse_tail(c, out) && ztp_partial_calendar_ok(c, out);
 }
 
 /* A goal with two forms: a full date-time (time optional) or the partial
@@ -493,6 +594,30 @@ static bool ztp_parse_slow(ztp_cursor *c, ztp_parse_goal goal, ztp_parsed *out)
     if (goal == ZTP_PARSE_MONTH_DAY)
         return ztp_parse_goal_partial(c, out, ztp_parse_goal_month_day_only);
     if (goal == ZTP_PARSE_INSTANT) return ztp_parse_goal_instant(c, out);
+    if (goal == ZTP_PARSE_ANY) {
+        /* The goals of ParseTemporalTimeZoneString in its order; the first
+           that matches wins, and the failure that read furthest is kept. */
+        static const ztp_parse_goal order[] = {
+            ZTP_PARSE_ZONED, ZTP_PARSE_DATE_TIME, ZTP_PARSE_INSTANT,
+            ZTP_PARSE_TIME, ZTP_PARSE_MONTH_DAY, ZTP_PARSE_YEAR_MONTH};
+        const char *reason = NULL;
+        size_t fail_pos = 0;
+
+        for (size_t g = 0; g < sizeof order / sizeof order[0]; g++) {
+            ztp_cursor attempt = *c;
+            if (ztp_parse_slow(&attempt, order[g], out)) {
+                *c = attempt;
+                return true;
+            }
+            if (attempt.reason != NULL && (reason == NULL || attempt.fail_pos > fail_pos)) {
+                reason = attempt.reason;
+                fail_pos = attempt.fail_pos;
+            }
+        }
+        c->reason = reason;
+        c->fail_pos = fail_pos;
+        return false;
+    }
 
     /* TemporalTimeString: a date-time with the time required, or a bare
        time. Try the date-time form when the string can start with a year
@@ -538,7 +663,9 @@ static bool ztp_parse_fast(const char *s, size_t n, ztp_parse_goal goal,
     zuf_datetime dt;
     zuf_result r;
 
-    if (goal == ZTP_PARSE_TIME || goal == ZTP_PARSE_ZONED || n == 0) return false;
+    if (goal == ZTP_PARSE_TIME || goal == ZTP_PARSE_ZONED || goal == ZTP_PARSE_ANY ||
+        n == 0)
+        return false;
     if (memchr(s, '[', n) != NULL) return false;
     r = zuf_parse_datetime_opt(s, s + n, &dt, ZUF_DT_EXPANDED_YEAR);
     if (r.status != ZUF_OK || r.ptr != s + n) return false;
@@ -587,31 +714,42 @@ ztp_status ztp_parse_path(ztp_ctx *ctx, size_t index, const char *s, size_t n,
                           ztp_parse_goal goal, int path, ztp_parsed *out,
                           size_t *position)
 {
-    ztp_cursor c = {(const unsigned char *)s, n, 0, NULL, 0};
+    ztp_cursor c = {(const unsigned char *)s, n, 0, NULL, 0, 0};
 
     if (position) *position = 0;
     if (path != ZTP_PARSE_PATH_SLOW && ztp_parse_fast(s, n, goal, out))
         return ZTP_OK;
     if (path == ZTP_PARSE_PATH_FAST)
         return ztp_fail(ctx, ZTP_ERR_TYPE, index, "the fast path does not apply");
-    if (ztp_parse_slow(&c, goal, out)) return ZTP_OK;
+    if (ztp_parse_slow(&c, goal, out)) {
+        if (out->has_calendar && !out->calendar_is_iso && goal != ZTP_PARSE_TIME &&
+            goal != ZTP_PARSE_INSTANT && goal != ZTP_PARSE_ANY)
+            return ztp_fail(ctx, ZTP_ERR_RANGE, index,
+                            "calendar \"%s\" is not supported; only \"iso8601\" is",
+                            out->calendar);
+        return ZTP_OK;
+    }
     if (position) *position = c.fail_pos;
     {
         char shown[41];
         size_t k = n < 40 ? n : 37;
+        ztp_status st;
         memcpy(shown, s, k);
         if (n > 40) memcpy(shown + 37, "...", 3), k = 40;
         shown[k] = '\0';
-        return ztp_fail(ctx, ZTP_ERR_PARSE, index,
+        st = ztp_fail(ctx, ZTP_ERR_PARSE, index,
                         "cannot parse \"%s\" as a %s: %s at byte %lu", shown,
                         goal == ZTP_PARSE_TIME ? "time"
                         : goal == ZTP_PARSE_INSTANT ? "instant"
                         : goal == ZTP_PARSE_YEAR_MONTH ? "year-month"
                         : goal == ZTP_PARSE_MONTH_DAY ? "month-day"
                         : goal == ZTP_PARSE_ZONED ? "zoned date-time"
+                        : goal == ZTP_PARSE_ANY ? "date, time or time zone"
                         : "date or date-time",
                         c.reason ? c.reason : "invalid",
                         (unsigned long)(c.fail_pos + 1));
+        ctx->position = c.fail_pos + 1;
+        return st;
     }
 }
 
@@ -620,4 +758,86 @@ ztp_status ztp_parse(ztp_ctx *ctx, size_t index, const char *s, size_t n,
 {
     return ztp_parse_path(ctx, index, s, n, goal, ZTP_PARSE_PATH_AUTO, out,
                           position);
+}
+
+/* ParseTemporalTimeZoneString: a TimeZoneIdentifier stands for itself;
+   any other string is read as an ISO string, whose time zone annotation,
+   "Z" or UTC offset names the zone (ParseTimeZoneIdentifier then rejects
+   an offset finer than minutes). */
+ztp_status ztp_parse_time_zone_string(ztp_ctx *ctx, size_t index, const char *s,
+                                      size_t n, char *dst)
+{
+    ztp_parsed p;
+
+    if (n > 0 && n + 2 <= ZTP_TZ_ANNOTATION_CAP) {
+        unsigned char buf[ZTP_TZ_ANNOTATION_CAP];
+        ztp_cursor c = {buf, n + 2, 0, NULL, 0, 0};
+        buf[0] = '[';
+        memcpy(buf + 1, s, n);
+        buf[n + 1] = ']';
+        memset(&p, 0, sizeof p);
+        if (ztp_parse_tz_annotation(&c, &p) && ztp_at_end(&c) && !p.tz_critical) {
+            memcpy(dst, s, n);
+            dst[n] = '\0';
+            return ZTP_OK;
+        }
+    }
+    if (ztp_parse(ctx, index, s, n, ZTP_PARSE_ANY, &p, NULL) != ZTP_OK) return ctx->status;
+    if (p.has_tz) {
+        strcpy(dst, p.tz);
+        return ZTP_OK;
+    }
+    if (p.has_z) {
+        strcpy(dst, "UTC");
+        return ZTP_OK;
+    }
+    if (p.has_offset) {
+        int64_t minutes = p.offset_ns / (60 * ZTP_NS_PER_SECOND);
+        int64_t a = minutes < 0 ? -minutes : minutes;
+        if (p.offset_ns % (60 * ZTP_NS_PER_SECOND) != 0)
+            return ztp_fail(ctx, ZTP_ERR_RANGE, index,
+                            "a time zone offset must be a whole number of minutes");
+        dst[0] = p.offset_ns < 0 ? '-' : '+';
+        dst[1] = (char)('0' + a / 600);
+        dst[2] = (char)('0' + a / 60 % 10);
+        dst[3] = ':';
+        dst[4] = (char)('0' + a % 60 / 10);
+        dst[5] = (char)('0' + a % 10);
+        dst[6] = '\0';
+        return ZTP_OK;
+    }
+    return ztp_fail(ctx, ZTP_ERR_RANGE, index,
+                    "the string names no time zone, UTC designator or UTC offset");
+}
+
+/* ParseTemporalCalendarString: the calendar annotation of an ISO string,
+   "iso8601" when it has none; otherwise the string itself, which must be
+   an AnnotationValue. */
+ztp_status ztp_parse_calendar_string(ztp_ctx *ctx, size_t index, const char *s,
+                                     size_t n, char *dst)
+{
+    ztp_ctx scratch;
+    ztp_parsed p;
+    size_t k;
+    bool valid = n > 0;
+
+    ztp_ctx_init(&scratch);
+    if (ztp_parse(&scratch, index, s, n, ZTP_PARSE_ANY, &p, NULL) == ZTP_OK) {
+        strcpy(dst, p.has_calendar ? p.calendar : "iso8601");
+        return ZTP_OK;
+    }
+    for (size_t i = 0; valid && i < n; i++) {
+        int ch = (unsigned char)s[i];
+        if (ch == '-')
+            valid = i > 0 && i + 1 < n && s[i - 1] != '-';
+        else
+            valid = ztp_is_alnum(ch);
+    }
+    if (!valid)
+        return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a calendar identifier",
+                        (int)(n < 40 ? n : 40), s);
+    k = n < ZTP_CALENDAR_CAP - 1 ? n : ZTP_CALENDAR_CAP - 1;
+    memcpy(dst, s, k);
+    dst[k] = '\0';
+    return ZTP_OK;
 }
