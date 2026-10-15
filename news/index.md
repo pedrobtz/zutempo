@@ -2,6 +2,24 @@
 
 ## zutempo 0.0.0.9000
 
+- Checked against test262’s Temporal tests (39,263 cases from 2,715
+  files) and against base R’s offsets for every zone. Fixes from that:
+  the constructors read a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  (`plain_date(z)`, `plain_time(z)`, `plain_date_time(z)`,
+  `instant(z)`); `relative_to = "-271821-04-19"` works;
+  [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
+  and
+  [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
+  on year-months raise a range error when the first of a month is not a
+  valid date; a time zone string whose offset has seconds is an error
+  even when they are zero; and a duration field computed from a large
+  total is the nearest double.
+- Operations on zoned values no longer look for the time zone database
+  on every call: the directory is found once per setting of
+  `zutempo.tzdir` and `TZDIR`, and again after
+  [`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md).
+  Many short calls run several times faster.
 - Conversions with base R’s dates and times:
   [`as.Date()`](https://rdrr.io/r/base/as.Date.html),
   [`as.POSIXct()`](https://rdrr.io/r/base/as.POSIXlt.html) and
