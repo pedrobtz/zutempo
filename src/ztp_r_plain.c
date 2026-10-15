@@ -11,6 +11,7 @@
 #include "ztp_r.h"
 #include "ztp_format.h"
 #include "ztp_parse.h"
+#include "ztp_duration.h"
 #include "ztp_round.h"
 
 #include <math.h>
@@ -755,11 +756,11 @@ SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path)
 
 /* The syntax pass of zutempo_parse(): per element, NA where the string
    parses against the goal (or is NA), else the 1-based byte position and
-   the message of the failure. */
+   the message of the failure. A negative goal is a duration string. */
 SEXP ztp_r_parse_check(SEXP x, SEXP goal)
 {
     R_xlen_t n = Rf_xlength(x);
-    ztp_parse_goal g = (ztp_parse_goal)ztp_r_scalar_int(goal);
+    int g = ztp_r_scalar_int(goal);
     const char *names[] = {"position", "message", ""};
     SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));
     SEXP position = SET_VECTOR_ELT(out, 0, Rf_allocVector(REALSXP, n));
@@ -768,14 +769,18 @@ SEXP ztp_r_parse_check(SEXP x, SEXP goal)
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_ctx ctx;
         ztp_parsed p;
+        ztp_duration d;
         const char *s;
+        ztp_status st;
 
         REAL(position)[i] = NA_REAL;
         SET_STRING_ELT(message, i, NA_STRING);
         if (STRING_ELT(x, i) == NA_STRING) continue;
         s = Rf_translateCharUTF8(STRING_ELT(x, i));
         ztp_ctx_init(&ctx);
-        if (ztp_parse(&ctx, (size_t)i + 1, s, strlen(s), g, &p, NULL) == ZTP_OK) continue;
+        st = g < 0 ? ztp_duration_parse(&ctx, (size_t)i + 1, s, strlen(s), &d, NULL)
+                   : ztp_parse(&ctx, (size_t)i + 1, s, strlen(s), (ztp_parse_goal)g, &p, NULL);
+        if (st == ZTP_OK) continue;
         if (ctx.position > 0) REAL(position)[i] = (double)ctx.position;
         SET_STRING_ELT(message, i, Rf_mkCharCE(ctx.msg, CE_UTF8));
     }
