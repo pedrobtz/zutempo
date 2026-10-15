@@ -1,0 +1,109 @@
+---
+title: "Durations"
+---
+
+```{r, include = FALSE}
+library(zutempo)
+has_tzdb <- !is.na(zutempo_info()[["tzdir"]])
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r, message = FALSE}
+library(zutempo)
+```
+
+A `duration()` is an amount of time in ten fields, from years to
+nanoseconds, as Temporal's `Duration` has them. Each field is a whole
+number, and all of them share a sign.
+
+## Building them
+
+```{r}
+duration(hours = 1, minutes = 30)
+duration("P1Y2M3DT4H5M6.789S")
+duration(days = -2)
+duration(as.difftime(90, units = "mins"))
+```
+
+The fields stay as given; nothing is balanced on the way in:
+
+```{r}
+d <- duration(minutes = 90)
+d
+minutes(d)
+hours(d)
+```
+
+## Balancing and rounding
+
+`temporal_round()` balances a duration into larger units and rounds it.
+Hours, minutes and smaller units have fixed lengths, so they need nothing
+else:
+
+```{r}
+temporal_round(duration(minutes = 90), largest_unit = "hour")
+temporal_round(duration(seconds = 100000), largest_unit = "day")
+temporal_round(duration("PT1H23M45.6S"), smallest_unit = "minute")
+temporal_round(duration("PT1H23M45.6S"), smallest_unit = "minute", rounding_mode = "floor")
+```
+
+## Calendar units need a reference
+
+A month is 28 to 31 days and a year 365 or 366, so a duration with
+years, months or weeks only has a length relative to a date. Arithmetic
+that needs that length takes `relative_to`:
+
+```{r}
+try(temporal_total(duration(months = 1), "day"))
+temporal_total(duration(months = 1), "day", relative_to = "2026-02-01")
+temporal_total(duration(months = 1), "day", relative_to = "2026-03-01")
+temporal_round(duration(days = 45), largest_unit = "month", relative_to = "2026-01-31")
+```
+
+With a zoned value as `relative_to`, a day follows the zone's clock
+changes, so 25 hours from noon before New York's spring change is a day
+and two hours:
+
+```{r, eval = has_tzdb}
+temporal_round(
+  duration(hours = 25),
+  largest_unit = "day",
+  relative_to = zoned_date_time("2026-03-07T12:00[America/New_York]")
+)
+```
+
+## Adding and comparing
+
+```{r}
+temporal_add(duration(hours = 1), "PT45M")
+temporal_negated(duration(hours = 1))
+temporal_abs(duration(minutes = -5))
+blank(duration())
+```
+
+`==` compares fields, so 90 minutes and an hour and a half are different
+durations; `<`, `sort()` and `duration_compare()` compare lengths:
+
+```{r}
+duration("PT90M") == duration("PT1H30M")
+duration_compare("PT90M", "PT1H30M")
+duration("PT90M") < duration("PT2H")
+sort(duration(c("PT2H", "PT30M", "P1D")))
+```
+
+With years, months or weeks the length depends on the date, so
+`duration_compare()` takes `relative_to`:
+
+```{r}
+duration_compare("P1M", "P30D", relative_to = "2026-02-01")
+duration_compare("P1M", "P30D", relative_to = "2026-03-01")
+```
+
+## Totals and strings
+
+```{r}
+temporal_total(duration("P1DT12H"), "hour")
+temporal_to_difftime(duration("PT1H30M"))
+temporal_to_string(duration("PT1.987654321S"), fractional_second_digits = 2)
+temporal_to_string(duration("PT1.5S"), smallest_unit = "second", rounding_mode = "halfExpand")
+```

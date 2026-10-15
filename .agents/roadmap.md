@@ -993,4 +993,7 @@ knows base R finds the way in.
    call; it changes stage 10's work and exit criteria.
 3. **Is a vignette part of 0.1.0?** The design does not mention one.
    Stage 12 includes a single short vignette; drop it from the stage if
-   not wanted. Decided in stage 12: kept, `vignette("zutempo")`.
+   not wanted. Decided in stage 12: kept, `vignette("zutempo")`; then,
+   on 2026-10-15, the maintainer made every vignette a pkgdown article
+   (`vignettes/articles/`, build-ignored): "Get started" and five articles
+   on the main usage. The package ships no vignette.

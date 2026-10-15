@@ -297,6 +297,9 @@ a test, roxygen documentation and a `NEWS.md` entry.
 
 - roxygen comments are the source. Never edit `man/` or `NAMESPACE` by hand.
 - Edit `README.Rmd`, not the generated `README.md` (from stage 12).
+- Long-form documentation is pkgdown articles under `vignettes/articles/`,
+  which R CMD build ignores: the package ships no vignette. Each article
+  runs its zone examples only where a time zone database is found.
 - Keep prose simple and short. One idea per sentence. British spelling.
 - Wrap roxygen text at 80 characters and run `air format .` on R sources.
 - Use `lower_snake_case`. R names follow design §5: constructors named after
