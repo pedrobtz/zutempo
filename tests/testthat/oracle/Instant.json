@@ -1,0 +1,886 @@
+{
+  "type": "Instant",
+  "engine": "temporal-polyfill 1.0.6",
+  "tz": "2025b",
+  "cases": [
+    {
+      "id": "from-string-z",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30:45.123456789Z"
+      ],
+      "result": {
+        "string": "2026-01-31T12:30:45.123456789Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769862645123,
+          "epochNanoseconds": "1769862645123456789"
+        }
+      }
+    },
+    {
+      "id": "from-string-minutes",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30Z"
+      ],
+      "result": {
+        "string": "2026-01-31T12:30:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769862600000,
+          "epochNanoseconds": "1769862600000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-offset",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30+05:30"
+      ],
+      "result": {
+        "string": "2026-01-31T07:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769842800000,
+          "epochNanoseconds": "1769842800000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-negative-zero-offset",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30-00:00"
+      ],
+      "result": {
+        "string": "2026-01-31T12:30:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769862600000,
+          "epochNanoseconds": "1769862600000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-no-offset",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-date-only",
+      "op": "from",
+      "args": [
+        "2026-01-31"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-subminute-offset",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30+05:30:15"
+      ],
+      "result": {
+        "string": "2026-01-31T06:59:45Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769842785000,
+          "epochNanoseconds": "1769842785000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-fraction-offset",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30+05:30:15.5"
+      ],
+      "result": {
+        "string": "2026-01-31T06:59:44.5Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769842784500,
+          "epochNanoseconds": "1769842784500000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-lowercase-z",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30z"
+      ],
+      "result": {
+        "string": "2026-01-31T12:30:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769862600000,
+          "epochNanoseconds": "1769862600000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-max",
+      "op": "from",
+      "args": [
+        "+275760-09-13T00:00Z"
+      ],
+      "result": {
+        "string": "+275760-09-13T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 8640000000000000,
+          "epochNanoseconds": "8640000000000000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-past-max",
+      "op": "from",
+      "args": [
+        "+275760-09-13T00:00:00.000000001Z"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-min",
+      "op": "from",
+      "args": [
+        "-271821-04-20T00:00Z"
+      ],
+      "result": {
+        "string": "-271821-04-20T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": -8640000000000000,
+          "epochNanoseconds": "-8640000000000000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-past-min",
+      "op": "from",
+      "args": [
+        "-271821-04-19T23:59:59.999999999Z"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-max-via-offset",
+      "op": "from",
+      "args": [
+        "+275760-09-13T01:00+01:00"
+      ],
+      "result": {
+        "string": "+275760-09-13T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 8640000000000000,
+          "epochNanoseconds": "8640000000000000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-past-max-via-offset",
+      "op": "from",
+      "args": [
+        "+275760-09-14T00:00+01:00"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-min-via-offset",
+      "op": "from",
+      "args": [
+        "-271821-04-19T23:00-01:00"
+      ],
+      "result": {
+        "string": "-271821-04-20T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": -8640000000000000,
+          "epochNanoseconds": "-8640000000000000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-basic",
+      "op": "from",
+      "args": [
+        "20260131T123045Z"
+      ],
+      "result": {
+        "string": "2026-01-31T12:30:45Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769862645000,
+          "epochNanoseconds": "1769862645000000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-comma",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30:45,5Z"
+      ],
+      "result": {
+        "string": "2026-01-31T12:30:45.5Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769862645500,
+          "epochNanoseconds": "1769862645500000000"
+        }
+      }
+    },
+    {
+      "id": "from-string-leap-second",
+      "op": "from",
+      "args": [
+        "2026-01-31T12:30:60Z"
+      ],
+      "result": {
+        "string": "2026-01-31T12:30:59Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 1769862659000,
+          "epochNanoseconds": "1769862659000000000"
+        }
+      }
+    },
+    {
+      "id": "from-epoch-ms-zero",
+      "op": "fromEpochMilliseconds",
+      "args": [
+        0
+      ],
+      "result": {
+        "string": "1970-01-01T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 0,
+          "epochNanoseconds": "0"
+        }
+      }
+    },
+    {
+      "id": "from-epoch-ms-negative",
+      "op": "fromEpochMilliseconds",
+      "args": [
+        -1
+      ],
+      "result": {
+        "string": "1969-12-31T23:59:59.999Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": -1,
+          "epochNanoseconds": "-1000000"
+        }
+      }
+    },
+    {
+      "id": "from-epoch-ms-max",
+      "op": "fromEpochMilliseconds",
+      "args": [
+        8640000000000000
+      ],
+      "result": {
+        "string": "+275760-09-13T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 8640000000000000,
+          "epochNanoseconds": "8640000000000000000000"
+        }
+      }
+    },
+    {
+      "id": "from-epoch-ms-past-max",
+      "op": "fromEpochMilliseconds",
+      "args": [
+        8640000000000001
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-epoch-ms-fraction",
+      "op": "fromEpochMilliseconds",
+      "args": [
+        1.5
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "compare-less",
+      "op": "compare",
+      "args": [
+        "1969-12-31T23:59:59.5Z",
+        "1970-01-01T00:00Z"
+      ],
+      "result": -1
+    },
+    {
+      "id": "compare-equal-offsets",
+      "op": "compare",
+      "args": [
+        "1970-01-01T00:00Z",
+        "1970-01-01T05:30+05:30"
+      ],
+      "result": 0
+    },
+    {
+      "id": "compare-greater",
+      "op": "compare",
+      "args": [
+        "1970-01-01T00:00:00.000000001Z",
+        "1970-01-01T00:00Z"
+      ],
+      "result": 1
+    },
+    {
+      "id": "equals-offset-form",
+      "op": "equals",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1969-12-31T18:59:59.5-05:00"
+      ],
+      "result": true
+    },
+    {
+      "id": "equals-false",
+      "op": "equals",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1970-01-01T00:00Z"
+      ],
+      "result": false
+    },
+    {
+      "id": "round-second-floor",
+      "op": "round",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "smallestUnit": "second",
+          "roundingMode": "floor"
+        }
+      ],
+      "result": {
+        "string": "1969-12-31T23:59:59Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": -1000,
+          "epochNanoseconds": "-1000000000"
+        }
+      }
+    },
+    {
+      "id": "round-second-ceil",
+      "op": "round",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "smallestUnit": "second",
+          "roundingMode": "ceil"
+        }
+      ],
+      "result": {
+        "string": "1970-01-01T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 0,
+          "epochNanoseconds": "0"
+        }
+      }
+    },
+    {
+      "id": "round-second-half-even",
+      "op": "round",
+      "on": "1969-12-31T23:59:58.5Z",
+      "args": [
+        {
+          "smallestUnit": "second",
+          "roundingMode": "halfEven"
+        }
+      ],
+      "result": {
+        "string": "1969-12-31T23:59:58Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": -2000,
+          "epochNanoseconds": "-2000000000"
+        }
+      }
+    },
+    {
+      "id": "round-24-hours",
+      "op": "round",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "smallestUnit": "hour",
+          "roundingIncrement": 24
+        }
+      ],
+      "result": {
+        "string": "1970-01-01T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 0,
+          "epochNanoseconds": "0"
+        }
+      }
+    },
+    {
+      "id": "round-25-hours",
+      "op": "round",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "smallestUnit": "hour",
+          "roundingIncrement": 25
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-1440-minutes",
+      "op": "round",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "smallestUnit": "minute",
+          "roundingIncrement": 1440
+        }
+      ],
+      "result": {
+        "string": "1970-01-01T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 0,
+          "epochNanoseconds": "0"
+        }
+      }
+    },
+    {
+      "id": "round-day",
+      "op": "round",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "day"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-7-hours",
+      "op": "round",
+      "on": "2026-01-31T12:30Z",
+      "args": [
+        {
+          "smallestUnit": "hour",
+          "roundingIncrement": 7
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-past-max",
+      "op": "round",
+      "on": "+275760-09-12T23:59:59.9Z",
+      "args": [
+        "second"
+      ],
+      "result": {
+        "string": "+275760-09-13T00:00:00Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 8640000000000000,
+          "epochNanoseconds": "8640000000000000000000"
+        }
+      }
+    },
+    {
+      "id": "to-string",
+      "op": "toString",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [],
+      "result": "1969-12-31T23:59:59.5Z"
+    },
+    {
+      "id": "to-string-offset-zone",
+      "op": "toString",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "timeZone": "+05:30"
+        }
+      ],
+      "result": "1970-01-01T05:29:59.5+05:30"
+    },
+    {
+      "id": "to-string-utc-zone",
+      "op": "toString",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "timeZone": "UTC"
+        }
+      ],
+      "result": "1969-12-31T23:59:59.5+00:00"
+    },
+    {
+      "id": "to-string-basic-offset-zone",
+      "op": "toString",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "timeZone": "+0530"
+        }
+      ],
+      "result": "1970-01-01T05:29:59.5+05:30"
+    },
+    {
+      "id": "to-string-hour-offset-zone",
+      "op": "toString",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "timeZone": "+05"
+        }
+      ],
+      "result": "1970-01-01T04:59:59.5+05:00"
+    },
+    {
+      "id": "to-string-subminute-zone",
+      "op": "toString",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        {
+          "timeZone": "+05:30:15"
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-string-max",
+      "op": "toString",
+      "on": "+275760-09-13T00:00Z",
+      "args": [],
+      "result": "+275760-09-13T00:00:00Z"
+    },
+    {
+      "id": "to-string-max-offset",
+      "op": "toString",
+      "on": "+275760-09-13T00:00Z",
+      "args": [
+        {
+          "timeZone": "+01:00"
+        }
+      ],
+      "result": "+275760-09-13T01:00:00+01:00"
+    },
+    {
+      "id": "to-string-min-negative-offset",
+      "op": "toString",
+      "on": "-271821-04-20T00:00Z",
+      "args": [
+        {
+          "timeZone": "-01:00"
+        }
+      ],
+      "result": "-271821-04-19T23:00:00-01:00"
+    },
+    {
+      "id": "add-hour",
+      "op": "add",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "PT1H"
+      ],
+      "result": {
+        "string": "1970-01-01T00:59:59.5Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 3599500,
+          "epochNanoseconds": "3599500000000"
+        }
+      }
+    },
+    {
+      "id": "add-day-rejected",
+      "op": "add",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "P1D"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "add-24-hours",
+      "op": "add",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "PT24H"
+      ],
+      "result": {
+        "string": "1970-01-01T23:59:59.5Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": 86399500,
+          "epochNanoseconds": "86399500000000"
+        }
+      }
+    },
+    {
+      "id": "subtract-half-second",
+      "op": "subtract",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "PT0.5S"
+      ],
+      "result": {
+        "string": "1969-12-31T23:59:59Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": -1000,
+          "epochNanoseconds": "-1000000000"
+        }
+      }
+    },
+    {
+      "id": "add-past-max",
+      "op": "add",
+      "on": "+275760-09-13T00:00Z",
+      "args": [
+        "PT1S"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "until-half-second",
+      "op": "until",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1970-01-01T00:00:00Z"
+      ],
+      "result": {
+        "string": "PT0.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-default-seconds",
+      "op": "until",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1970-01-02T00:00:00Z"
+      ],
+      "result": {
+        "string": "PT86400.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 86400,
+          "milliseconds": 500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-hours",
+      "op": "until",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1970-01-02T00:00:00Z"
+      ],
+      "options": {
+        "largestUnit": "hour"
+      },
+      "result": {
+        "string": "PT24H0.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 24,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-days-rejected",
+      "op": "until",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1970-01-02T00:00:00Z"
+      ],
+      "options": {
+        "largestUnit": "day"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "since-hours",
+      "op": "since",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1970-01-02T00:00:00Z"
+      ],
+      "options": {
+        "largestUnit": "hour"
+      },
+      "result": {
+        "string": "-PT24H0.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": -24,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": -500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-round-hour",
+      "op": "until",
+      "on": "1969-12-31T23:59:59.5Z",
+      "args": [
+        "1970-01-02T00:00:00Z"
+      ],
+      "options": {
+        "smallestUnit": "hour",
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "PT24H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 24,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-whole-range",
+      "op": "until",
+      "on": "-271821-04-20T00:00Z",
+      "args": [
+        "+275760-09-13T00:00Z"
+      ],
+      "result": {
+        "string": "PT17280000000000S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 17280000000000,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-whole-range-hours",
+      "op": "until",
+      "on": "-271821-04-20T00:00Z",
+      "args": [
+        "+275760-09-13T00:00Z"
+      ],
+      "options": {
+        "largestUnit": "hour"
+      },
+      "result": {
+        "string": "PT4800000000H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 4800000000,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "epoch-fields-negative",
+      "op": "from",
+      "args": [
+        "1969-12-31T23:59:59.999999999Z"
+      ],
+      "result": {
+        "string": "1969-12-31T23:59:59.999999999Z",
+        "type": "Instant",
+        "fields": {
+          "epochMilliseconds": -1,
+          "epochNanoseconds": "-1"
+        }
+      }
+    }
+  ]
+}
