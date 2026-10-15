@@ -844,10 +844,11 @@ knows base R finds the way in.
   containers, both builds) as the test environments; no win-builder,
   macOS builder or R-hub.
 - The `pkg-cran-review` skill run, every finding resolved.
-- The long gctorture run (`gh workflow run gctorture.yaml`, step 20 over
-  the sampled oracle) on the release candidate, every finding fixed. It
-  runs here once rather than on every stage (deviation of 2026-10-15
-  below).
+- The full CI run on the release candidate, every finding fixed: the
+  `full-ci` label on its pull request runs valgrind, gctorture at step 20
+  over the sampled oracle and thirty minutes of each fuzz target, beside
+  the full R CMD check legs. It runs here once rather than on every stage
+  (deviation of 2026-10-15 below).
 - `urlchecker::url_check()` and `spelling::spell_check_package()` clean.
 - The §15 acceptance criteria re-verified on the release commit and
   recorded in the pull request.
@@ -857,8 +858,8 @@ knows base R finds the way in.
 - A full-profile r-actions run (`R-CMD-check`, `native-checks`,
   `hardening`, `coverage`) is green on the release commit, with `zufast`
   0.1.1 installed from CRAN and no `Remotes:` field.
-- The long gctorture run (`gctorture.yaml`) is green on the release
-  commit.
+- The full run of the `full-ci` label (valgrind, the long gctorture, the
+  long fuzz) is green on the release commit.
 - `R CMD check --as-cran` shows 0 errors, 0 warnings and only the "New
   submission" note, natively and with `ZUF_NO_INT128`.
 - `test-members.R` has an empty `pending` vector (§15 criterion 3).
@@ -869,13 +870,13 @@ knows base R finds the way in.
 
 **Deviations (2026-10-15).**
 - The long gctorture run (step 20) took 89 to 99 minutes of its
-  120-minute budget by stage 8 and ran on every push to `main` and every
-  `full-ci` pull request. From stage 9 on, every run is the quick one
-  (step 500), and the "gctorture clean" exit criterion of stages 10 to 12
-  means the quick run. The long one runs here, once, over a sample of the
-  oracle (one case per shape), and on demand or with the `gctorture`
-  label when a change to the glue needs it sooner. A PROTECT bug it finds
-  then is fixed then.
+  120-minute budget by stage 8, and valgrind and the nightly fuzz ran
+  long too. From stage 10 on, every run is the quick one, each job under
+  five minutes: gctorture at step 500 over a sample of the oracle (one
+  case per shape), valgrind skipped, two minutes of fuzzing per target.
+  The "CI green on every leg" and "gctorture clean" criteria of stages 10
+  to 12 mean the quick run. The full run happens here, once, with the
+  `full-ci` label; what it finds is fixed then.
 
 ## After 0.1.0
 

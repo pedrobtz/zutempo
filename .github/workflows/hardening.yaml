@@ -1,9 +1,12 @@
+# Two minutes per target on every pull request and push to main; thirty
+# with the `full-ci` label or on demand, the long run before submission.
+# The corpus cache is what makes the short runs add up to one campaign.
 on:
+  push:
+    branches: [main, master]
   pull_request:
-  schedule:
-    # A long run nightly. The corpus cache is what makes the short PR runs
-    # and this one add up to a single campaign.
-    - cron: "0 3 * * *"
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
 
 name: hardening
 
@@ -24,7 +27,7 @@ jobs:
       seed-corpus: tests/testthat/tzdata/slim
       github-packages: pedrobtz/zufast
       cflags: -g -O1 -fno-omit-frame-pointer -I.github-packages/zufast/inst/include
-      max-total-time: ${{ github.event_name == 'schedule' && 1800 || 120 }}
+      max-total-time: ${{ (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'full-ci')) && 1800 || 120 }}
 
   fuzz-rfc9557:
     uses: pedrobtz/r-actions/.github/workflows/fuzz.yml@v1
@@ -38,7 +41,7 @@ jobs:
       seed-corpus: tools/fuzz/corpus/rfc9557
       github-packages: pedrobtz/zufast
       cflags: -g -O1 -fno-omit-frame-pointer -I.github-packages/zufast/inst/include
-      max-total-time: ${{ github.event_name == 'schedule' && 1800 || 120 }}
+      max-total-time: ${{ (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'full-ci')) && 1800 || 120 }}
 
   fuzz-duration:
     uses: pedrobtz/r-actions/.github/workflows/fuzz.yml@v1
@@ -52,4 +55,4 @@ jobs:
       seed-corpus: tools/fuzz/corpus/duration
       github-packages: pedrobtz/zufast
       cflags: -g -O1 -fno-omit-frame-pointer -I.github-packages/zufast/inst/include
-      max-total-time: ${{ github.event_name == 'schedule' && 1800 || 120 }}
+      max-total-time: ${{ (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'full-ci')) && 1800 || 120 }}
