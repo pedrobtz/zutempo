@@ -23,18 +23,18 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 3. The five plain types exist:
-`plain_date()`, `plain_time()`, `plain_date_time()`, `plain_year_month()`
-and `plain_month_day()`, with their fields, `with`, `compare`, `equals`,
-`round` (time types), conversions among them and default `toString()`;
-strings are read without annotations (stage 9 adds them). The engine has
-the ISO date and time records (`src/ztp_iso.c`), rounding
-(`src/ztp_round.c`), formatting (`src/ztp_format.c`) and the parser with
-its four goals and the zufast fast path (`src/ztp_parse.c`); the glue for
-the plain types is `src/ztp_r_plain.c`. No `Duration`, `Instant`, zone or
-`ZonedDateTime` yet; arithmetic (`add`, `subtract`, `since`, `until`)
-arrives in stage 4. The oracle has cases for the five plain types. See the
-roadmap's stage table.
+Verified 2026-10-15: stages 0 to 4. The five plain types and `duration()`
+exist with every member that needs no time zone: fields, `with`, `compare`,
+`equals`, `round`, `add`, `subtract`, `since`, `until`, `total`, the
+conversions among the plain types and default `toString()`; strings are
+read without annotations (stage 9 adds them). The engine has the ISO
+records (`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
+(`src/ztp_format.c`), the parser with its goals and the zufast fast path
+(`src/ztp_parse.c`), durations on 128-bit time durations
+(`src/ztp_duration.c`) and calendar arithmetic with relative rounding
+(`src/ztp_relative.c`); the glue is `src/ztp_r_plain.c` and
+`src/ztp_r_duration.c`. No `Instant`, zone or `ZonedDateTime` yet. The
+oracle covers the six types. See the roadmap's stage table.
 
 ## Stage tracking
 
@@ -165,6 +165,17 @@ Design §4 is the reference. The layers, top down:
   needs its own `NEWS.md` entry.
 - **The suite must build and pass with `ZUF_NO_INT128`** as well as with
   `__int128`. CI runs both.
+- **The pinned specification has two steps that cannot be followed
+  literally** (recorded in the roadmap under stage 4): `ISODateSurpasses`
+  returns false when `months` is 0, which would leave `CalendarDateUntil`'s
+  day loop without an exit, and `ComputeNudgeWindow` takes the origin when
+  `r1` is 0, which drops the larger units of the start duration. The
+  engine does what the reference engines do; `src/ztp_relative.c` comments
+  both places.
+- **A list-backed class needs `names()` to return `NULL`.** The fields are
+  the list's names; base R and vctrs read `names()` as element names, and
+  `rbind()` and `vec_c()` break without the method. `duration()` is the
+  example; `ZonedDateTime` will be the next.
 - **Index lists with `[[`, never `$`.** `$` partial-matches names, so
   `fields$month` finds `month_code` when `month` is absent. This bit once
   in `temporal_with()`.
@@ -197,6 +208,10 @@ Design §4 is the reference. The layers, top down:
   constructor exists. `test-oracle-<type>.R` loops the cases through it.
 - **`test-members.R` is the member ledger.** When a stage exports a member,
   remove its name from `pending` there; the test fails otherwise.
+- **Keep the gctorture job inside its 120-minute budget.** Its cost grows
+  with the number of expectations, not test blocks: an oracle file runs
+  all its cases in one `test_that()` and compares fields in one
+  `expect_equal()`. Add cases freely; add expectations with care.
 - **Keep the suite inside the CRAN time budget.** Not yet measured.
 
 ## Definition of done

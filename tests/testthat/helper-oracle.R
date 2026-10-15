@@ -93,7 +93,11 @@ oracle_run <- function(type, case) {
   splice <- function(args) {
     out <- list()
     for (a in args) {
-      if (is.list(a)) out <- c(out, a) else out <- c(out, list(a))
+      if (is.list(a) && is.null(oldClass(a))) {
+        out <- c(out, a)
+      } else {
+        out <- c(out, list(a))
+      }
     }
     out
   }
@@ -116,47 +120,82 @@ oracle_run <- function(type, case) {
   ) {
     args[[1L]] <- list(smallest_unit = args[[1L]])
   }
+  if (
+    identical(case[["op"]], "total") && length(args) && is.character(args[[1L]])
+  ) {
+    args[[1L]] <- list(unit = args[[1L]])
+  }
   do.call(fn, c(list(x), splice(args), options))
 }
 
-# Compare an R value with the engine's description of its result.
-oracle_expect_result <- function(value, result) {
+# Compare an R value with the engine's description of its result. `id`
+# names the case in any failure. The fields are compared in one go: each
+# expectation costs allocations, and the gctorture job pays for every one.
+oracle_expect_result <- function(value, result, id) {
   if (!is.list(result)) {
     # A number, string or boolean.
-    if (is.logical(result)) {
-      expect_identical(value, result)
-    } else if (is.numeric(result)) {
-      expect_equal(as.numeric(value), result)
+    if (is.numeric(result)) {
+      expect_equal(as.numeric(value), result, info = id)
     } else {
-      expect_identical(value, result)
+      expect_identical(value, result, info = id)
     }
     return(invisible())
   }
-  expect_identical(oracle_fn("temporal_to_string")(value), result[["string"]])
+  expect_identical(
+    oracle_fn("temporal_to_string")(value),
+    result[["string"]],
+    info = id
+  )
   if (!is.null(result[["type"]])) {
     expect_s3_class(value, paste0("zutempo_", oracle_snake(result[["type"]])))
   }
-  for (name in names(result[["fields"]])) {
-    accessor <- oracle_fn(oracle_snake(name))
-    expected <- result[["fields"]][[name]]
-    if (is.null(expected)) {
-      # JavaScript's undefined (era and eraYear in the ISO calendar).
-      expect_true(is.na(accessor(value)), info = name)
-    } else {
-      expect_equal(accessor(value), expected, info = name, ignore_attr = TRUE)
-    }
+  fields <- result[["fields"]]
+  if (length(fields)) {
+    actual <- lapply(names(fields), function(name) {
+      oracle_fn(oracle_snake(name))(value)
+    })
+    names(actual) <- names(fields)
+    # JavaScript's undefined (era and eraYear in the ISO calendar) is NA.
+    undefined <- vapply(fields, is.null, logical(1L))
+    expect_true(all(is.na(unlist(actual[undefined]))), info = id)
+    expect_equal(
+      lapply(actual[!undefined], as.vector),
+      fields[!undefined],
+      info = id,
+      ignore_attr = TRUE
+    )
   }
   invisible()
 }
 
+# Check one case: the condition class it throws, or its result.
 oracle_check <- function(type, case) {
-  oracle_skip_until_built(type)
+  id <- case[["id"]]
   if (!is.null(case[["throws"]])) {
     expect_error(
       oracle_run(type, case),
-      class = oracle_error_class(case[["throws"]])
+      class = oracle_error_class(case[["throws"]]),
+      info = id
     )
     return(invisible())
   }
-  oracle_expect_result(oracle_run(type, case), case[["result"]])
+  oracle_expect_result(oracle_run(type, case), case[["result"]], id)
+}
+
+# Run every case of a type inside one test_that() block: one block per
+# type keeps testthat's per-block cost out of the gctorture job, which
+# forces a collection every few allocations. An error in a case becomes
+# a failure naming it, and the rest of the file still runs.
+oracle_run_cases <- function(type) {
+  oracle_skip_until_built(type)
+  cases <- oracle_cases(type)
+  for (case in cases) {
+    tryCatch(
+      oracle_check(type, case),
+      error = function(e) {
+        fail(sprintf("%s: %s", case[["id"]], conditionMessage(e)))
+      }
+    )
+  }
+  invisible(length(cases))
 }

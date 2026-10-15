@@ -1297,6 +1297,396 @@
       }
     },
     {
+      "id": "add-wraps",
+      "op": "add",
+      "on": "23:00",
+      "args": [
+        "PT2H"
+      ],
+      "result": {
+        "string": "01:00:00",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 1,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "subtract-wraps",
+      "op": "subtract",
+      "on": "00:30",
+      "args": [
+        "PT1H"
+      ],
+      "result": {
+        "string": "23:30:00",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 23,
+          "minute": 30,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "add-day-ignored",
+      "op": "add",
+      "on": "12:00",
+      "args": [
+        "P1D"
+      ],
+      "result": {
+        "string": "12:00:00",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 12,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "add-month-ignored",
+      "op": "add",
+      "on": "12:00",
+      "args": [
+        "P1M"
+      ],
+      "result": {
+        "string": "12:00:00",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 12,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "add-nanosecond",
+      "op": "add",
+      "on": "12:00",
+      "args": [
+        {
+          "$type": "Duration",
+          "value": "PT0.000000001S"
+        }
+      ],
+      "result": {
+        "string": "12:00:00.000000001",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 12,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 1
+        }
+      }
+    },
+    {
+      "id": "add-huge",
+      "op": "add",
+      "on": "12:00",
+      "args": [
+        "PT9007199254740991S"
+      ],
+      "result": {
+        "string": "19:36:31",
+        "type": "PlainTime",
+        "fields": {
+          "hour": 19,
+          "minute": 36,
+          "second": 31,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "until-default",
+      "op": "until",
+      "on": "12:00",
+      "args": [
+        "13:30"
+      ],
+      "result": {
+        "string": "PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-backwards",
+      "op": "until",
+      "on": "13:30",
+      "args": [
+        "12:00"
+      ],
+      "result": {
+        "string": "-PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": -1,
+          "minutes": -30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "since-default",
+      "op": "since",
+      "on": "12:00",
+      "args": [
+        "13:30"
+      ],
+      "result": {
+        "string": "-PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": -1,
+          "minutes": -30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-largest-minute",
+      "op": "until",
+      "on": "12:00",
+      "args": [
+        "13:30"
+      ],
+      "options": {
+        "largestUnit": "minute"
+      },
+      "result": {
+        "string": "PT90M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 90,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-smallest-hour-trunc",
+      "op": "until",
+      "on": "12:00",
+      "args": [
+        "13:30"
+      ],
+      "options": {
+        "smallestUnit": "hour"
+      },
+      "result": {
+        "string": "PT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-smallest-hour-half",
+      "op": "until",
+      "on": "12:00",
+      "args": [
+        "13:30"
+      ],
+      "options": {
+        "smallestUnit": "hour",
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "PT2H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 2,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-largest-day",
+      "op": "until",
+      "on": "12:00",
+      "args": [
+        "13:30"
+      ],
+      "options": {
+        "largestUnit": "day"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "until-nanoseconds",
+      "op": "until",
+      "on": "12:00:00.5",
+      "args": [
+        "12:00:01"
+      ],
+      "options": {
+        "largestUnit": "nanosecond"
+      },
+      "result": {
+        "string": "PT0.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 500000000,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-whole-day-nanoseconds",
+      "op": "until",
+      "on": "00:00",
+      "args": [
+        "23:59:59.999999999"
+      ],
+      "options": {
+        "largestUnit": "nanosecond"
+      },
+      "result": {
+        "string": "PT86399.999999999S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 86399999999999,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "since-increment-15-minutes",
+      "op": "since",
+      "on": "13:00",
+      "args": [
+        "12:20"
+      ],
+      "options": {
+        "smallestUnit": "minute",
+        "roundingIncrement": 15,
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "PT45M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 45,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
       "id": "to-string",
       "op": "toString",
       "on": "12:30:45.5",

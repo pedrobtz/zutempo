@@ -6,23 +6,13 @@
 
 test_that("every in-scope member has an exported function, or is pending", {
   pending <- c(
-    "blank",
-    "days",
-    "duration",
-    "duration_compare",
     "epoch_milliseconds",
     "epoch_nanoseconds",
-    "hours",
     "hours_in_day",
     "instant",
     "instant_compare",
     "instant_from_epoch_milliseconds",
     "instant_from_epoch_nanoseconds",
-    "microseconds",
-    "milliseconds",
-    "minutes",
-    "months",
-    "nanoseconds",
     "now_instant",
     "now_plain_date_iso",
     "now_plain_date_time_iso",
@@ -31,24 +21,13 @@ test_that("every in-scope member has an exported function, or is pending", {
     "now_zoned_date_time_iso",
     "offset",
     "offset_nanoseconds",
-    "seconds",
-    "sign",
-    "temporal_abs",
-    "temporal_add",
     "temporal_get_time_zone_transition",
-    "temporal_negated",
-    "temporal_since",
     "temporal_start_of_day",
-    "temporal_subtract",
     "temporal_to_instant",
     "temporal_to_zoned_date_time",
     "temporal_to_zoned_date_time_iso",
-    "temporal_total",
-    "temporal_until",
     "temporal_with_time_zone",
     "time_zone_id",
-    "weeks",
-    "years",
     "zoned_date_time",
     "zoned_date_time_compare"
   )
@@ -62,6 +41,22 @@ test_that("every in-scope member has an exported function, or is pending", {
   # The pending list names only real members, each once.
   expect_identical(setdiff(pending, in_scope), character())
   expect_identical(anyDuplicated(pending), 0L)
+  # Members whose R name is a base R generic are provided as S3 methods
+  # through a group generic, not as exports (design 5: `sign(x)` on a
+  # duration dispatches through the Math group).
+  through_group <- c(sign = "Math")
+  for (name in intersect(names(through_group), in_scope)) {
+    expect_false(
+      is.null(getS3method(
+        through_group[[name]],
+        "zutempo_duration",
+        optional = TRUE
+      )),
+      info = name
+    )
+  }
+  in_scope <- setdiff(in_scope, names(through_group))
+  pending <- setdiff(pending, names(through_group))
   # Every member that is not pending is exported.
   expect_identical(setdiff(setdiff(in_scope, pending), exports), character())
   # A member that has been built is no longer pending.

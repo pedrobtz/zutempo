@@ -25,7 +25,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 1 | [Engine scaffold, pinned specification and oracle](#stage-1--engine-scaffold-pinned-specification-and-oracle) | [#4](https://github.com/pedrobtz/zutempo/issues/4) | [#20](https://github.com/pedrobtz/zutempo/pull/20) | 2026-10-15 |
 | 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | [#21](https://github.com/pedrobtz/zutempo/pull/21) | 2026-10-15 |
 | 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | [#22](https://github.com/pedrobtz/zutempo/pull/22) | 2026-10-15 |
-| 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | | |
+| 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | [#23](https://github.com/pedrobtz/zutempo/pull/23) | 2026-10-15 |
 | 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | | |
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | | |
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | | |
@@ -355,6 +355,37 @@ zone, and the five plain types gain `add`, `subtract`, `since` and
   `relative_to` behaviour (stage 8).
 - A `Duration` built from milliseconds beyond 2⁵³ that are exactly
   representable keeps its value through normalisation in both builds.
+
+**Deviations (2026-10-15).**
+- Two steps of the pinned specification are not followed literally, since
+  taken as written they do not compute what the reference engines (and
+  test262) expect: `ISODateSurpasses` step "If months = 0, return false"
+  leaves `CalendarDateUntil`'s day loop without an exit when no months are
+  added, and `ComputeNudgeWindow` step "If r1 = 0, let startEpochNs be
+  originEpochNs" ignores the larger units of the start duration (`P1Y`
+  rounded to months would start a year early). The engine skips the first
+  and adds the start duration in the second; the same text is on
+  `tc39/proposal-temporal` main on 2026-10-15. Worth an upstream issue.
+- `sign` is a base R generic, so `sign(x)` on a `duration()` dispatches
+  through the `Math` group method rather than through an export named
+  `sign`; `abs(x)` works the same way, next to `temporal_abs()`.
+  `test-members.R` accepts group methods for such names.
+- `relative_to` accepts a `plain_date()`, a `plain_date_time()` or a
+  string; a string with a time zone annotation or `Z` arrives in stage 8
+  with `ZonedDateTime`.
+- Duration fields given to `duration()` must be integral, as
+  `ToIntegerIfIntegral` requires; a bare number passed as a duration to
+  `temporal_add()` and friends is a type error, as in Temporal.
+- `temporal_round()`'s generic gained `...` so the `duration()` method can
+  take `largest_unit` and `relative_to`; the plain types reject extra
+  arguments.
+- The oracle test files run every case of a type inside one `test_that()`
+  block and compare a value's fields in one expectation. The full-profile
+  `gctorture` job (step 20, 120-minute timeout) took 9 minutes at stage 1,
+  48 at stage 2 and over an hour at stage 3, growing with the number of
+  expectations; measured locally at step 200, the PlainDate oracle file
+  went from 188 s to 63 s with the same cases and assertions. Case ids
+  travel in `info` so a failure still names its case.
 
 **Design.** §4.1, §4.3, §6.2, §6.4, §6.5, §6.6, §9 (durations), §14 row 2.
 

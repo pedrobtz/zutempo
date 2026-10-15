@@ -185,11 +185,13 @@ temporal_equals.zutempo_plain_date_time <- function(x, other) {
 #' @export
 temporal_round.zutempo_plain_date_time <- function(
   x,
-  smallest_unit,
+  smallest_unit = NULL,
   rounding_increment = 1,
-  rounding_mode = "halfExpand"
+  rounding_mode = "halfExpand",
+  ...
 ) {
-  if (missing(smallest_unit)) {
+  ztp_check_dots_empty(...)
+  if (is.null(smallest_unit)) {
     stop_zutempo("`smallest_unit` is required", kind = "type")
   }
   opts <- ztp_round_options(

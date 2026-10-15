@@ -5,6 +5,7 @@
   for (cls in ztp_plain_classes) {
     ztp_register_vctrs(cls)
   }
+  ztp_register_vctrs_duration()
   invisible()
 }
 
@@ -53,4 +54,24 @@ ztp_s3_register <- function(generic, class, method) {
     register()
   }
   invisible()
+}
+
+ztp_register_vctrs_duration <- function() {
+  cls <- "zutempo_duration"
+  self <- paste0(cls, ".", cls)
+  ztp_s3_register("vctrs::vec_proxy", cls, function(x, ...) {
+    data <- unclass(x)
+    attributes(data) <- list(names = names(data))
+    vctrs::new_data_frame(data, n = length(data[[1L]]))
+  })
+  ztp_s3_register("vctrs::vec_restore", cls, function(x, to, ...) {
+    new_duration(lapply(as.list(x), as.double))
+  })
+  ztp_s3_register("vctrs::vec_ptype2", self, function(x, y, ...) new_duration())
+  ztp_s3_register("vctrs::vec_cast", self, function(x, to, ...) x)
+  ztp_s3_register("vctrs::vec_ptype_abbr", cls, function(x, ...) "duration")
+  ztp_s3_register("vctrs::vec_ptype_full", cls, function(x, ...) cls)
+  ztp_s3_register("pillar::pillar_shaft", cls, function(x, ...) {
+    pillar::new_pillar_shaft_simple(format(x), align = "right")
+  })
 }

@@ -1,0 +1,1720 @@
+{
+  "type": "Duration",
+  "engine": "temporal-polyfill 1.0.6",
+  "tz": "2025b",
+  "cases": [
+    {
+      "id": "from-string-full",
+      "op": "from",
+      "args": [
+        "P1Y2M3W4DT5H6M7.5S"
+      ],
+      "result": {
+        "string": "P1Y2M3W4DT5H6M7.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 1,
+          "months": 2,
+          "weeks": 3,
+          "days": 4,
+          "hours": 5,
+          "minutes": 6,
+          "seconds": 7,
+          "milliseconds": 500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-fraction-hours",
+      "op": "from",
+      "args": [
+        "PT1.5H"
+      ],
+      "result": {
+        "string": "PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-fraction-comma",
+      "op": "from",
+      "args": [
+        "PT1,5H"
+      ],
+      "result": {
+        "string": "PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-fraction-minutes",
+      "op": "from",
+      "args": [
+        "PT1H30.5M"
+      ],
+      "result": {
+        "string": "PT1H30M30S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 30,
+          "seconds": 30,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-fraction-then-unit",
+      "op": "from",
+      "args": [
+        "PT1.5H30M"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-nine-digits",
+      "op": "from",
+      "args": [
+        "PT0.123456789S"
+      ],
+      "result": {
+        "string": "PT0.123456789S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 123,
+          "microseconds": 456,
+          "nanoseconds": 789,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-ten-digits",
+      "op": "from",
+      "args": [
+        "PT0.1234567890S"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-negative",
+      "op": "from",
+      "args": [
+        "-P1D"
+      ],
+      "result": {
+        "string": "-P1D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": -1,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-plus",
+      "op": "from",
+      "args": [
+        "+P1D"
+      ],
+      "result": {
+        "string": "P1D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-lowercase",
+      "op": "from",
+      "args": [
+        "p1dT1h"
+      ],
+      "result": {
+        "string": "P1DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-weeks-days",
+      "op": "from",
+      "args": [
+        "P1W1D"
+      ],
+      "result": {
+        "string": "P1W1D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 1,
+          "days": 1,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-wrong-order",
+      "op": "from",
+      "args": [
+        "P1D1W"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-empty",
+      "op": "from",
+      "args": [
+        "P"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-empty-time",
+      "op": "from",
+      "args": [
+        "PT"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-years-limit",
+      "op": "from",
+      "args": [
+        "P4294967295Y"
+      ],
+      "result": {
+        "string": "P4294967295Y",
+        "type": "Duration",
+        "fields": {
+          "years": 4294967295,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-years-over",
+      "op": "from",
+      "args": [
+        "P4294967296Y"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-seconds-limit",
+      "op": "from",
+      "args": [
+        "PT9007199254740991S"
+      ],
+      "result": {
+        "string": "PT9007199254740991S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 9007199254740991,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-seconds-over",
+      "op": "from",
+      "args": [
+        "PT9007199254740992S"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-unbalanced",
+      "op": "from",
+      "args": [
+        "P1DT24H"
+      ],
+      "result": {
+        "string": "P1DT24H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 24,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-string-zero",
+      "op": "from",
+      "args": [
+        "P0D"
+      ],
+      "result": {
+        "string": "PT0S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 0,
+          "blank": true
+        }
+      }
+    },
+    {
+      "id": "from-string-fraction-days",
+      "op": "from",
+      "args": [
+        "P1.5D"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-trailing",
+      "op": "from",
+      "args": [
+        "PT1H2M3S4"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-space",
+      "op": "from",
+      "args": [
+        " P1D"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-fields",
+      "op": "from",
+      "args": [
+        {
+          "years": 1,
+          "months": 2,
+          "weeks": 3,
+          "days": 4,
+          "hours": 5,
+          "minutes": 6,
+          "seconds": 7,
+          "milliseconds": 8,
+          "microseconds": 9,
+          "nanoseconds": 10
+        }
+      ],
+      "result": {
+        "string": "P1Y2M3W4DT5H6M7.00800901S",
+        "type": "Duration",
+        "fields": {
+          "years": 1,
+          "months": 2,
+          "weeks": 3,
+          "days": 4,
+          "hours": 5,
+          "minutes": 6,
+          "seconds": 7,
+          "milliseconds": 8,
+          "microseconds": 9,
+          "nanoseconds": 10,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-fields-negative",
+      "op": "from",
+      "args": [
+        {
+          "hours": -1,
+          "minutes": -30
+        }
+      ],
+      "result": {
+        "string": "-PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": -1,
+          "minutes": -30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-fields-mixed-signs",
+      "op": "from",
+      "args": [
+        {
+          "years": 1,
+          "months": -1
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-fields-fraction",
+      "op": "from",
+      "args": [
+        {
+          "hours": 1.5
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-fields-unsafe-milliseconds",
+      "op": "from",
+      "args": [
+        {
+          "milliseconds": 9007199254740994
+        }
+      ],
+      "result": {
+        "string": "PT9007199254740.994S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 9007199254740994,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-fields-seconds-limit",
+      "op": "from",
+      "args": [
+        {
+          "seconds": 9007199254740991,
+          "nanoseconds": 999999999
+        }
+      ],
+      "result": {
+        "string": "PT9007199254740991.999999999S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 9007199254740991,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 999999999,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "from-fields-seconds-over",
+      "op": "from",
+      "args": [
+        {
+          "seconds": 9007199254740991,
+          "nanoseconds": 1000000000
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-fields-seconds-2-53",
+      "op": "from",
+      "args": [
+        {
+          "seconds": 9007199254740992
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "with-years-zero",
+      "op": "with",
+      "on": "P1Y2M3W4DT5H6M7.5S",
+      "args": [
+        {
+          "years": 0
+        }
+      ],
+      "result": {
+        "string": "P2M3W4DT5H6M7.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 2,
+          "weeks": 3,
+          "days": 4,
+          "hours": 5,
+          "minutes": 6,
+          "seconds": 7,
+          "milliseconds": 500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "with-mixed-signs",
+      "op": "with",
+      "on": "P1Y2M",
+      "args": [
+        {
+          "months": -1
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "with-nothing",
+      "op": "with",
+      "on": "P1Y",
+      "args": [
+        {}
+      ],
+      "throws": "TypeError"
+    },
+    {
+      "id": "negated",
+      "op": "negated",
+      "on": "P1Y2M3W4DT5H6M7.5S",
+      "args": [],
+      "result": {
+        "string": "-P1Y2M3W4DT5H6M7.5S",
+        "type": "Duration",
+        "fields": {
+          "years": -1,
+          "months": -2,
+          "weeks": -3,
+          "days": -4,
+          "hours": -5,
+          "minutes": -6,
+          "seconds": -7,
+          "milliseconds": -500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "negated-zero",
+      "op": "negated",
+      "on": "PT0S",
+      "args": [],
+      "result": {
+        "string": "PT0S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 0,
+          "blank": true
+        }
+      }
+    },
+    {
+      "id": "abs",
+      "op": "abs",
+      "on": "-P1DT2H",
+      "args": [],
+      "result": {
+        "string": "P1DT2H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 2,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "add-time",
+      "op": "add",
+      "on": "PT1H",
+      "args": [
+        "PT30M"
+      ],
+      "result": {
+        "string": "PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "add-days-hours",
+      "op": "add",
+      "on": "P1D",
+      "args": [
+        "PT25H"
+      ],
+      "result": {
+        "string": "P2DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 2,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "add-calendar",
+      "op": "add",
+      "on": "P1M",
+      "args": [
+        "P1D"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "add-weeks",
+      "op": "add",
+      "on": "P1W",
+      "args": [
+        "P1D"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "subtract-negative",
+      "op": "subtract",
+      "on": "PT1H",
+      "args": [
+        "PT2H"
+      ],
+      "result": {
+        "string": "-PT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": -1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "subtract-to-zero",
+      "op": "subtract",
+      "on": "P1DT1H",
+      "args": [
+        "PT25H"
+      ],
+      "result": {
+        "string": "PT0S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 0,
+          "blank": true
+        }
+      }
+    },
+    {
+      "id": "round-largest-day",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day"
+        }
+      ],
+      "result": {
+        "string": "P1DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-largest-day-relative",
+      "op": "round",
+      "on": "PT25H",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-03-07"
+        }
+      ],
+      "result": {
+        "string": "P1DT1H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 1,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-hour",
+      "op": "round",
+      "on": "PT90M",
+      "args": [
+        "hour"
+      ],
+      "result": {
+        "string": "PT2H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 2,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-hour-ceil",
+      "op": "round",
+      "on": "PT90M",
+      "args": [
+        {
+          "smallestUnit": "hour",
+          "roundingMode": "ceil"
+        }
+      ],
+      "result": {
+        "string": "PT2H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 2,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-month-no-relative",
+      "op": "round",
+      "on": "P1Y",
+      "args": [
+        {
+          "smallestUnit": "month"
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-month-relative",
+      "op": "round",
+      "on": "P1Y",
+      "args": [
+        {
+          "smallestUnit": "month",
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "result": {
+        "string": "P1Y",
+        "type": "Duration",
+        "fields": {
+          "years": 1,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-largest-month-leap",
+      "op": "round",
+      "on": "P1Y",
+      "args": [
+        {
+          "largestUnit": "month",
+          "relativeTo": "2024-01-01"
+        }
+      ],
+      "result": {
+        "string": "P12M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 12,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-days-to-months-jan31",
+      "op": "round",
+      "on": "P45D",
+      "args": [
+        {
+          "largestUnit": "month",
+          "relativeTo": "2026-01-31"
+        }
+      ],
+      "result": {
+        "string": "P1M17D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 1,
+          "weeks": 0,
+          "days": 17,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-days-to-months-jan1",
+      "op": "round",
+      "on": "P45D",
+      "args": [
+        {
+          "largestUnit": "month",
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "result": {
+        "string": "P1M14D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 1,
+          "weeks": 0,
+          "days": 14,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-no-units",
+      "op": "round",
+      "on": "PT1H",
+      "args": [
+        {}
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-weeks-to-days",
+      "op": "round",
+      "on": "P1W",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "result": {
+        "string": "P7D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 7,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-half-month-down",
+      "op": "round",
+      "on": "P1M15D",
+      "args": [
+        {
+          "smallestUnit": "month",
+          "relativeTo": "2026-01-01",
+          "roundingMode": "halfExpand"
+        }
+      ],
+      "result": {
+        "string": "P2M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 2,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-half-month-up",
+      "op": "round",
+      "on": "P1M16D",
+      "args": [
+        {
+          "smallestUnit": "month",
+          "relativeTo": "2026-01-01",
+          "roundingMode": "halfExpand"
+        }
+      ],
+      "result": {
+        "string": "P2M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 2,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-half-day",
+      "op": "round",
+      "on": "P1DT12H",
+      "args": [
+        {
+          "smallestUnit": "day",
+          "roundingMode": "halfExpand"
+        }
+      ],
+      "result": {
+        "string": "P2D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 2,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-bad-increment",
+      "op": "round",
+      "on": "PT100H",
+      "args": [
+        {
+          "smallestUnit": "hour",
+          "roundingIncrement": 7
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-years-increment",
+      "op": "round",
+      "on": "P1Y2M",
+      "args": [
+        {
+          "smallestUnit": "year",
+          "roundingIncrement": 2,
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "result": {
+        "string": "P2Y",
+        "type": "Duration",
+        "fields": {
+          "years": 2,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-day-increment-needs-equal-units",
+      "op": "round",
+      "on": "P10D",
+      "args": [
+        {
+          "smallestUnit": "day",
+          "roundingIncrement": 3,
+          "largestUnit": "week",
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-day-increment",
+      "op": "round",
+      "on": "P10D",
+      "args": [
+        {
+          "smallestUnit": "day",
+          "roundingIncrement": 3,
+          "largestUnit": "day"
+        }
+      ],
+      "result": {
+        "string": "P9D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 9,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-largest-smaller-than-smallest",
+      "op": "round",
+      "on": "P1D",
+      "args": [
+        {
+          "smallestUnit": "day",
+          "largestUnit": "hour"
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "round-relative-date-time",
+      "op": "round",
+      "on": "P1M",
+      "args": [
+        {
+          "largestUnit": "day",
+          "relativeTo": "2026-01-15T12:00"
+        }
+      ],
+      "result": {
+        "string": "P31D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 31,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-negative-relative",
+      "op": "round",
+      "on": "-P1M15D",
+      "args": [
+        {
+          "smallestUnit": "month",
+          "relativeTo": "2026-03-31",
+          "roundingMode": "halfExpand"
+        }
+      ],
+      "result": {
+        "string": "-P2M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": -2,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "round-unsafe-nanoseconds",
+      "op": "from",
+      "args": [
+        {
+          "nanoseconds": 1e+21
+        }
+      ],
+      "result": {
+        "string": "PT1000000000000S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 1e+21,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "total-day",
+      "op": "total",
+      "on": "PT25H",
+      "args": [
+        "day"
+      ],
+      "result": 1.0416666666666667
+    },
+    {
+      "id": "total-month-days-relative",
+      "op": "total",
+      "on": "P1M",
+      "args": [
+        {
+          "unit": "day",
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "result": 31
+    },
+    {
+      "id": "total-month-no-relative",
+      "op": "total",
+      "on": "P1M",
+      "args": [
+        "day"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "total-days-plural",
+      "op": "total",
+      "on": "P1DT12H",
+      "args": [
+        {
+          "unit": "days"
+        }
+      ],
+      "result": 1.5
+    },
+    {
+      "id": "total-year-in-months",
+      "op": "total",
+      "on": "P1Y",
+      "args": [
+        {
+          "unit": "month",
+          "relativeTo": "2026-03-15"
+        }
+      ],
+      "result": 12
+    },
+    {
+      "id": "total-days-in-months",
+      "op": "total",
+      "on": "P45D",
+      "args": [
+        {
+          "unit": "month",
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "result": 1.5
+    },
+    {
+      "id": "total-weeks-no-relative",
+      "op": "total",
+      "on": "PT1H",
+      "args": [
+        "week"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "total-weeks-relative",
+      "op": "total",
+      "on": "PT1H",
+      "args": [
+        {
+          "unit": "week",
+          "relativeTo": "2026-01-01"
+        }
+      ],
+      "result": 0.005952380952380952
+    },
+    {
+      "id": "total-relative-date-time",
+      "op": "total",
+      "on": "P1M",
+      "args": [
+        {
+          "unit": "day",
+          "relativeTo": "2026-01-15T12:00"
+        }
+      ],
+      "result": 31
+    },
+    {
+      "id": "total-nanoseconds-large",
+      "op": "total",
+      "on": "P1D",
+      "args": [
+        "nanosecond"
+      ],
+      "result": 86400000000000
+    },
+    {
+      "id": "compare-equal-units",
+      "op": "compare",
+      "args": [
+        "PT1H",
+        "PT60M"
+      ],
+      "result": 0
+    },
+    {
+      "id": "compare-calendar-no-relative",
+      "op": "compare",
+      "args": [
+        "P1M",
+        "P30D"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "compare-calendar-feb",
+      "op": "compare",
+      "args": [
+        "P1M",
+        "P30D"
+      ],
+      "options": {
+        "relativeTo": "2026-02-01"
+      },
+      "result": -1
+    },
+    {
+      "id": "compare-calendar-jan",
+      "op": "compare",
+      "args": [
+        "P1M",
+        "P30D"
+      ],
+      "options": {
+        "relativeTo": "2026-01-01"
+      },
+      "result": 1
+    },
+    {
+      "id": "compare-day-hours",
+      "op": "compare",
+      "args": [
+        "P1D",
+        "PT24H"
+      ],
+      "result": 0
+    },
+    {
+      "id": "compare-signs",
+      "op": "compare",
+      "args": [
+        "-PT1H",
+        "PT1H"
+      ],
+      "result": -1
+    },
+    {
+      "id": "to-string-milliseconds",
+      "op": "from",
+      "args": [
+        {
+          "milliseconds": 1500
+        }
+      ],
+      "result": {
+        "string": "PT1.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 1500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "to-string-seconds",
+      "op": "from",
+      "args": [
+        {
+          "seconds": 90
+        }
+      ],
+      "result": {
+        "string": "PT90S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 90,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "to-string-minutes",
+      "op": "from",
+      "args": [
+        {
+          "minutes": 90
+        }
+      ],
+      "result": {
+        "string": "PT90M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 90,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "to-string-nanosecond",
+      "op": "from",
+      "args": [
+        {
+          "nanoseconds": 1
+        }
+      ],
+      "result": {
+        "string": "PT0.000000001S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 1,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "to-string-microseconds",
+      "op": "from",
+      "args": [
+        {
+          "microseconds": 1500
+        }
+      ],
+      "result": {
+        "string": "PT0.0015S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 1500,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "to-string-hour-and-nanosecond",
+      "op": "from",
+      "args": [
+        {
+          "hours": 1,
+          "nanoseconds": 1
+        }
+      ],
+      "result": {
+        "string": "PT1H0.000000001S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 1,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "to-string-negative-fraction",
+      "op": "from",
+      "args": [
+        "-PT0.5S"
+      ],
+      "result": {
+        "string": "-PT0.5S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": -500,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    }
+  ]
+}

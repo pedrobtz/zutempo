@@ -1,5 +1,3 @@
-for (case in oracle_cases("PlainDate")) {
-  test_that(paste("oracle PlainDate", case$id), {
-    oracle_check("PlainDate", case)
-  })
-}
+test_that("every oracle case for PlainDate agrees with the engine", {
+  oracle_run_cases("PlainDate")
+})

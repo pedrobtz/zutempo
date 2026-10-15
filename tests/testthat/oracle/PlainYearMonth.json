@@ -731,6 +731,367 @@
       "throws": "TypeError"
     },
     {
+      "id": "add-month",
+      "op": "add",
+      "on": "2026-01",
+      "args": [
+        "P1M"
+      ],
+      "result": {
+        "string": "2026-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "add-thirteen-months",
+      "op": "add",
+      "on": "2026-01",
+      "args": [
+        "P13M"
+      ],
+      "result": {
+        "string": "2027-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2027,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "add-days-rejected",
+      "op": "add",
+      "on": "2026-01",
+      "args": [
+        "P1D"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "add-hours-rejected",
+      "op": "add",
+      "on": "2026-01",
+      "args": [
+        "PT1H"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "add-negative-month",
+      "op": "add",
+      "on": "2026-01",
+      "args": [
+        "-P1M"
+      ],
+      "result": {
+        "string": "2025-12",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2025,
+          "month": 12,
+          "monthCode": "M12",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "subtract-year",
+      "op": "subtract",
+      "on": "2026-01",
+      "args": [
+        "P1Y"
+      ],
+      "result": {
+        "string": "2025-01",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2025,
+          "month": 1,
+          "monthCode": "M01",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "add-past-max",
+      "op": "add",
+      "on": "+275760-09",
+      "args": [
+        "P1M"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "add-weeks-rejected",
+      "op": "add",
+      "on": "2026-01",
+      "args": [
+        "P1W"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "add-year-month",
+      "op": "add",
+      "on": "2026-01",
+      "args": [
+        "P1Y1M"
+      ],
+      "result": {
+        "string": "2027-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2027,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "until-default",
+      "op": "until",
+      "on": "2026-01",
+      "args": [
+        "2027-03"
+      ],
+      "result": {
+        "string": "P1Y2M",
+        "type": "Duration",
+        "fields": {
+          "years": 1,
+          "months": 2,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-months",
+      "op": "until",
+      "on": "2026-01",
+      "args": [
+        "2027-03"
+      ],
+      "options": {
+        "largestUnit": "month"
+      },
+      "result": {
+        "string": "P14M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 14,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-backwards",
+      "op": "until",
+      "on": "2027-03",
+      "args": [
+        "2026-01"
+      ],
+      "result": {
+        "string": "-P1Y2M",
+        "type": "Duration",
+        "fields": {
+          "years": -1,
+          "months": -2,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "since-default",
+      "op": "since",
+      "on": "2026-01",
+      "args": [
+        "2027-03"
+      ],
+      "result": {
+        "string": "-P1Y2M",
+        "type": "Duration",
+        "fields": {
+          "years": -1,
+          "months": -2,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-days-rejected",
+      "op": "until",
+      "on": "2026-01",
+      "args": [
+        "2027-03"
+      ],
+      "options": {
+        "largestUnit": "day"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "until-round-year-down",
+      "op": "until",
+      "on": "2026-01",
+      "args": [
+        "2027-03"
+      ],
+      "options": {
+        "smallestUnit": "year",
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "P1Y",
+        "type": "Duration",
+        "fields": {
+          "years": 1,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-round-year-up",
+      "op": "until",
+      "on": "2026-01",
+      "args": [
+        "2027-08"
+      ],
+      "options": {
+        "smallestUnit": "year",
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "P2Y",
+        "type": "Duration",
+        "fields": {
+          "years": 2,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-same",
+      "op": "until",
+      "on": "2026-01",
+      "args": [
+        "2026-01"
+      ],
+      "result": {
+        "string": "PT0S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 0,
+          "blank": true
+        }
+      }
+    },
+    {
       "id": "to-string",
       "op": "toString",
       "on": "2026-02",
