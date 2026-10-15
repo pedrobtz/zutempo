@@ -63,4 +63,26 @@ SEXP ztp_r_plain_month_day_parse(SEXP x);
 SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar);
 SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path);
 
+/* ztp_r_duration.c */
+SEXP ztp_r_duration_create(SEXP fields);
+SEXP ztp_r_duration_parse(SEXP x);
+SEXP ztp_r_duration_format(SEXP dur, SEXP precision);
+SEXP ztp_r_duration_add(SEXP a, SEXP b);
+SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
+                          SEXP mode, SEXP smallest_present, SEXP relative_days);
+SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days);
+SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days);
+SEXP ztp_r_plain_date_add(SEXP days, SEXP dur, SEXP overflow);
+SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
+                            SEXP increment, SEXP mode);
+SEXP ztp_r_plain_time_add(SEXP ns, SEXP dur);
+SEXP ztp_r_plain_time_until(SEXP t1, SEXP t2, SEXP largest, SEXP smallest,
+                            SEXP increment, SEXP mode);
+SEXP ztp_r_plain_date_time_add(SEXP x, SEXP dur, SEXP overflow);
+SEXP ztp_r_plain_date_time_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
+                                 SEXP increment, SEXP mode);
+SEXP ztp_r_plain_year_month_add(SEXP ym, SEXP dur, SEXP overflow);
+SEXP ztp_r_plain_year_month_until(SEXP ym1, SEXP ym2, SEXP largest, SEXP smallest,
+                                  SEXP increment, SEXP mode);
+
 #endif /* ZTP_R_H */

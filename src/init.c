@@ -41,6 +41,21 @@ static const R_CallMethodDef call_methods[] = {
     {"ztp_r_plain_month_day_parse", (DL_FUNC)&ztp_r_plain_month_day_parse, 1},
     {"ztp_r_plain_month_day_format", (DL_FUNC)&ztp_r_plain_month_day_format, 2},
     {"ztp_r_parse_describe", (DL_FUNC)&ztp_r_parse_describe, 3},
+    {"ztp_r_duration_create", (DL_FUNC)&ztp_r_duration_create, 1},
+    {"ztp_r_duration_parse", (DL_FUNC)&ztp_r_duration_parse, 1},
+    {"ztp_r_duration_format", (DL_FUNC)&ztp_r_duration_format, 2},
+    {"ztp_r_duration_add", (DL_FUNC)&ztp_r_duration_add, 2},
+    {"ztp_r_duration_round", (DL_FUNC)&ztp_r_duration_round, 7},
+    {"ztp_r_duration_total", (DL_FUNC)&ztp_r_duration_total, 3},
+    {"ztp_r_duration_compare", (DL_FUNC)&ztp_r_duration_compare, 3},
+    {"ztp_r_plain_date_add", (DL_FUNC)&ztp_r_plain_date_add, 3},
+    {"ztp_r_plain_date_until", (DL_FUNC)&ztp_r_plain_date_until, 6},
+    {"ztp_r_plain_time_add", (DL_FUNC)&ztp_r_plain_time_add, 2},
+    {"ztp_r_plain_time_until", (DL_FUNC)&ztp_r_plain_time_until, 6},
+    {"ztp_r_plain_date_time_add", (DL_FUNC)&ztp_r_plain_date_time_add, 3},
+    {"ztp_r_plain_date_time_until", (DL_FUNC)&ztp_r_plain_date_time_until, 6},
+    {"ztp_r_plain_year_month_add", (DL_FUNC)&ztp_r_plain_year_month_add, 3},
+    {"ztp_r_plain_year_month_until", (DL_FUNC)&ztp_r_plain_year_month_until, 6},
     {NULL, NULL, 0}
 };
 
