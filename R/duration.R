@@ -169,7 +169,9 @@ ztp_relative_to <- function(relative_to, n) {
         kind = "type"
       )
     } else {
-      relative_to <- temporal_to_plain_date(plain_date_time(relative_to))
+      # A date, not a date-time: "-271821-04-19" is a PlainDate, though
+      # its midnight is before the first PlainDateTime.
+      relative_to <- plain_date(relative_to)
     }
   }
   if (inherits(relative_to, "zutempo_zoned_date_time")) {

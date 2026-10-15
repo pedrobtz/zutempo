@@ -794,9 +794,11 @@ ztp_status ztp_parse_time_zone_string(ztp_ctx *ctx, size_t index, const char *s,
     if (p.has_offset) {
         int64_t minutes = p.offset_ns / (60 * ZTP_NS_PER_SECOND);
         int64_t a = minutes < 0 ? -minutes : minutes;
-        if (p.offset_ns % (60 * ZTP_NS_PER_SECOND) != 0)
+        /* ParseTimeZoneIdentifier reads UTCOffset[~SubMinutePrecision]: a
+           seconds part is an error even when it is zero. */
+        if (p.offset_has_seconds)
             return ztp_fail(ctx, ZTP_ERR_RANGE, index,
-                            "a time zone offset must be a whole number of minutes");
+                            "a time zone offset cannot have seconds");
         dst[0] = p.offset_ns < 0 ? '-' : '+';
         dst[1] = (char)('0' + a / 600);
         dst[2] = (char)('0' + a / 60 % 10);
