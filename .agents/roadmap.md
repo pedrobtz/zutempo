@@ -379,6 +379,13 @@ zone, and the five plain types gain `add`, `subtract`, `since` and
 - `temporal_round()`'s generic gained `...` so the `duration()` method can
   take `largest_unit` and `relative_to`; the plain types reject extra
   arguments.
+- The oracle test files run every case of a type inside one `test_that()`
+  block and compare a value's fields in one expectation. The full-profile
+  `gctorture` job (step 20, 120-minute timeout) took 9 minutes at stage 1,
+  48 at stage 2 and over an hour at stage 3, growing with the number of
+  expectations; measured locally at step 200, the PlainDate oracle file
+  went from 188 s to 63 s with the same cases and assertions. Case ids
+  travel in `info` so a failure still names its case.
 
 **Design.** §4.1, §4.3, §6.2, §6.4, §6.5, §6.6, §9 (durations), §14 row 2.
 

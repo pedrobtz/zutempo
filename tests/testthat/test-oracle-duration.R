@@ -1,5 +1,3 @@
-for (case in oracle_cases("Duration")) {
-  test_that(paste("oracle Duration", case[["id"]]), {
-    oracle_check("Duration", case)
-  })
-}
+test_that("every oracle case for Duration agrees with the engine", {
+  oracle_run_cases("Duration")
+})

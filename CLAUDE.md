@@ -208,6 +208,10 @@ Design §4 is the reference. The layers, top down:
   constructor exists. `test-oracle-<type>.R` loops the cases through it.
 - **`test-members.R` is the member ledger.** When a stage exports a member,
   remove its name from `pending` there; the test fails otherwise.
+- **Keep the gctorture job inside its 120-minute budget.** Its cost grows
+  with the number of expectations, not test blocks: an oracle file runs
+  all its cases in one `test_that()` and compares fields in one
+  `expect_equal()`. Add cases freely; add expectations with care.
 - **Keep the suite inside the CRAN time budget.** Not yet measured.
 
 ## Definition of done
