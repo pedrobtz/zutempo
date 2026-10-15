@@ -515,7 +515,8 @@ temporal_total.zutempo_duration <- function(x, unit, relative_to = NULL) {
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_duration <- function(x) {
+temporal_to_string.zutempo_duration <- function(x, ...) {
+  ztp_check_dots_empty(...)
   .Call(C_ztp_r_duration_format, unclass(x), -1L)
 }
 

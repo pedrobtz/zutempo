@@ -1,5 +1,13 @@
 # zutempo 0.0.0.9000
 
+* `instant()`: Temporal's `Instant` over its full range, from strings with
+  `Z` or an offset, `instant_from_epoch_milliseconds()` and
+  `instant_from_epoch_nanoseconds()` (numbers or decimal strings), with
+  `epoch_milliseconds()`, `epoch_nanoseconds()` as a decimal string,
+  `instant_compare()`, `temporal_equals()`, `temporal_add()`,
+  `temporal_subtract()`, `temporal_since()`, `temporal_until()`,
+  `temporal_round()` as if positive, and `temporal_to_string()` with a
+  `time_zone` of `"UTC"` or a fixed offset; `now_instant()`.
 * `duration()`: Temporal's `Duration` as an R vector of ten exact fields,
   from fields or ISO 8601 strings, with `years()` to `nanoseconds()`,
   `blank()`, `sign()` and `abs()`, `temporal_with()`, `temporal_negated()`,

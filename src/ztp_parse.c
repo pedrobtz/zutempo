@@ -202,18 +202,48 @@ static bool ztp_parse_offset(ztp_cursor *c, int64_t *offset_ns)
 
 /* After a time: an optional offset, where "Z" is never allowed for the
    plain types; then no annotations (stage 9) and the end of the string. */
-static bool ztp_parse_time_suffix(ztp_cursor *c, ztp_parsed *out)
+static bool ztp_is_separator(int ch);
+static bool ztp_parse_tail(ztp_cursor *c);
+
+static bool ztp_parse_time_suffix_z(ztp_cursor *c, ztp_parsed *out, bool allow_z)
 {
     int ch = ztp_peek(c, 0);
 
-    if (ch == 'Z' || ch == 'z')
-        return ztp_fail_at(c, c->pos,
-                           "a UTC designator is not allowed for a plain type");
+    if (ch == 'Z' || ch == 'z') {
+        if (!allow_z)
+            return ztp_fail_at(c, c->pos,
+                               "a UTC designator is not allowed for a plain type");
+        c->pos++;
+        out->has_z = true;
+        return true;
+    }
     if (ch == '+' || ch == '-') {
         if (!ztp_parse_offset(c, &out->offset_ns)) return false;
         out->has_offset = true;
     }
     return true;
+}
+
+static bool ztp_parse_time_suffix(ztp_cursor *c, ztp_parsed *out)
+{
+    return ztp_parse_time_suffix_z(c, out, false);
+}
+
+/* TemporalInstantString: a date, a time and "Z" or an offset. */
+static bool ztp_parse_goal_instant(ztp_cursor *c, ztp_parsed *out)
+{
+    if (!ztp_parse_date(c, &out->year, &out->month, &out->day)) return false;
+    out->has_year = true;
+    out->has_day = true;
+    if (!ztp_is_separator(ztp_peek(c, 0)))
+        return ztp_fail_at(c, c->pos, "expected a time after the date");
+    c->pos++;
+    if (!ztp_parse_time(c, &out->time)) return false;
+    out->has_time = true;
+    if (!ztp_parse_time_suffix_z(c, out, true)) return false;
+    if (!out->has_z && !out->has_offset)
+        return ztp_fail_at(c, c->pos, "an instant needs 'Z' or a UTC offset");
+    return ztp_parse_tail(c);
 }
 
 static bool ztp_parse_tail(ztp_cursor *c)
@@ -379,6 +409,7 @@ static bool ztp_parse_slow(ztp_cursor *c, ztp_parse_goal goal, ztp_parsed *out)
         return ztp_parse_goal_partial(c, out, ztp_parse_goal_year_month_only);
     if (goal == ZTP_PARSE_MONTH_DAY)
         return ztp_parse_goal_partial(c, out, ztp_parse_goal_month_day_only);
+    if (goal == ZTP_PARSE_INSTANT) return ztp_parse_goal_instant(c, out);
 
     /* TemporalTimeString: a date-time with the time required, or a bare
        time. Try the date-time form when the string can start with a year
@@ -431,7 +462,11 @@ static bool ztp_parse_fast(const char *s, size_t n, ztp_parse_goal goal,
     /* zufast reads "Z" and "-00:00" as offset 0; Temporal forbids Z here,
        and zufast accepts more than nine fraction digits where Temporal
        rejects them. Let the slow path judge both. */
-    if (dt.has_offset && (s[n - 1] == 'Z' || s[n - 1] == 'z')) return false;
+    if (dt.has_offset && (s[n - 1] == 'Z' || s[n - 1] == 'z')) {
+        if (goal != ZTP_PARSE_INSTANT) return false;
+    } else if (goal == ZTP_PARSE_INSTANT && (!dt.has_time || !dt.has_offset)) {
+        return false;
+    }
     if (dt.has_time) {
         const char *dot = memchr(s, '.', n);
         if (dot == NULL) dot = memchr(s, ',', n);
@@ -457,6 +492,10 @@ static bool ztp_parse_fast(const char *s, size_t n, ztp_parse_goal goal,
         out->time.nanosecond = dt.nanosecond % 1000u;
         out->has_offset = dt.has_offset;
         out->offset_ns = (int64_t)dt.offset_seconds * ZTP_NS_PER_SECOND;
+        if (dt.has_offset && (s[n - 1] == 'Z' || s[n - 1] == 'z')) {
+            out->has_z = true;
+            out->has_offset = false;
+        }
     }
     return true;
 }
@@ -483,6 +522,7 @@ ztp_status ztp_parse_path(ztp_ctx *ctx, size_t index, const char *s, size_t n,
         return ztp_fail(ctx, ZTP_ERR_PARSE, index,
                         "cannot parse \"%s\" as a %s: %s at byte %lu", shown,
                         goal == ZTP_PARSE_TIME ? "time"
+                        : goal == ZTP_PARSE_INSTANT ? "instant"
                         : goal == ZTP_PARSE_YEAR_MONTH ? "year-month"
                         : goal == ZTP_PARSE_MONTH_DAY ? "month-day"
                         : "date or date-time",

@@ -43,7 +43,8 @@ function describe(Temporal, type, value) {
     out.fields = {};
     for (const name of names) {
       const v = value[name];
-      out.fields[name] = v === undefined ? null : v;
+      // A BigInt (epochNanoseconds) travels as its decimal string.
+      out.fields[name] = v === undefined ? null : typeof v === "bigint" ? v.toString() : v;
     }
   }
   return out;

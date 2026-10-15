@@ -23,18 +23,20 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 4. The five plain types and `duration()`
-exist with every member that needs no time zone: fields, `with`, `compare`,
-`equals`, `round`, `add`, `subtract`, `since`, `until`, `total`, the
-conversions among the plain types and default `toString()`; strings are
-read without annotations (stage 9 adds them). The engine has the ISO
-records (`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
-(`src/ztp_format.c`), the parser with its goals and the zufast fast path
-(`src/ztp_parse.c`), durations on 128-bit time durations
-(`src/ztp_duration.c`) and calendar arithmetic with relative rounding
-(`src/ztp_relative.c`); the glue is `src/ztp_r_plain.c` and
-`src/ztp_r_duration.c`. No `Instant`, zone or `ZonedDateTime` yet. The
-oracle covers the six types. See the roadmap's stage table.
+Verified 2026-10-15: stages 0 to 5. The five plain types, `duration()` and
+`instant()` exist with every member that needs no named time zone: fields,
+`with`, `compare`, `equals`, `round`, `add`, `subtract`, `since`, `until`,
+`total`, the conversions among the plain types and default `toString()`;
+`now_instant()` works; strings are read without annotations (stage 9 adds
+them). The engine has the ISO records (`src/ztp_iso.c`), rounding
+(`src/ztp_round.c`), formatting (`src/ztp_format.c`), the parser with its
+five goals and the zufast fast path (`src/ztp_parse.c`), durations on
+128-bit time durations (`src/ztp_duration.c`), calendar arithmetic with
+relative rounding (`src/ztp_relative.c`) and instants with the UTC and
+fixed-offset zone kinds (`src/ztp_instant.c`); the glue is
+`src/ztp_r_plain.c`, `src/ztp_r_duration.c` and `src/ztp_r_instant.c`.
+No named zone or `ZonedDateTime` yet. The oracle covers the seven types.
+See the roadmap's stage table.
 
 ## Stage tracking
 

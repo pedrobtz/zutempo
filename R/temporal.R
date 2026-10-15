@@ -170,12 +170,17 @@ temporal_round <- function(
 #' significant digits.
 #'
 #' @param x A zutempo value.
+#' @param ... Must be empty, except for an `instant()`'s `time_zone`.
+#' @param time_zone For an `instant()`: `"UTC"` or a fixed offset such as
+#'   `"+05:30"` to show the time in; `NULL` (the default) writes the time
+#'   in UTC with `Z`. Named zones arrive with the time zone database.
 #' @return A character vector, `NA` where `x` is `NA`.
 #' @examples
 #' temporal_to_string(plain_date(c(2026, 275760), c(1, 9), c(31, 13)))
+#' temporal_to_string(instant("2026-01-31T12:30Z"), time_zone = "+05:30")
 #' temporal_to_string(plain_time(12, 30, 45, 500))
 #' @order 1
 #' @export
-temporal_to_string <- function(x) {
+temporal_to_string <- function(x, ...) {
   UseMethod("temporal_to_string")
 }

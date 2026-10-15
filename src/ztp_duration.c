@@ -348,13 +348,24 @@ static ztp_unsigned_mode128 ztp_unsigned_mode_of(ztp_rounding_mode mode, bool ne
 zuf_i128 ztp_round_i128_to_increment(zuf_i128 x, zuf_i128 increment,
                                      ztp_rounding_mode mode, bool as_if_positive)
 {
-    bool negative = zuf_i128_is_neg(x);
-    zuf_i128 magnitude = ztp_i128_abs(x);
     zuf_i128 q, r, half_gap, rounded;
-    ztp_unsigned_mode128 umode = ztp_unsigned_mode_of(mode, as_if_positive ? false : negative);
-    bool up;
+    bool negative, up;
+    ztp_unsigned_mode128 umode;
 
-    zuf_i128_divmod_trunc(magnitude, increment, &q, &r);
+    if (as_if_positive) {
+        /* RoundNumberToIncrementAsIfPositive: the quotient is bracketed by
+           its floor and the next integer, and "up" is toward positive
+           infinity whatever the sign; the remainder of the floor division
+           is in [0, increment). */
+        zuf_i128_divmod_floor(x, increment, &q, &r);
+        umode = ztp_unsigned_mode_of(mode, false);
+    } else {
+        /* RoundNumberToIncrement: on the magnitude, with the mode read for
+           the sign. */
+        negative = zuf_i128_is_neg(x);
+        zuf_i128_divmod_trunc(ztp_i128_abs(x), increment, &q, &r);
+        umode = ztp_unsigned_mode_of(mode, negative);
+    }
     if (r.low == 0 && r.high == 0) {
         up = false;
     } else {
@@ -377,7 +388,7 @@ zuf_i128 ztp_round_i128_to_increment(zuf_i128 x, zuf_i128 increment,
     }
     if (up) q = zuf_i128_add_wrap(q, zuf_i128_from_i64(1));
     rounded = zuf_i128_mul_wrap(q, increment);
-    if (negative) zuf_i128_neg(rounded, &rounded);
+    if (!as_if_positive && zuf_i128_is_neg(x)) zuf_i128_neg(rounded, &rounded);
     return rounded;
 }
 

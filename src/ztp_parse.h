@@ -15,7 +15,8 @@ typedef enum {
     ZTP_PARSE_DATE_TIME = 0,   /* TemporalDateTimeString[~Zoned] */
     ZTP_PARSE_TIME = 1,        /* TemporalTimeString */
     ZTP_PARSE_YEAR_MONTH = 2,  /* TemporalYearMonthString */
-    ZTP_PARSE_MONTH_DAY = 3    /* TemporalMonthDayString */
+    ZTP_PARSE_MONTH_DAY = 3,   /* TemporalMonthDayString */
+    ZTP_PARSE_INSTANT = 4      /* TemporalInstantString */
 } ztp_parse_goal;
 
 /* An ISO Date-Time Parse Record. The date is always present; a year-month
@@ -30,6 +31,7 @@ typedef struct {
     ztp_iso_time time;
     bool has_offset;        /* a numeric UTC offset was present */
     int64_t offset_ns;      /* meaningful when has_offset */
+    bool has_z;             /* the UTC designator was present */
 } ztp_parsed;
 
 /* Parse s[0, n) against the goal. A failure is ZTP_ERR_PARSE with the

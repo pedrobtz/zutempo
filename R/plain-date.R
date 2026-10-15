@@ -275,6 +275,7 @@ temporal_equals.zutempo_plain_date <- function(x, other) {
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_plain_date <- function(x) {
+temporal_to_string.zutempo_plain_date <- function(x, ...) {
+  ztp_check_dots_empty(...)
   .Call(C_ztp_r_plain_date_format, unclass(x), 0L)
 }

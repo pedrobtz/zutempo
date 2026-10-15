@@ -183,6 +183,7 @@ temporal_equals.zutempo_plain_month_day <- function(x, other) {
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_plain_month_day <- function(x) {
+temporal_to_string.zutempo_plain_month_day <- function(x, ...) {
+  ztp_check_dots_empty(...)
   .Call(C_ztp_r_plain_month_day_format, unclass(x), 0L)
 }
