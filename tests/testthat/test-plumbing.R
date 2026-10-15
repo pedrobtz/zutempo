@@ -117,8 +117,10 @@ test_that("accessors fall back to the function they mask", {
   withr::local_options(list())
   withr::defer(detach("local:zutempo_test"), envir = parent.frame())
   attach(env, name = "local:zutempo_test", warn.conflicts = FALSE)
-  expect_identical(year(structure(1, class = "other")), "masked year")
-  expect_identical(year(plain_date("2026-01-31")), 2026L)
+  # Call the generic by its namespace: the attached environment sits in
+  # front of the package on the search path.
+  expect_identical(zutempo::year(structure(1, class = "other")), "masked year")
+  expect_identical(zutempo::year(plain_date("2026-01-31")), 2026L)
 })
 
 test_that("an accessor with nothing to fall back to is a type error", {

@@ -406,9 +406,10 @@ ztp_status ztp_parse_path(ztp_ctx *ctx, size_t index, const char *s, size_t n,
         if (n > 40) memcpy(shown + 37, "...", 3), k = 40;
         shown[k] = '\0';
         return ztp_fail(ctx, ZTP_ERR_PARSE, index,
-                        "cannot parse \"%s\" as a %s: %s at byte %zu", shown,
+                        "cannot parse \"%s\" as a %s: %s at byte %lu", shown,
                         goal == ZTP_PARSE_TIME ? "time" : "date or date-time",
-                        c.reason ? c.reason : "invalid", c.fail_pos + 1);
+                        c.reason ? c.reason : "invalid",
+                        (unsigned long)(c.fail_pos + 1));
     }
 }
 
