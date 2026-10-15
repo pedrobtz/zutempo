@@ -25,11 +25,11 @@ roadmap says what each stage builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 5. The five plain types,
+Verified 2026-10-15: stages 0 to 6. The five plain types,
 [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
 and
 [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
-exist with every member that needs no named time zone: fields, `with`,
+exist with every member that needs no `ZonedDateTime`: fields, `with`,
 `compare`, `equals`, `round`, `add`, `subtract`, `since`, `until`,
 `total`, the conversions among the plain types and default
 [`toString()`](https://rdrr.io/r/base/toString.html);
@@ -39,11 +39,18 @@ engine has the ISO records (`src/ztp_iso.c`), rounding
 (`src/ztp_round.c`), formatting (`src/ztp_format.c`), the parser with
 its five goals and the zufast fast path (`src/ztp_parse.c`), durations
 on 128-bit time durations (`src/ztp_duration.c`), calendar arithmetic
-with relative rounding (`src/ztp_relative.c`) and instants with the UTC
-and fixed-offset zone kinds (`src/ztp_instant.c`); the glue is
-`src/ztp_r_plain.c`, `src/ztp_r_duration.c` and `src/ztp_r_instant.c`.
-No named zone or `ZonedDateTime` yet. The oracle covers the seven types.
-See the roadmap’s stage table.
+with relative rounding (`src/ztp_relative.c`), instants with the UTC,
+fixed-offset and IANA zone kinds (`src/ztp_instant.c`) and the time zone
+database: TZif reader and footer rules (`src/ztp_tz.c`), the session
+cache (`src/ztp_tz_cache.c`) and the generated link table
+(`src/ztp_tz_links.c`); the glue is `src/ztp_r_plain.c`,
+`src/ztp_r_duration.c`, `src/ztp_r_instant.c` and `src/ztp_r_tz.c`.
+`R/tz.R` finds the database and reads the files; named zones work in
+[`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
+on an
+[`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md).
+No `ZonedDateTime` yet. The oracle covers the seven types. See the
+roadmap’s stage table.
 
 ## Stage tracking
 
@@ -108,8 +115,11 @@ Rscript tools/spec/members.R                     # regenerate inst/spec/members.
                                                  # Node 26+: polyfill vs native
 ```
 
-`devtools::clean_dll()` matters when `ZUTEMPO_CFLAGS` changes:
-`load_all()` only recompiles files that changed.
+`devtools::clean_dll()` matters when `ZUTEMPO_CFLAGS` changes, and after
+any edit to a header that changes a struct’s layout: `load_all()` only
+recompiles `.c` files that changed, so an object built against the old
+header keeps the old sizes and the mismatch shows up as a stack smash
+(SIGABRT with no message) rather than a compile error.
 
 ## Architecture
 
@@ -124,8 +134,19 @@ Design §4 is the reference. The layers, top down:
   each commented with the section it implements. No `SEXP`, no R calls,
   no allocation in loops. Calendar algorithms and 128-bit intermediates
   come from `zufast`’s headers.
-- `src/ztp_tz*.c`: the zone cache. TZif reader, POSIX TZ footer rules,
-  link table, identifier index.
+- `src/ztp_tz*.c`: the zone cache. TZif reader and POSIX TZ footer rules
+  (`ztp_tz.c`), the session cache keyed by case-folded identifier
+  (`ztp_tz_cache.c`), the link table `tools/tz/links.R` generates
+  (`ztp_tz_links.c`). The engine never touches the file system: `R/tz.R`
+  finds the directory in base R’s order, walks it once per session for
+  the identifier index, reads a zone’s bytes with
+  [`readBin()`](https://rdrr.io/r/base/readBin.html) and hands them to
+  `ztp_tz_cache_put()`. `ztp_zone_parse()` only knows zones already in
+  the cache, so every R entry point that takes a zone goes through
+  `ztp_tz_ensure()` first.
+- `tests/testthat/tzdata/`: fat and slim TZif fixtures for 22 zones with
+  the transitions `zdump` reports, from `tools/tz/fixtures.R` (needs
+  `zic` and `zdump`). Regenerate when the tzdata pin moves.
 - `src/init.c`: the only exported symbol, `R_init_zutempo`. R reaches
   the registered routines as `C_<name>`
   (`useDynLib(..., .fixes = "C_")`).
@@ -309,6 +330,12 @@ This package calls:
   committed to `gh-pages` because `main` takes no direct pushes.
 - `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with
   `force: false` so it does not overwrite the badge.
+- `hardening.yaml`: `fuzz.yml` with the TZif harness `tools/fuzz/tzif.c`
+  against the engine sources (the glue excluded), seeded from the slim
+  fixtures; two minutes on a pull request, thirty nightly, with the
+  corpus carried between runs. The harness builds without R:
+  `clang -fsanitize=address,undefined` over `src/ztp_*.c` minus
+  `src/ztp_r_*.c` with `zufast`’s headers is the local smoke test.
 
 Small edits get a small run. The shared workflows look at the files a
 pull request changes, compared with its merge base:

@@ -16,7 +16,18 @@ zutempo_info()
 
 A list of class `zutempo_info` with elements `package`, `zufast`,
 `int128`, `spec_repository`, `spec_commit`, `spec_date`,
-`test262_repository`, `test262_commit`, `test262_date` and `tzdata`.
+`test262_repository`, `test262_commit`, `test262_date`, `tzdata`,
+`tzdir`, `tz_version`, `tz_form` and `tz_links_version`.
+
+## Details
+
+The time zone fields describe the database zutempo reads (design 8):
+`tzdir`, the directory found by base R's lookup order (`NA` when none
+exists), `tz_version`, the tzdata release it declares, `tz_form`,
+whether its files carry explicit transitions far into the future
+(`"fat"`) or stop at the last rule change (`"slim"`), and
+`tz_links_version`, the tzdata release the built-in link table comes
+from.
 
 ## Examples
 
@@ -26,5 +37,6 @@ zutempo_info()
 #>   zufast 0.1.0, 128-bit arithmetic: __int128
 #>   specification: tc39/proposal-temporal@e8cc03fc970a (2026-07-27)
 #>   test262: tc39/test262@d53ebc8b1931 (2026-10-13)
-#>   tzdata: 2026d
+#>   tzdata pin: 2026d; link table: 2026d
+#>   tz database: /usr/share/zoneinfo (2026c, fat)
 ```

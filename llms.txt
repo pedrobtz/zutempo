@@ -117,4 +117,6 @@ library(zutempo)
   : Replace fields of a Temporal value
 - [`zutempo_info()`](https://pedrobtz.github.io/zutempo/reference/zutempo_info.md)
   : What zutempo was built against
+- [`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md)
+  : Forget the parsed time zones
 

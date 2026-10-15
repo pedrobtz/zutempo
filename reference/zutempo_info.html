@@ -58,7 +58,18 @@ pins live in <code>inst/spec/PINS</code> and move only on purpose.</p>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list of class <code>zutempo_info</code> with elements <code>package</code>, <code>zufast</code>,
 <code>int128</code>, <code>spec_repository</code>, <code>spec_commit</code>, <code>spec_date</code>,
-<code>test262_repository</code>, <code>test262_commit</code>, <code>test262_date</code> and <code>tzdata</code>.</p>
+<code>test262_repository</code>, <code>test262_commit</code>, <code>test262_date</code>, <code>tzdata</code>,
+<code>tzdir</code>, <code>tz_version</code>, <code>tz_form</code> and <code>tz_links_version</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The time zone fields describe the database zutempo reads (design 8):
+<code>tzdir</code>, the directory found by base R's lookup order (<code>NA</code> when none
+exists), <code>tz_version</code>, the tzdata release it declares, <code>tz_form</code>,
+whether its files carry explicit transitions far into the future
+(<code>"fat"</code>) or stop at the last rule change (<code>"slim"</code>), and
+<code>tz_links_version</code>, the tzdata release the built-in link table comes
+from.</p>
     </div>
 
     <div class="section level2">
@@ -68,7 +79,8 @@ pins live in <code>inst/spec/PINS</code> and move only on purpose.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   zufast 0.1.0, 128-bit arithmetic: __int128</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   specification: tc39/proposal-temporal@e8cc03fc970a (2026-07-27)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   test262: tc39/test262@d53ebc8b1931 (2026-10-13)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   tzdata: 2026d</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   tzdata pin: 2026d; link table: 2026d</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   tz database: /usr/share/zoneinfo (2026c, fat)</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
