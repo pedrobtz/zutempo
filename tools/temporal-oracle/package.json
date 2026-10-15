@@ -1,0 +1,14 @@
+{
+  "name": "zutempo-temporal-oracle",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generates zutempo's oracle cases from temporal-polyfill (design 11).",
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.js",
+    "check-native": "node generate.js --check-native"
+  },
+  "dependencies": {
+    "temporal-polyfill": "1.0.6"
+  }
+}

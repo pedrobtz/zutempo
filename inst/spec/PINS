@@ -1,0 +1,7 @@
+Specification: tc39/proposal-temporal
+SpecificationCommit: e8cc03fc970a65a3359e8870e3b35e687ac94e55
+SpecificationDate: 2026-07-27
+Test262: tc39/test262
+Test262Commit: d53ebc8b1931d9f1541e43d59650776e4b766248
+Test262Date: 2026-10-13
+Tzdata: 2026d

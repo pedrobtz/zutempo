@@ -1,0 +1,106 @@
+// Run the cases of cases.js through an engine and write one JSON file per
+// type into tests/testthat/oracle/ (design 11, roadmap stage 1).
+//
+//   node generate.js                  temporal-polyfill, write the files
+//   node generate.js --check-native   compare temporal-polyfill with this
+//                                     Node's native Temporal (Node 26+),
+//                                     exit 1 on any difference, write nothing
+//
+// The output depends only on cases.js and the engine, so running it twice
+// gives identical files. The header records the engine and the tzdata
+// release of the Node binary (process.versions.tz) for cases that depend
+// on zone rules.
+
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { cases, fields } from "./cases.js";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const outDir = join(here, "..", "..", "tests", "testthat", "oracle");
+
+function polyfillVersion() {
+  const pkg = JSON.parse(
+    readFileSync(join(here, "node_modules", "temporal-polyfill", "package.json"), "utf8"),
+  );
+  return pkg.version;
+}
+
+function describe(Temporal, type, value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "string") {
+    return value;
+  }
+  const out = { string: value.toString() };
+  const names = fields[type];
+  if (names && value instanceof Temporal[type]) {
+    out.fields = {};
+    for (const name of names) {
+      const v = value[name];
+      out.fields[name] = v === undefined ? null : v;
+    }
+  }
+  return out;
+}
+
+function run(Temporal, type, c) {
+  const record = { id: c.id, op: c.op, args: c.args };
+  if (c.options !== undefined) record.options = c.options;
+  const target = Temporal[type];
+  try {
+    const args = c.options === undefined ? c.args : [...c.args, c.options];
+    const value = target[c.op](...args);
+    record.result = describe(Temporal, type, value);
+  } catch (e) {
+    record.throws = e instanceof RangeError ? "RangeError"
+      : e instanceof TypeError ? "TypeError"
+      : e.constructor.name;
+  }
+  return record;
+}
+
+function generate(Temporal, engine) {
+  const files = {};
+  for (const type of Object.keys(cases)) {
+    const doc = {
+      type,
+      engine,
+      tz: process.versions.tz ?? null,
+      cases: cases[type].map((c) => run(Temporal, type, c)),
+    };
+    files[`${type}.json`] = JSON.stringify(doc, null, 2) + "\n";
+  }
+  return files;
+}
+
+const { Temporal: Polyfill } = await import("temporal-polyfill");
+const polyfill = generate(Polyfill, `temporal-polyfill ${polyfillVersion()}`);
+
+if (process.argv.includes("--check-native")) {
+  if (typeof globalThis.Temporal === "undefined") {
+    console.error("This Node has no native Temporal; Node 26 or later is needed.");
+    process.exit(2);
+  }
+  const native = generate(globalThis.Temporal, `node ${process.versions.node}`);
+  let differences = 0;
+  for (const name of Object.keys(polyfill)) {
+    const a = JSON.parse(polyfill[name]).cases;
+    const b = JSON.parse(native[name]).cases;
+    for (let i = 0; i < a.length; i++) {
+      const x = JSON.stringify(a[i]);
+      const y = JSON.stringify(b[i]);
+      if (x !== y) {
+        differences++;
+        console.log(`${name} ${a[i].id}\n  polyfill: ${x}\n  native:   ${y}`);
+      }
+    }
+  }
+  console.log(`${differences} difference(s)`);
+  process.exit(differences === 0 ? 0 : 1);
+}
+
+mkdirSync(outDir, { recursive: true });
+for (const [name, text] of Object.entries(polyfill)) {
+  writeFileSync(join(outDir, name), text);
+  console.log(`wrote ${join("tests", "testthat", "oracle", name)}`);
+}

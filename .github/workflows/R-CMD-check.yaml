@@ -22,3 +22,13 @@ jobs:
       # Quick on each push to a pull request, full after merge. The
       # `full-ci` label runs the full set on a pull request before merging.
       profile: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') && 'quick' || 'full' }}
+
+  # The same check with zufast's 128-bit arithmetic built without the
+  # compiler's __int128 (design 4.3). src/Makevars adds ZUTEMPO_CFLAGS to
+  # PKG_CFLAGS, and test-info.R asserts that the flag reached the engine.
+  R-CMD-check-no-int128:
+    uses: pedrobtz/r-actions/.github/workflows/r-cmd-check.yml@v1
+    with:
+      profile: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') && 'quick' || 'full' }}
+      env: |
+        ZUTEMPO_CFLAGS=-DZUF_NO_INT128

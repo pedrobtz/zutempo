@@ -2,6 +2,6 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @useDynLib zutempo, .registration = TRUE
+#' @useDynLib zutempo, .registration = TRUE, .fixes = "C_"
 ## usethis namespace: end
 NULL

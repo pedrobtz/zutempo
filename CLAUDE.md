@@ -23,10 +23,16 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: package identity only (stage 0). `src/` holds the
-registration entry point and nothing else; no R function exists yet. The
-engine, the types and the time zone reader are not implemented. See the
-roadmap's stage table for what is done.
+Verified 2026-10-15: stages 0 and 1. The layering of design §4 exists end
+to end for one probe (`src/ztp_probe.c`, reached through the internal
+`ztp_probe_*()` functions): engine context and status codes (`src/ztp.h`),
+R glue that raises classed conditions with the failing element's index
+(`src/ztp_r_common.c`, `R/conditions.R`), and `zutempo_info()` with the
+pins of `inst/spec/PINS`. The member list of the pinned specification is
+in `inst/spec/members.csv`, and `tests/testthat/test-members.R` lists every
+member as pending. The oracle loop runs for `PlainDate` and skips until
+stage 2. No Temporal type is implemented yet; the engine's real operations
+and the time zone reader are not built. See the roadmap's stage table.
 
 ## Stage tracking
 
@@ -79,6 +85,21 @@ The default loop is `document()`, `test()`, `check()`. Before the first
 `load_all()`, install the development `zufast`:
 `Rscript -e 'pak::pak("pedrobtz/zufast")'`.
 
+Occasional:
+
+```sh
+ZUTEMPO_CFLAGS=-DZUF_NO_INT128 Rscript -e 'devtools::clean_dll(); devtools::test()'
+                                                 # the portable 128-bit build
+Rscript tools/spec/members.R                     # regenerate inst/spec/members.csv
+(cd tools/temporal-oracle && npm ci && npm run generate)
+                                                 # regenerate tests/testthat/oracle/
+(cd tools/temporal-oracle && npm run check-native)
+                                                 # Node 26+: polyfill vs native
+```
+
+`devtools::clean_dll()` matters when `ZUTEMPO_CFLAGS` changes: `load_all()`
+only recompiles files that changed.
+
 ## Architecture
 
 Design §4 is the reference. The layers, top down:
@@ -94,7 +115,19 @@ Design §4 is the reference. The layers, top down:
   from `zufast`'s headers.
 - `src/ztp_tz*.c`: the zone cache. TZif reader, POSIX TZ footer rules, link
   table, identifier index.
-- `src/init.c`: the only exported symbol, `R_init_zutempo`.
+- `src/init.c`: the only exported symbol, `R_init_zutempo`. R reaches the
+  registered routines as `C_<name>` (`useDynLib(..., .fixes = "C_")`).
+- `src/ztp.h`: `ztp_status` and `ztp_ctx`. An engine function takes a
+  context and returns a status; on failure `ztp_fail()` records the status,
+  the 1-based element index and a message. `src/ztp_r.h`: `ztp_r_raise()`
+  turns a failed context into a condition by evaluating `stop_zutempo()`
+  in the namespace.
+- `inst/spec/PINS`: the specification, test262 and tzdata pins (DCF).
+  `inst/spec/members.csv`: every member of the pinned specification with
+  its R name, written by `tools/spec/members.R`.
+- `tools/temporal-oracle/`: the Node project that writes
+  `tests/testthat/oracle/<Type>.json` from `temporal-polyfill`. Cases are
+  data in `cases.js`; expectations come from the engine.
 
 ## Invariants that are easy to break
 
@@ -137,8 +170,12 @@ Design §4 is the reference. The layers, top down:
   translated in stage 11. Zone cases run against committed TZif fixtures
   from a pinned tzdata release, not the machine's database.
 - **Tests that need the machine's database skip when it is missing.**
-- **Helpers live in `tests/testthat/helper-*.R`.** `helper-oracle.R` runs
-  every case in an oracle JSON file (from stage 1).
+- **Helpers live in `tests/testthat/helper-*.R`.** `helper-oracle.R` reads
+  an oracle JSON file (`oracle_cases()`) and holds one checker per type
+  (`oracle_check_plain_date()`, ...), which skips until that type's
+  constructor exists. `test-oracle-<type>.R` loops the cases through it.
+- **`test-members.R` is the member ledger.** When a stage exports a member,
+  remove its name from `pending` there; the test fails otherwise.
 - **Keep the suite inside the CRAN time budget.** Not yet measured.
 
 ## Definition of done
@@ -192,11 +229,14 @@ This package calls:
 
 - `R-CMD-check.yaml`: `r-cmd-check.yml@v1`, quick on pull requests, full on
   `main` or with the `full-ci` label.
-- `native-checks.yml`: `valgrind.yml`, `lto.yml`, `gctorture.yml`,
-  `rchk.yml` (with `github-packages: pedrobtz/zufast`, since the rchk image
-  ignores `Remotes:`), `analyzers.yml` and `cran-special.yml`, with the same
-  profile expression. `sanitizers.yml` (with ASan) joins in stage 1, once
-  there is C for it to instrument (pedrobtz/r-actions#68).
+- `R-CMD-check.yaml` also runs `R-CMD-check-no-int128`, the same check with
+  `ZUTEMPO_CFLAGS=-DZUF_NO_INT128` in the environment, which
+  `src/Makevars` adds to `PKG_CFLAGS`; `test-info.R` asserts that the flag
+  reached the engine.
+- `native-checks.yml`: `sanitizers.yml` (with ASan), `valgrind.yml`,
+  `lto.yml`, `gctorture.yml`, `rchk.yml` (with `github-packages:
+  pedrobtz/zufast`, since the rchk image ignores `Remotes:`),
+  `analyzers.yml` and `cran-special.yml`, with the same profile expression.
 - `coverage.yaml`: `coverage.yml` pinned to a commit. The badge is committed
   to `gh-pages` because `main` takes no direct pushes.
 - `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with
