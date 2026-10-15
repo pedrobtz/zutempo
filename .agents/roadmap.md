@@ -30,7 +30,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | [#25](https://github.com/pedrobtz/zutempo/pull/25) | 2026-10-15 |
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | [#26](https://github.com/pedrobtz/zutempo/pull/26), [#28](https://github.com/pedrobtz/zutempo/pull/28) | 2026-10-15 |
 | 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | [#27](https://github.com/pedrobtz/zutempo/pull/27) | 2026-10-15 |
-| 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | | |
+| 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | | 2026-10-15 |
 | 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | | |
 | 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | | |
 | 12 | [Documentation](#stage-12--documentation) | [#15](https://github.com/pedrobtz/zutempo/issues/15) | | |
@@ -699,6 +699,24 @@ offers is offered, and the parsers are fuzzed.
 - `pending` in `test-members.R` is empty.
 
 **Design.** §2 (calendars), §6.8, §9, §10, §11 (fuzzing), §14 row 6.
+
+**Deviations (2026-10-15).**
+- `zutempo_parse()` takes the type to read: `zutempo_parse(x, type, ...,
+  na_on_error = TRUE)`, where §6.8 gives `zutempo_parse(x, na_on_error =
+  TRUE)` without saying what it returns. The maintainer chose this shape on
+  2026-10-15. The failures travel in the attribute `parse_errors`, read
+  with `zutempo_parse_errors()`; that function is new public API.
+- Strings the grammar rejects and `temporal-polyfill` 1.0.6 accepts stay
+  out of the oracle and are tested in `test-strings.R`: a key-value
+  annotation before the time zone annotation, an empty annotation value,
+  a value ending in `-` or holding `_`, a key that starts with a digit.
+  Native Temporal in Node 26.11.1 rejects them as zutempo does. It also
+  rejects one-character annotation keys and values, which the grammar
+  allows; `check-native` lists that as a known native bug.
+- The fuzz targets are seeded from the oracle's strings and the ISO
+  strings of test262's `harness/temporalHelpers.js` at the pinned commit
+  (`tools/fuzz/seeds.mjs`), not from every string in the test files;
+  stage 11 translates those.
 
 ## Stage 10 — Base R conversions and epoch nanoseconds
 
