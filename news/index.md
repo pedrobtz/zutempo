@@ -15,6 +15,9 @@
   valid date; a time zone string whose offset has seconds is an error
   even when they are zero; and a duration field computed from a large
   total is the nearest double.
+- On macOS the time zone database is R’s own copy first, then the
+  system’s, as base R reads it, so zutempo and `POSIXct` agree;
+  `TZDIR = "macOS"` selects the system’s.
 - Operations on zoned values no longer look for the time zone database
   on every call: the directory is found once per setting of
   `zutempo.tzdir` and `TZDIR`, and again after
