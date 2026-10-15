@@ -34,6 +34,21 @@ now_plain_time_iso(time_zone = NULL)
 
 `now_time_zone_id()` returns a string; the others the value named.
 
+## Members
+
+Every member of `Temporal.Now` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `Temporal.Now.timeZoneId()` | `now_time_zone_id()` |
+| `Temporal.Now.instant()` | [`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md) |
+| `Temporal.Now.plainDateTimeISO()` | `now_plain_date_time_iso()` |
+| `Temporal.Now.zonedDateTimeISO()` | `now_zoned_date_time_iso()` |
+| `Temporal.Now.plainDateISO()` | `now_plain_date_iso()` |
+| `Temporal.Now.plainTimeISO()` | `now_plain_time_iso()` |
+
 ## Examples
 
 ``` r
@@ -41,14 +56,14 @@ now_time_zone_id()
 #> [1] "UTC"
 now_zoned_date_time_iso()
 #> <zutempo_zoned_date_time[1]>
-#> [1] 2026-10-15T17:52:49.710909128+00:00[UTC]
+#> [1] 2026-10-15T18:10:42.249287605+00:00[UTC]
 now_plain_date_time_iso("Asia/Tokyo")
 #> <zutempo_plain_date_time[1]>
-#> [1] 2026-10-16T02:52:49.712137461
+#> [1] 2026-10-16T03:10:42.256935596
 now_plain_date_iso("Pacific/Auckland")
 #> <zutempo_plain_date[1]>
 #> [1] 2026-10-16
 now_plain_time_iso("UTC")
 #> <zutempo_plain_time[1]>
-#> [1] 17:52:49.722456932
+#> [1] 18:10:42.266308308
 ```

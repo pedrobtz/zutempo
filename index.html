@@ -31,6 +31,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/zutempo.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
@@ -51,11 +52,11 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of zutempo is to …</p>
+<p>zutempo implements <a href="https://tc39.es/proposal-temporal/" class="external-link">Temporal</a>, the date and time model of ECMA-262, in R. It has the eight Temporal types and <code>Temporal.Now</code>, in the ISO 8601 calendar, with IANA time zones read from the same database base R uses. The arithmetic follows the specification’s own operations in C, over the specification’s full ranges, so a result in R is the result in a browser or in Node.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of zutempo from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<p>zutempo is not on CRAN yet. Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"pedrobtz/zutempo"</span><span class="op">)</span></span></code></pre></div>
@@ -63,10 +64,130 @@
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pedrobtz.github.io/zutempo/">zutempo</a></span><span class="op">)</span></span>
-<span><span class="co">## basic example code</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pedrobtz.github.io/zutempo/">zutempo</a></span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/zoned_date_time.html">zoned_date_time</a></span><span class="op">(</span><span class="st">"2026-03-07T12:00[America/New_York]"</span><span class="op">)</span></span>
+<span><span class="va">x</span></span>
+<span><span class="co">#&gt; &lt;zutempo_zoned_date_time[1]&gt;</span></span>
+<span><span class="co">#&gt; [1] 2026-03-07T12:00:00-05:00[America/New_York]</span></span>
+<span></span>
+<span><span class="co"># Clocks go forward overnight, so 25 hours later is 14:00 the next day.</span></span>
+<span><span class="fu"><a href="reference/temporal_add.html">temporal_add</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="reference/duration.html">duration</a></span><span class="op">(</span>hours <span class="op">=</span> <span class="fl">25</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;zutempo_zoned_date_time[1]&gt;</span></span>
+<span><span class="co">#&gt; [1] 2026-03-08T14:00:00-04:00[America/New_York]</span></span>
+<span></span>
+<span><span class="co"># The same 25 hours are a day and two hours of that calendar day.</span></span>
+<span><span class="fu"><a href="reference/temporal_round.html">temporal_round</a></span><span class="op">(</span><span class="fu"><a href="reference/duration.html">duration</a></span><span class="op">(</span>hours <span class="op">=</span> <span class="fl">25</span><span class="op">)</span>, largest_unit <span class="op">=</span> <span class="st">"day"</span>, relative_to <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;zutempo_duration[1]&gt;</span></span>
+<span><span class="co">#&gt; [1] P1DT2H</span></span>
+<span></span>
+<span><span class="co"># One month after 31 January, constrained to the month's last day.</span></span>
+<span><span class="fu"><a href="reference/plain_date.html">plain_date</a></span><span class="op">(</span><span class="st">"2026-01-31"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/temporal_add.html">temporal_add</a></span><span class="op">(</span><span class="fu"><a href="reference/duration.html">duration</a></span><span class="op">(</span>months <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;zutempo_plain_date[1]&gt;</span></span>
+<span><span class="co">#&gt; [1] 2026-02-28</span></span>
+<span></span>
+<span><span class="co"># The last instant Temporal represents, in exact nanoseconds.</span></span>
+<span><span class="fu"><a href="reference/temporal_fields.html">epoch_nanoseconds</a></span><span class="op">(</span><span class="fu"><a href="reference/instant.html">instant</a></span><span class="op">(</span><span class="st">"+275760-09-13T00:00Z"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "8640000000000000000000"</span></span></code></pre></div>
+<p>Values are vectors, with <code>NA</code>, and work in data frames:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plain_date.html">plain_date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2026-01-31"</span>, <span class="st">"2026-02-28"</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/temporal_until.html">temporal_until</a></span><span class="op">(</span><span class="va">d</span>, <span class="st">"2026-12-25"</span>, largest_unit <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;zutempo_duration[3]&gt;</span></span>
+<span><span class="co">#&gt; [1] P10M25D P9M27D  &lt;NA&gt;</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>date <span class="op">=</span> <span class="va">d</span>, weekday <span class="op">=</span> <span class="fu"><a href="reference/temporal_fields.html">day_of_week</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         date weekday</span></span>
+<span><span class="co">#&gt; 1 2026-01-31       6</span></span>
+<span><span class="co">#&gt; 2 2026-02-28       6</span></span>
+<span><span class="co">#&gt; 3       &lt;NA&gt;      NA</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="from-temporal-to-r">From Temporal to R<a class="anchor" aria-label="anchor" href="#from-temporal-to-r"></a>
+</h2>
+<p>Names follow Temporal’s, in snake case, by one rule per kind of member:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>Temporal</th>
+<th>R</th>
+<th>Examples</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>a type and its <code>from()</code>
+</td>
+<td>the constructor named after the type</td>
+<td>
+<code><a href="reference/plain_date.html">plain_date()</a></code>, <code><a href="reference/instant.html">instant()</a></code>, <code><a href="reference/zoned_date_time.html">zoned_date_time()</a></code>, <code><a href="reference/duration.html">duration()</a></code>
+</td>
+</tr>
+<tr>
+<td>another static method</td>
+<td>the type name, then the method name</td>
+<td>
+<code><a href="reference/duration.html">duration_compare()</a></code>, <code><a href="reference/instant.html">instant_compare()</a></code>
+</td>
+</tr>
+<tr>
+<td>a prototype method</td>
+<td>
+<code>temporal_</code> and the method name</td>
+<td>
+<code><a href="reference/temporal_add.html">temporal_add()</a></code>, <code><a href="reference/temporal_round.html">temporal_round()</a></code>, <code><a href="reference/temporal_until.html">temporal_since()</a></code>
+</td>
+</tr>
+<tr>
+<td>a property</td>
+<td>an accessor named after it</td>
+<td>
+<code><a href="reference/temporal_fields.html">year()</a></code>, <code><a href="reference/temporal_fields.html">epoch_nanoseconds()</a></code>, <code><a href="reference/temporal_fields.html">hours_in_day()</a></code>
+</td>
+</tr>
+<tr>
+<td>a <code>Temporal.Now</code> function</td>
+<td>
+<code>now_</code> and the function name</td>
+<td>
+<code><a href="reference/now_instant.html">now_instant()</a></code>, <code><a href="reference/now_time_zone_id.html">now_zoned_date_time_iso()</a></code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Options are named arguments, as in <code>temporal_round(x, "hour", rounding_mode = "halfEven")</code>. Each type’s help page lists every member of the type with its R function.</p>
+<p>The accessors are generics that mask functions of the same name: base R’s <code><a href="reference/temporal_fields.html">months()</a></code>, stats’ <code><a href="reference/temporal_fields.html">offset()</a></code>, and lubridate’s <code><a href="reference/temporal_fields.html">year()</a></code>, <code><a href="reference/temporal_fields.html">month()</a></code>, <code><a href="reference/temporal_fields.html">day()</a></code> and the like when it is attached. For any object that is not zutempo’s they call the function they mask, so <code>months(Sys.Date())</code> and lubridate’s own objects keep working.</p>
+</div>
+<div class="section level2">
+<h2 id="base-rs-dates-and-times">Base R’s dates and times<a class="anchor" aria-label="anchor" href="#base-rs-dates-and-times"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="reference/plain_date.html">plain_date</a></span><span class="op">(</span><span class="st">"2026-03-07"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2026-03-07"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="fu"><a href="reference/zoned_date_time.html">zoned_date_time</a></span><span class="op">(</span><span class="st">"2026-03-07T12:00[Europe/Lisbon]"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "2026-03-07 12:00:00 WET"</span></span>
+<span><span class="fu"><a href="reference/instant.html">instant</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="st">"2026-03-07 12:00:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;zutempo_instant[1]&gt;</span></span>
+<span><span class="co">#&gt; [1] 2026-03-07T12:00:00Z</span></span>
+<span><span class="fu"><a href="reference/duration.html">duration</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/difftime.html" class="external-link">as.difftime</a></span><span class="op">(</span><span class="fl">90</span>, units <span class="op">=</span> <span class="st">"mins"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;zutempo_duration[1]&gt;</span></span>
+<span><span class="co">#&gt; [1] PT5400S</span></span></code></pre></div>
+<p>A <code>Date</code> and a <code><a href="reference/plain_date.html">plain_date()</a></code> convert exactly. A <code>POSIXct</code> is a double, so an instant converts to the nearest double second; <code><a href="reference/zutempo_parse.html">zutempo_parse()</a></code> reads character vectors in bulk, with <code>NA</code> for what it cannot read.</p>
+</div>
+<div class="section level2">
+<h2 id="not-in-010">Not in 0.1.0<a class="anchor" aria-label="anchor" href="#not-in-010"></a>
+</h2>
+<ul>
+<li>Calendars other than ISO 8601 (Hebrew, Japanese and the others come from ECMA-402, with CLDR data).</li>
+<li>Locale formatting (<code>toLocaleString()</code>).</li>
+<li>Custom time zones, and POSIX TZ strings as zone identifiers.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/strptime.html" class="external-link">strftime()</a></code>-style formats: convert to <code>POSIXct</code> for those.</li>
+<li>Arithmetic and comparison operators on dates (<code>x + d</code>, <code>x &lt; y</code>): use the functions. Durations do compare with <code>==</code> and <code>&lt;</code>.</li>
+</ul>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

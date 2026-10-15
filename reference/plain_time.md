@@ -56,6 +56,35 @@ plain_time_compare(x, y)
 A `plain_time()` vector; `plain_time_compare()` returns an integer
 vector of -1, 0 and 1.
 
+## Members
+
+Every member of `Temporal.PlainTime` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `new Temporal.PlainTime()` | `plain_time()` |
+| `Temporal.PlainTime.from()` | `plain_time()` |
+| `Temporal.PlainTime.compare()` | `plain_time_compare()` |
+| `.hour` | [`hour()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.minute` | [`minute()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.second` | [`second()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.millisecond` | [`millisecond()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.microsecond` | [`microsecond()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.nanosecond` | [`nanosecond()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.add()` | [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.subtract()` | [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.with()` | [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.until()` | [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.since()` | [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.round()` | [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md) |
+| `.equals()` | [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md) |
+| `.toString()` | [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md) |
+| `.toLocaleString()` | none: ECMA-402 (locale formatting) is out of scope |
+| `.toJSON()` | none: format() covers it |
+| `.valueOf()` | none: throws in JavaScript; no R counterpart |
+
 ## Examples
 
 ``` r

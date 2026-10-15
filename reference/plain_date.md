@@ -64,6 +64,49 @@ vector of -1, 0 and 1.
 Dates run from -271821-04-19 to +275760-09-13. A result outside that
 range is a `zutempo_range_error`, never `NA`.
 
+## Members
+
+Every member of `Temporal.PlainDate` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `new Temporal.PlainDate()` | `plain_date()` |
+| `Temporal.PlainDate.from()` | `plain_date()` |
+| `Temporal.PlainDate.compare()` | `plain_date_compare()` |
+| `.calendarId` | [`calendar_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.era` | [`era()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.eraYear` | [`era_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.year` | [`year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.month` | [`month()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.monthCode` | [`month_code()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.day` | [`day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.dayOfWeek` | [`day_of_week()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.dayOfYear` | [`day_of_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.weekOfYear` | [`week_of_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.yearOfWeek` | [`year_of_week()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInWeek` | [`days_in_week()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInMonth` | [`days_in_month()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInYear` | [`days_in_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.monthsInYear` | [`months_in_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.inLeapYear` | [`in_leap_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.toPlainYearMonth()` | [`temporal_to_plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+| `.toPlainMonthDay()` | [`temporal_to_plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+| `.add()` | [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.subtract()` | [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.with()` | [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.withCalendar()` | [`temporal_with_calendar()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.until()` | [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.since()` | [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.equals()` | [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md) |
+| `.toPlainDateTime()` | [`temporal_to_plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+| `.toZonedDateTime()` | [`temporal_to_zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md) |
+| `.toString()` | [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md) |
+| `.toLocaleString()` | none: ECMA-402 (locale formatting) is out of scope |
+| `.toJSON()` | none: format() covers it |
+| `.valueOf()` | none: throws in JavaScript; no R counterpart |
+
 ## Examples
 
 ``` r

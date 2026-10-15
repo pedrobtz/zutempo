@@ -68,6 +68,39 @@ Months run from -271821-04 to +275760-09, every month that holds a
 representable
 [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md).
 
+## Members
+
+Every member of `Temporal.PlainYearMonth` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `new Temporal.PlainYearMonth()` | `plain_year_month()` |
+| `Temporal.PlainYearMonth.from()` | `plain_year_month()` |
+| `Temporal.PlainYearMonth.compare()` | `plain_year_month_compare()` |
+| `.calendarId` | [`calendar_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.era` | [`era()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.eraYear` | [`era_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.year` | [`year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.month` | [`month()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.monthCode` | [`month_code()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInYear` | [`days_in_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInMonth` | [`days_in_month()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.monthsInYear` | [`months_in_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.inLeapYear` | [`in_leap_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.with()` | [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.add()` | [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.subtract()` | [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.until()` | [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.since()` | [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.equals()` | [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md) |
+| `.toString()` | [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md) |
+| `.toLocaleString()` | none: ECMA-402 (locale formatting) is out of scope |
+| `.toJSON()` | none: format() covers it |
+| `.valueOf()` | none: throws in JavaScript; no R counterpart |
+| `.toPlainDate()` | [`temporal_to_plain_date()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+
 ## Examples
 
 ``` r

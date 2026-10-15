@@ -39,6 +39,33 @@ instant_compare(x, y)
 An `instant()` vector; `instant_compare()` returns an integer vector of
 -1, 0 and 1.
 
+## Members
+
+Every member of `Temporal.Instant` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `new Temporal.Instant()` | `instant()` |
+| `Temporal.Instant.from()` | `instant()` |
+| `Temporal.Instant.fromEpochMilliseconds()` | `instant_from_epoch_milliseconds()` |
+| `Temporal.Instant.fromEpochNanoseconds()` | `instant_from_epoch_nanoseconds()` |
+| `Temporal.Instant.compare()` | `instant_compare()` |
+| `.epochMilliseconds` | [`epoch_milliseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.epochNanoseconds` | [`epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.add()` | [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.subtract()` | [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.until()` | [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.since()` | [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.round()` | [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md) |
+| `.equals()` | [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md) |
+| `.toString()` | [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md) |
+| `.toLocaleString()` | none: ECMA-402 (locale formatting) is out of scope |
+| `.toJSON()` | none: format() covers it |
+| `.valueOf()` | none: throws in JavaScript; no R counterpart |
+| `.toZonedDateTimeISO()` | [`temporal_to_zoned_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md) |
+
 ## Examples
 
 ``` r

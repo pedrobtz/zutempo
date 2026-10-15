@@ -1,65 +1,40 @@
 # Package index
 
-## All functions
+## Types
 
-- [`as.Date(`*`<zutempo_plain_date>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.Date(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.Date(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.Date(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.POSIXct(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.POSIXct(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.POSIXct(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.POSIXlt(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.POSIXlt(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`as.POSIXlt(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  [`temporal_to_difftime()`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
-  : Convert Temporal values to base R dates and times
-
-- [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
-  [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
-  : Durations: Temporal's Duration
+Temporal’s eight types, each built by the function named after it from
+fields, strings or other values. Each topic lists every member of the
+type and the R function that implements it.
 
 - [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
   [`instant_from_epoch_milliseconds()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
   [`instant_from_epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
   [`instant_compare()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
   : Exact times: Temporal's Instant
-
-- [`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md)
-  : The current time
-
-- [`now_time_zone_id()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
-  [`now_zoned_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
-  [`now_plain_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
-  [`now_plain_date_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
-  [`now_plain_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
-  : The current time in a time zone
-
-- [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
-  [`plain_date_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
-  : Calendar dates: Temporal's PlainDate
-
+- [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  [`zoned_date_time_compare()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  : Exact times in a time zone: Temporal's ZonedDateTime
 - [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
   [`plain_date_time_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
   : Calendar dates with clock times: Temporal's PlainDateTime
-
-- [`plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/plain_month_day.md)
-  : Days of the year: Temporal's PlainMonthDay
-
+- [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
+  [`plain_date_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
+  : Calendar dates: Temporal's PlainDate
 - [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
   [`plain_time_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
   : Clock times: Temporal's PlainTime
-
 - [`plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md)
   [`plain_year_month_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md)
   : Months: Temporal's PlainYearMonth
+- [`plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/plain_month_day.md)
+  : Days of the year: Temporal's PlainMonthDay
+- [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
+  [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
+  : Durations: Temporal's Duration
 
-- [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md)
-  [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md)
-  : Add a duration to, or subtract one from, a Temporal value
+## Properties
 
-- [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md)
-  : Compare Temporal values
+Temporal’s properties, as accessors named after them.
 
 - [`calendar_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
   [`era()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
@@ -103,53 +78,74 @@
   [`hours_in_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
   : Fields of a Temporal value
 
-- [`temporal_get_time_zone_transition()`](https://pedrobtz.github.io/zutempo/reference/temporal_get_time_zone_transition.md)
-  : Time zone transitions
+## Methods
 
+Temporal’s prototype methods, as `temporal_` and the method name.
+
+- [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md)
+  [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md)
+  : Add a duration to, or subtract one from, a Temporal value
+- [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
+  [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
+  : Difference between two Temporal values
+- [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md)
+  : Round a Temporal value
+- [`temporal_total()`](https://pedrobtz.github.io/zutempo/reference/temporal_total.md)
+  : Total a duration in one unit
+- [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
+  [`temporal_with_plain_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
+  [`temporal_with_calendar()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
+  [`temporal_with_time_zone()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
+  : Replace fields of a Temporal value
+- [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md)
+  : Compare Temporal values
 - [`temporal_negated()`](https://pedrobtz.github.io/zutempo/reference/temporal_negated.md)
   [`temporal_abs()`](https://pedrobtz.github.io/zutempo/reference/temporal_negated.md)
   : Negate or take the magnitude of a duration
-
-- [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md)
-  : Round a Temporal value
-
 - [`temporal_start_of_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_start_of_day.md)
   : The start of a day in a time zone
-
+- [`temporal_get_time_zone_transition()`](https://pedrobtz.github.io/zutempo/reference/temporal_get_time_zone_transition.md)
+  : Time zone transitions
 - [`temporal_to_instant()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md)
   [`temporal_to_zoned_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md)
   [`temporal_to_zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md)
   : Convert to and from zoned values
-
 - [`temporal_to_plain_date()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   [`temporal_to_plain_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   [`temporal_to_plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   [`temporal_to_plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   [`temporal_to_plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   : Convert between the plain types
-
 - [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
   : Format a Temporal value as an ISO 8601 string
 
-- [`temporal_total()`](https://pedrobtz.github.io/zutempo/reference/temporal_total.md)
-  : Total a duration in one unit
+## Now
 
-- [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
-  [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
-  : Difference between two Temporal values
+`Temporal.Now`: the system time zone and the current time.
 
-- [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
-  [`temporal_with_plain_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
-  [`temporal_with_calendar()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
-  [`temporal_with_time_zone()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md)
-  : Replace fields of a Temporal value
+- [`now_time_zone_id()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
+  [`now_zoned_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
+  [`now_plain_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
+  [`now_plain_date_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
+  [`now_plain_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
+  : The current time in a time zone
+- [`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md)
+  : The current time
 
-- [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
-  [`zoned_date_time_compare()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
-  : Exact times in a time zone: Temporal's ZonedDateTime
+## Conversions and reading
 
-- [`zutempo_info()`](https://pedrobtz.github.io/zutempo/reference/zutempo_info.md)
-  : What zutempo was built against
+- [`as.Date(`*`<zutempo_plain_date>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.Date(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.Date(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.Date(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXct(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXct(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXct(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXlt(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXlt(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXlt(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`temporal_to_difftime()`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  : Convert Temporal values to base R dates and times
 
 - [`zutempo_parse()`](https://pedrobtz.github.io/zutempo/reference/zutempo_parse.md)
   :
@@ -163,5 +159,18 @@
   [`zutempo_parse()`](https://pedrobtz.github.io/zutempo/reference/zutempo_parse.md)
   could not read
 
+## Options
+
+- [`zutempo_options`](https://pedrobtz.github.io/zutempo/reference/zutempo_options.md)
+  : Options shared by zutempo's functions
+
+## The package
+
+- [`zutempo`](https://pedrobtz.github.io/zutempo/reference/zutempo-package.md)
+  [`zutempo-package`](https://pedrobtz.github.io/zutempo/reference/zutempo-package.md)
+  : zutempo: Dates, Times and Durations Following the 'TC39' Temporal
+  Specification
+- [`zutempo_info()`](https://pedrobtz.github.io/zutempo/reference/zutempo_info.md)
+  : What zutempo was built against
 - [`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md)
   : Forget the parsed time zones

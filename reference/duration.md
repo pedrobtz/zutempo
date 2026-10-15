@@ -60,6 +60,41 @@ duration_compare(x, y, relative_to = NULL)
 A `duration()` vector; `duration_compare()` returns an integer vector of
 -1, 0 and 1.
 
+## Members
+
+Every member of `Temporal.Duration` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `new Temporal.Duration()` | `duration()` |
+| `Temporal.Duration.from()` | `duration()` |
+| `Temporal.Duration.compare()` | `duration_compare()` |
+| `.years` | [`years()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.months` | [`months()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.weeks` | [`weeks()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.days` | [`days()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.hours` | [`hours()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.minutes` | [`minutes()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.seconds` | [`seconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.milliseconds` | [`milliseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.microseconds` | [`microseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.nanoseconds` | [`nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.sign` | [`sign()`](https://rdrr.io/r/base/sign.html) |
+| `.blank` | [`blank()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.with()` | [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.negated()` | [`temporal_negated()`](https://pedrobtz.github.io/zutempo/reference/temporal_negated.md) |
+| `.abs()` | [`temporal_abs()`](https://pedrobtz.github.io/zutempo/reference/temporal_negated.md) |
+| `.add()` | [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.subtract()` | [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.round()` | [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md) |
+| `.total()` | [`temporal_total()`](https://pedrobtz.github.io/zutempo/reference/temporal_total.md) |
+| `.toString()` | [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md) |
+| `.toJSON()` | none: format() covers it |
+| `.toLocaleString()` | none: ECMA-402 (locale formatting) is out of scope |
+| `.valueOf()` | none: throws in JavaScript; no R counterpart |
+
 ## Examples
 
 ``` r

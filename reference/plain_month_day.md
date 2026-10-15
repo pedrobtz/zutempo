@@ -61,6 +61,27 @@ plain_month_day(
 
 A `plain_month_day()` vector.
 
+## Members
+
+Every member of `Temporal.PlainMonthDay` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `new Temporal.PlainMonthDay()` | `plain_month_day()` |
+| `Temporal.PlainMonthDay.from()` | `plain_month_day()` |
+| `.calendarId` | [`calendar_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.monthCode` | [`month_code()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.day` | [`day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.with()` | [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.equals()` | [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md) |
+| `.toString()` | [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md) |
+| `.toLocaleString()` | none: ECMA-402 (locale formatting) is out of scope |
+| `.toJSON()` | none: format() covers it |
+| `.valueOf()` | none: throws in JavaScript; no R counterpart |
+| `.toPlainDate()` | [`temporal_to_plain_date()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+
 ## Examples
 
 ``` r

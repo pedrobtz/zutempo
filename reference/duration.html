@@ -23,7 +23,8 @@ length take relative_to, a date, and fail without it (design 6.5)."></head><body
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/zutempo.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -101,6 +102,12 @@ when either duration has years, months or weeks.</p></dd>
     <p>A <code>duration()</code> vector; <code>duration_compare()</code> returns an integer
 vector of -1, 0 and 1.</p>
     </div>
+    <div class="section level2">
+    <h2 id="members">Members<a class="anchor" aria-label="anchor" href="#members"></a></h2>
+
+
+<p>Every member of <code>Temporal.Duration</code> in the pinned specification
+(<code>inst/spec/PINS</code>) and the R function that implements it:</p><table class="table table"><tr><td>Temporal</td><td>R</td></tr><tr><td><code>new Temporal.Duration()</code></td><td><code>duration()</code></td></tr><tr><td><code>Temporal.Duration.from()</code></td><td><code>duration()</code></td></tr><tr><td><code>Temporal.Duration.compare()</code></td><td><code>duration_compare()</code></td></tr><tr><td><code>.years</code></td><td><code><a href="temporal_fields.html">years()</a></code></td></tr><tr><td><code>.months</code></td><td><code><a href="temporal_fields.html">months()</a></code></td></tr><tr><td><code>.weeks</code></td><td><code><a href="temporal_fields.html">weeks()</a></code></td></tr><tr><td><code>.days</code></td><td><code><a href="temporal_fields.html">days()</a></code></td></tr><tr><td><code>.hours</code></td><td><code><a href="temporal_fields.html">hours()</a></code></td></tr><tr><td><code>.minutes</code></td><td><code><a href="temporal_fields.html">minutes()</a></code></td></tr><tr><td><code>.seconds</code></td><td><code><a href="temporal_fields.html">seconds()</a></code></td></tr><tr><td><code>.milliseconds</code></td><td><code><a href="temporal_fields.html">milliseconds()</a></code></td></tr><tr><td><code>.microseconds</code></td><td><code><a href="temporal_fields.html">microseconds()</a></code></td></tr><tr><td><code>.nanoseconds</code></td><td><code><a href="temporal_fields.html">nanoseconds()</a></code></td></tr><tr><td><code>.sign</code></td><td><code><a href="https://rdrr.io/r/base/sign.html" class="external-link">sign()</a></code></td></tr><tr><td><code>.blank</code></td><td><code><a href="temporal_fields.html">blank()</a></code></td></tr><tr><td><code>.with()</code></td><td><code><a href="temporal_with.html">temporal_with()</a></code></td></tr><tr><td><code>.negated()</code></td><td><code><a href="temporal_negated.html">temporal_negated()</a></code></td></tr><tr><td><code>.abs()</code></td><td><code><a href="temporal_negated.html">temporal_abs()</a></code></td></tr><tr><td><code>.add()</code></td><td><code><a href="temporal_add.html">temporal_add()</a></code></td></tr><tr><td><code>.subtract()</code></td><td><code><a href="temporal_add.html">temporal_subtract()</a></code></td></tr><tr><td><code>.round()</code></td><td><code><a href="temporal_round.html">temporal_round()</a></code></td></tr><tr><td><code>.total()</code></td><td><code><a href="temporal_total.html">temporal_total()</a></code></td></tr><tr><td><code>.toString()</code></td><td><code><a href="temporal_to_string.html">temporal_to_string()</a></code></td></tr><tr><td><code>.toJSON()</code></td><td>none: format() covers it</td></tr><tr><td><code>.toLocaleString()</code></td><td>none: ECMA-402 (locale formatting) is out of scope</td></tr><tr><td><code>.valueOf()</code></td><td>none: throws in JavaScript; no R counterpart</td></tr></table></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

@@ -25,7 +25,7 @@ roadmap says what each stage builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 11. The eight types exist with every
+Verified 2026-10-15: stages 0 to 12. The eight types exist with every
 member of the pinned specification: fields, `with*`, `compare`,
 `equals`, `round`, `add`, `subtract`, `since`, `until`, `total`,
 `startOfDay`, `getTimeZoneTransition`, the conversions among the types

@@ -27,7 +27,8 @@ plain_date() or plain_date_time()."></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/zutempo.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -104,6 +105,12 @@ year 1972, a leap year, is used.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>plain_month_day()</code> vector.</p>
     </div>
+    <div class="section level2">
+    <h2 id="members">Members<a class="anchor" aria-label="anchor" href="#members"></a></h2>
+
+
+<p>Every member of <code>Temporal.PlainMonthDay</code> in the pinned specification
+(<code>inst/spec/PINS</code>) and the R function that implements it:</p><table class="table table"><tr><td>Temporal</td><td>R</td></tr><tr><td><code>new Temporal.PlainMonthDay()</code></td><td><code>plain_month_day()</code></td></tr><tr><td><code>Temporal.PlainMonthDay.from()</code></td><td><code>plain_month_day()</code></td></tr><tr><td><code>.calendarId</code></td><td><code><a href="temporal_fields.html">calendar_id()</a></code></td></tr><tr><td><code>.monthCode</code></td><td><code><a href="temporal_fields.html">month_code()</a></code></td></tr><tr><td><code>.day</code></td><td><code><a href="temporal_fields.html">day()</a></code></td></tr><tr><td><code>.with()</code></td><td><code><a href="temporal_with.html">temporal_with()</a></code></td></tr><tr><td><code>.equals()</code></td><td><code><a href="temporal_equals.html">temporal_equals()</a></code></td></tr><tr><td><code>.toString()</code></td><td><code><a href="temporal_to_string.html">temporal_to_string()</a></code></td></tr><tr><td><code>.toLocaleString()</code></td><td>none: ECMA-402 (locale formatting) is out of scope</td></tr><tr><td><code>.toJSON()</code></td><td>none: format() covers it</td></tr><tr><td><code>.valueOf()</code></td><td>none: throws in JavaScript; no R counterpart</td></tr><tr><td><code>.toPlainDate()</code></td><td><code><a href="temporal_to_plain_date.html">temporal_to_plain_date()</a></code></td></tr></table></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

@@ -115,6 +115,66 @@ offset, `"ignore"` trusts the zone, `"prefer"` (the default for
 trusts the offset when it is one of the zone's candidates and the zone
 otherwise.
 
+## Members
+
+Every member of `Temporal.ZonedDateTime` in the pinned specification
+(`inst/spec/PINS`) and the R function that implements it:
+
+|  |  |
+|----|----|
+| Temporal | R |
+| `new Temporal.ZonedDateTime()` | `zoned_date_time()` |
+| `Temporal.ZonedDateTime.from()` | `zoned_date_time()` |
+| `Temporal.ZonedDateTime.compare()` | `zoned_date_time_compare()` |
+| `.calendarId` | [`calendar_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.timeZoneId` | [`time_zone_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.era` | [`era()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.eraYear` | [`era_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.year` | [`year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.month` | [`month()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.monthCode` | [`month_code()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.day` | [`day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.hour` | [`hour()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.minute` | [`minute()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.second` | [`second()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.millisecond` | [`millisecond()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.microsecond` | [`microsecond()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.nanosecond` | [`nanosecond()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.epochMilliseconds` | [`epoch_milliseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.epochNanoseconds` | [`epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.dayOfWeek` | [`day_of_week()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.dayOfYear` | [`day_of_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.weekOfYear` | [`week_of_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.yearOfWeek` | [`year_of_week()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.hoursInDay` | [`hours_in_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInWeek` | [`days_in_week()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInMonth` | [`days_in_month()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.daysInYear` | [`days_in_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.monthsInYear` | [`months_in_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.inLeapYear` | [`in_leap_year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.offsetNanoseconds` | [`offset_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.offset` | [`offset()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
+| `.with()` | [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.withPlainTime()` | [`temporal_with_plain_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.withTimeZone()` | [`temporal_with_time_zone()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.withCalendar()` | [`temporal_with_calendar()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md) |
+| `.add()` | [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.subtract()` | [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md) |
+| `.until()` | [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.since()` | [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
+| `.round()` | [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md) |
+| `.equals()` | [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md) |
+| `.toString()` | [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md) |
+| `.toLocaleString()` | none: ECMA-402 (locale formatting) is out of scope |
+| `.toJSON()` | none: format() covers it |
+| `.valueOf()` | none: throws in JavaScript; no R counterpart |
+| `.startOfDay()` | [`temporal_start_of_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_start_of_day.md) |
+| `.getTimeZoneTransition()` | [`temporal_get_time_zone_transition()`](https://pedrobtz.github.io/zutempo/reference/temporal_get_time_zone_transition.md) |
+| `.toInstant()` | [`temporal_to_instant()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md) |
+| `.toPlainDate()` | [`temporal_to_plain_date()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+| `.toPlainTime()` | [`temporal_to_plain_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+| `.toPlainDateTime()` | [`temporal_to_plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md) |
+
 ## Examples
 
 ``` r
