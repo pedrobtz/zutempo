@@ -17,8 +17,9 @@ concurrency:
 # gctorture has a policy of its own: the quick run (step 500, minutes) on
 # every push, and the long one (step 20 over a sample of the oracle, about
 # an hour) only on a pull request labelled `gctorture`, one that changes
-# how the glue allocates or protects. gctorture.yaml runs the long one
-# weekly, so what a quick run misses is found within the week.
+# how the glue allocates or protects and needs it before release.
+# gctorture.yaml runs the long one on demand, and stage 13 of the roadmap
+# runs it once on the release candidate.
 jobs:
   sanitizers:
     uses: pedrobtz/r-actions/.github/workflows/sanitizers.yml@v1

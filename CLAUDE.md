@@ -254,9 +254,9 @@ Design §4 is the reference. The layers, top down:
 `devtools::document()` and `devtools::check()` clean, meaning 0 errors, 0
 warnings and 0 notes. The one allowed note is "New submission" before the first
 release. `devtools::test(shuffle = TRUE)` green. The quick gctorture run green
-on every pull request, and the long one when the pull request carries the
-`gctorture` label (see Continuous integration). CI green on every leg. A user-facing change also needs a test, roxygen
-documentation and a `NEWS.md` entry.
+on every pull request; the long one green once, on the release candidate (see
+Continuous integration). CI green on every leg. A user-facing change also needs
+a test, roxygen documentation and a `NEWS.md` entry.
 
 ## Releasing to CRAN
 
@@ -311,11 +311,11 @@ This package calls:
   `analyzers.yml` and `cran-special.yml`, with the same profile expression,
   except gctorture: quick (step 500) everywhere, long (step 20, sampled
   oracle) only on a pull request labelled `gctorture`.
-- `gctorture.yaml`: the long gctorture run every Sunday and on demand
-  (`gh workflow run gctorture.yaml`). Decide per pull request whether the
-  long run is worth an hour: label it `gctorture` when it adds or changes
-  allocation or `PROTECT` code in `src/ztp_r_*.c` or `init.c`. Otherwise
-  the weekly run finds what the quick run misses, and the fix follows.
+- `gctorture.yaml`: the long gctorture run on demand (`gh workflow run
+  gctorture.yaml`). It runs once in stage 13 on the release candidate
+  (roadmap); until then every run is the quick one, and a PROTECT bug the
+  long run finds is fixed then. The `gctorture` label runs it on a pull
+  request; use it only when asked.
 - `coverage.yaml`: `coverage.yml` pinned to a commit. The badge is committed
   to `gh-pages` because `main` takes no direct pushes.
 - `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with
