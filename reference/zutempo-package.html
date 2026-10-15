@@ -48,6 +48,21 @@
 
 
     <div class="section level2">
+    <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a></h2>
+
+
+<p>zutempo implements every member of the eight Temporal types and
+<code>Temporal.Now</code> in the pinned specification (<code><a href="zutempo_info.html">zutempo_info()</a></code>), in the
+ISO 8601 calendar. It does not include:</p><ul><li><p>calendars other than ISO 8601 (Hebrew, Japanese and the others come
+from ECMA-402, with CLDR data);</p></li>
+<li><p>locale formatting (<code>toLocaleString()</code>): convert to <code>POSIXct</code> and use
+base R's <code><a href="https://rdrr.io/r/base/format.html" class="external-link">format()</a></code>;</p></li>
+<li><p>custom time zones, or POSIX TZ strings as zone identifiers;</p></li>
+<li><p>arithmetic and comparison operators on dates and times (<code>x + d</code>,
+<code>x &lt; y</code>): use the functions, such as <code><a href="temporal_add.html">temporal_add()</a></code> and
+<code><a href="plain_date.html">plain_date_compare()</a></code>. Durations do compare with <code>==</code> and <code>&lt;</code>.</p></li>
+</ul></div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Useful links:</p><ul><li><p><a href="https://pedrobtz.github.io/zutempo/">https://pedrobtz.github.io/zutempo/</a></p></li>
 <li><p><a href="https://github.com/pedrobtz/zutempo" class="external-link">https://github.com/pedrobtz/zutempo</a></p></li>

@@ -1,15 +1,49 @@
 # zutempo
 
-zutempo implements [Temporal](https://tc39.es/proposal-temporal/), the
-date and time model of ECMA-262, in R. It has the eight Temporal types
-and `Temporal.Now`, in the ISO 8601 calendar, with IANA time zones read
-from the same database base R uses. The arithmetic follows the
-specification’s own operations in C, over the specification’s full
-ranges, so a result in R is the result in a browser or in Node.
+## Overview
+
+Dates and times are hard to get right. A day is not always 24 hours, one
+month after 31 January is not a date, a clock time can happen twice or
+not at all, and the same moment is a different date in Tokyo than in New
+York. Most code gets these cases right by accident, or not at all.
+
+[Temporal](https://tc39.es/proposal-temporal/docs/) is JavaScript’s
+answer: a date and time API designed by the committee that standardises
+the language, specified to the last nanosecond and tested by thousands
+of conformance tests. zutempo brings Temporal to R.
+
+- **The right type for each job.** A
+  [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
+  is a date on a calendar, a
+  [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
+  a time on a wall clock, an
+  [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  an exact moment, a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  a moment in a time zone, and a
+  [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
+  an amount of time. Each does what it says, and never silently becomes
+  another.
+
+- **Arithmetic you can trust.** Adding a month, a day or 24 hours each
+  mean what they should, across month ends, leap years and clock
+  changes, and the ambiguous cases ask you how to resolve them instead
+  of guessing.
+
+- **The same answers everywhere.** zutempo follows the Temporal
+  specification operation by operation, so a result in R is the result
+  in a browser or in Node. It is checked against test262, the
+  specification’s own conformance suite.
+
+- **At home in R.** Values are vectors with `NA`, fit in data frames,
+  convert to and from `Date` and `POSIXct`, and read time zones from the
+  same database base R uses. The engine is in C, with no runtime
+  dependencies.
 
 ## Installation
 
-zutempo is not on CRAN yet. Install the development version from GitHub:
+zutempo is not on CRAN yet. You can install the development version from
+GitHub:
 
 ``` r
 
@@ -17,114 +51,100 @@ zutempo is not on CRAN yet. Install the development version from GitHub:
 pak::pak("pedrobtz/zutempo")
 ```
 
-## Example
+## Usage
 
 ``` r
 
 library(zutempo)
 ```
 
+A team meets every day at 9:30 in New York. Clocks go forward on the
+night of 7 March, so the next meeting is one day later, but only 23
+hours later:
+
 ``` r
 
-x <- zoned_date_time("2026-03-07T12:00[America/New_York]")
-x
+meeting <- zoned_date_time("2026-03-07T09:30[America/New_York]")
+temporal_add(meeting, "P1D")
 #> <zutempo_zoned_date_time[1]>
-#> [1] 2026-03-07T12:00:00-05:00[America/New_York]
-
-# Clocks go forward overnight, so 25 hours later is 14:00 the next day.
-temporal_add(x, duration(hours = 25))
-#> <zutempo_zoned_date_time[1]>
-#> [1] 2026-03-08T14:00:00-04:00[America/New_York]
-
-# The same 25 hours are a day and two hours of that calendar day.
-temporal_round(duration(hours = 25), largest_unit = "day", relative_to = x)
+#> [1] 2026-03-08T09:30:00-04:00[America/New_York]
+temporal_until(meeting, temporal_add(meeting, "P1D"))
 #> <zutempo_duration[1]>
-#> [1] P1DT2H
-
-# One month after 31 January, constrained to the month's last day.
-plain_date("2026-01-31") |> temporal_add(duration(months = 1))
-#> <zutempo_plain_date[1]>
-#> [1] 2026-02-28
-
-# The last instant Temporal represents, in exact nanoseconds.
-epoch_nanoseconds(instant("+275760-09-13T00:00Z"))
-#> [1] "8640000000000000000000"
+#> [1] PT23H
 ```
 
-Values are vectors, with `NA`, and work in data frames:
+Where is everyone else at that moment?
 
 ``` r
 
-d <- plain_date(c("2026-01-31", "2026-02-28", NA))
-temporal_until(d, "2026-12-25", largest_unit = "month")
-#> <zutempo_duration[3]>
-#> [1] P10M25D P9M27D  <NA>
-data.frame(date = d, weekday = day_of_week(d))
-#>         date weekday
-#> 1 2026-01-31       6
-#> 2 2026-02-28       6
-#> 3       <NA>      NA
+temporal_with_time_zone(meeting, c("Europe/Lisbon", "Asia/Tokyo"))
+#> <zutempo_zoned_date_time[2]>
+#> [1] 2026-03-07T14:30:00+00:00[Europe/Lisbon]
+#> [2] 2026-03-07T23:30:00+09:00[Asia/Tokyo]
 ```
 
-## From Temporal to R
-
-Names follow Temporal’s, in snake case, by one rule per kind of member:
-
-| Temporal | R | Examples |
-|----|----|----|
-| a type and its `from()` | the constructor named after the type | [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md), [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md), [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md), [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md) |
-| another static method | the type name, then the method name | [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md), [`instant_compare()`](https://pedrobtz.github.io/zutempo/reference/instant.md) |
-| a prototype method | `temporal_` and the method name | [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md), [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md), [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md) |
-| a property | an accessor named after it | [`year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md), [`epoch_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md), [`hours_in_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md) |
-| a `Temporal.Now` function | `now_` and the function name | [`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md), [`now_zoned_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md) |
-
-Options are named arguments, as in
-`temporal_round(x, "hour", rounding_mode = "halfEven")`. Each type’s
-help page lists every member of the type with its R function.
-
-The accessors are generics that mask functions of the same name: base
-R’s
-[`months()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
-stats’
-[`offset()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
-and lubridate’s
-[`year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
-[`month()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
-[`day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
-and the like when it is attached. For any object that is not zutempo’s
-they call the function they mask, so `months(Sys.Date())` and
-lubridate’s own objects keep working.
-
-## Base R’s dates and times
+Calendar arithmetic knows that months have different lengths:
 
 ``` r
 
-as.Date(plain_date("2026-03-07"))
-#> [1] "2026-03-07"
-as.POSIXct(zoned_date_time("2026-03-07T12:00[Europe/Lisbon]"))
-#> [1] "2026-03-07 12:00:00 WET"
-instant(as.POSIXct("2026-03-07 12:00:00", tz = "UTC"))
-#> <zutempo_instant[1]>
-#> [1] 2026-03-07T12:00:00Z
-duration(as.difftime(90, units = "mins"))
+due <- plain_date(c("2026-01-31", "2026-03-31", "2026-05-15"))
+temporal_add(due, "P1M")
+#> <zutempo_plain_date[3]>
+#> [1] 2026-02-28 2026-04-30 2026-06-15
+temporal_until(plain_date("2026-01-31"), "2026-12-25", largest_unit = "month")
 #> <zutempo_duration[1]>
-#> [1] PT5400S
+#> [1] P10M25D
 ```
 
-A `Date` and a
-[`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
-convert exactly. A `POSIXct` is a double, so an instant converts to the
-nearest double second;
-[`zutempo_parse()`](https://pedrobtz.github.io/zutempo/reference/zutempo_parse.md)
-reads character vectors in bulk, with `NA` for what it cannot read.
+And durations are values you can round, compare and total:
 
-## Not in 0.1.0
+``` r
 
-- Calendars other than ISO 8601 (Hebrew, Japanese and the others come
-  from ECMA-402, with CLDR data).
-- Locale formatting (`toLocaleString()`).
-- Custom time zones, and POSIX TZ strings as zone identifiers.
-- [`strftime()`](https://rdrr.io/r/base/strptime.html)-style formats:
-  convert to `POSIXct` for those.
-- Arithmetic and comparison operators on dates (`x + d`, `x < y`): use
-  the functions. Durations do compare with `==` and `<`.
+temporal_round(duration(minutes = 200), largest_unit = "hour")
+#> <zutempo_duration[1]>
+#> [1] PT3H20M
+duration("PT90M") < duration("PT2H")
+#> [1] TRUE
+temporal_total(duration("P1M"), "day", relative_to = "2026-02-01")
+#> [1] 28
+```
+
+Every function follows one naming rule: a Temporal type is a constructor
+([`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)),
+a method is `temporal_` and its name
+([`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md)),
+and a property is a function of its name
+([`year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
+[`hours_in_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)).
+If you know Temporal, you already know zutempo.
+
+## Learn more
+
+- [Get
+  started](https://pedrobtz.github.io/zutempo/articles/zutempo.html)
+  follows one value from construction to base R.
+- Articles on [plain dates and
+  times](https://pedrobtz.github.io/zutempo/articles/plain-types.html),
+  [durations](https://pedrobtz.github.io/zutempo/articles/durations.html),
+  [instants and time
+  zones](https://pedrobtz.github.io/zutempo/articles/time-zones.html),
+  [strings and
+  formatting](https://pedrobtz.github.io/zutempo/articles/strings.html),
+  and [base R and data
+  frames](https://pedrobtz.github.io/zutempo/articles/base-r.html).
+- The
+  [reference](https://pedrobtz.github.io/zutempo/reference/index.html)
+  lists every Temporal member and the R function that implements it.
+
+## Acknowledgements
+
+zutempo is an implementation of the work of the [TC39 Temporal
+champions](https://github.com/tc39/proposal-temporal), who designed the
+API and wrote its specification and its
+[test262](https://github.com/tc39/test262) tests.
+[temporal-polyfill](https://github.com/fullcalendar/temporal-polyfill)
+is the reference zutempo is checked against, and time zones come from
+the [IANA time zone database](https://www.iana.org/time-zones).
+[lubridate](https://lubridate.tidyverse.org) and
+[clock](https://clock.r-lib.org) showed how much R users care about
+getting dates and times right.
