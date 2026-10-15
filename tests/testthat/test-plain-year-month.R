@@ -44,8 +44,13 @@ test_that("plain_year_month() rejects wrong input and bad strings", {
     class = "zutempo_parse_error"
   )
   expect_error(plain_year_month("-000000-01"), class = "zutempo_parse_error")
-  expect_error(
+  expect_identical(
     plain_year_month("2026-03[u-ca=iso8601]"),
+    plain_year_month("2026-03")
+  )
+  # Only the ISO 8601 calendar has the form without a day.
+  expect_error(
+    plain_year_month("2026-03[u-ca=gregory]"),
     class = "zutempo_parse_error"
   )
 })

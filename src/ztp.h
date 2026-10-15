@@ -34,6 +34,7 @@ typedef enum {
 typedef struct {
     ztp_status status;
     size_t index;             /* 1-based element index, 0 for none */
+    size_t position;          /* 1-based byte of a parse failure, 0 for none */
     char msg[ZTP_MSG_CAP];    /* NUL-terminated, empty while ZTP_OK */
 } ztp_ctx;
 
@@ -41,6 +42,7 @@ static inline void ztp_ctx_init(ztp_ctx *ctx)
 {
     ctx->status = ZTP_OK;
     ctx->index = 0;
+    ctx->position = 0;
     ctx->msg[0] = '\0';
 }
 

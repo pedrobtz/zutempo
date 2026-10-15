@@ -63,6 +63,9 @@ SEXP ztp_r_plain_month_day_from_fields(SEXP year, SEXP month, SEXP day, SEXP ove
 SEXP ztp_r_plain_month_day_parse(SEXP x);
 SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar);
 SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path);
+SEXP ztp_r_parse_check(SEXP x, SEXP goal);
+SEXP ztp_r_time_zone_string(SEXP x, SEXP index);
+SEXP ztp_r_calendar_string(SEXP x);
 
 /* ztp_r_instant.c */
 SEXP ztp_r_instant_parse(SEXP x);

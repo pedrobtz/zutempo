@@ -17,7 +17,7 @@ test_that("instant() stores whole seconds and nanoseconds with the floor convent
   for (s in c(
     "2026-01-31T12:30",
     "2026-01-31",
-    "2026-01-31T12:30Z[u-ca=iso8601]",
+    "2026-01-31T12:30Z[!x-y=z]",
     ""
   )) {
     expect_error(instant(s), class = "zutempo_parse_error", info = s)

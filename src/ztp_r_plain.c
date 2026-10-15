@@ -752,3 +752,66 @@ SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path)
     UNPROTECT(1);
     return out;
 }
+
+/* The syntax pass of zutempo_parse(): per element, NA where the string
+   parses against the goal (or is NA), else the 1-based byte position and
+   the message of the failure. */
+SEXP ztp_r_parse_check(SEXP x, SEXP goal)
+{
+    R_xlen_t n = Rf_xlength(x);
+    ztp_parse_goal g = (ztp_parse_goal)ztp_r_scalar_int(goal);
+    const char *names[] = {"position", "message", ""};
+    SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));
+    SEXP position = SET_VECTOR_ELT(out, 0, Rf_allocVector(REALSXP, n));
+    SEXP message = SET_VECTOR_ELT(out, 1, Rf_allocVector(STRSXP, n));
+
+    for (R_xlen_t i = 0; i < n; i++) {
+        ztp_ctx ctx;
+        ztp_parsed p;
+        const char *s;
+
+        REAL(position)[i] = NA_REAL;
+        SET_STRING_ELT(message, i, NA_STRING);
+        if (STRING_ELT(x, i) == NA_STRING) continue;
+        s = Rf_translateCharUTF8(STRING_ELT(x, i));
+        ztp_ctx_init(&ctx);
+        if (ztp_parse(&ctx, (size_t)i + 1, s, strlen(s), g, &p, NULL) == ZTP_OK) continue;
+        if (ctx.position > 0) REAL(position)[i] = (double)ctx.position;
+        SET_STRING_ELT(message, i, Rf_mkCharCE(ctx.msg, CE_UTF8));
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* ParseTemporalTimeZoneString and ParseTemporalCalendarString on one
+   string; `index` is the element a failure is reported against (0 for
+   none). */
+static size_t ztp_r_index_arg(SEXP index)
+{
+    double v = Rf_isNull(index) ? 0 : Rf_asReal(index);
+    return ISNAN(v) || v < 1 ? 0 : (size_t)v;
+}
+
+SEXP ztp_r_time_zone_string(SEXP x, SEXP index)
+{
+    char buf[ZTP_TZ_ANNOTATION_CAP];
+    const char *s = Rf_translateCharUTF8(STRING_ELT(x, 0));
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    if (ztp_parse_time_zone_string(&ctx, ztp_r_index_arg(index), s, strlen(s), buf) != ZTP_OK)
+        ztp_r_raise(&ctx);
+    return Rf_mkString(buf);
+}
+
+SEXP ztp_r_calendar_string(SEXP x)
+{
+    char buf[ZTP_CALENDAR_CAP];
+    const char *s = Rf_translateCharUTF8(STRING_ELT(x, 0));
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    if (ztp_parse_calendar_string(&ctx, 0, s, strlen(s), buf) != ZTP_OK)
+        ztp_r_raise(&ctx);
+    return Rf_mkString(buf);
+}

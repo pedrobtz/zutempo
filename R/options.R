@@ -183,12 +183,14 @@ ztp_round_options <- function(
 }
 
 # Calendar identifiers: only "iso8601", matched ASCII case-insensitively
-# (design D7). Anything else is a range error, as CanonicalizeCalendar
-# throws for an unknown calendar.
+# (design D7). An ISO string names its calendar annotation, or "iso8601"
+# (ParseTemporalCalendarString). Anything else is a range error, as
+# CanonicalizeCalendar throws for an unknown calendar.
 ztp_check_calendar <- function(calendar) {
   if (!is.character(calendar) || length(calendar) != 1L || is.na(calendar)) {
     stop_zutempo("`calendar` must be a single string", kind = "type")
   }
+  calendar <- .Call(C_ztp_r_calendar_string, calendar)
   if (tolower(calendar) != "iso8601") {
     stop_zutempo(
       sprintf(
