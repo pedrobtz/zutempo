@@ -239,18 +239,23 @@ Design §4 is the reference. The layers, top down:
   constructor exists. `test-oracle-<type>.R` loops the cases through it.
 - **`test-members.R` is the member ledger.** When a stage exports a member,
   remove its name from `pending` there; the test fails otherwise.
-- **Keep the gctorture job inside its 120-minute budget.** Its cost grows
-  with the number of expectations, not test blocks: an oracle file runs
+- **Keep the long gctorture run inside its 120-minute budget.** Its cost
+  grows with the R code the tests run, not test blocks: an oracle file runs
   all its cases in one `test_that()` and compares fields in one
-  `expect_equal()`. Add cases freely; add expectations with care.
+  `expect_equal()`. Under `ZUTEMPO_GCTORTURE_SAMPLE=true` the oracle runs
+  one case per shape (`oracle_gctorture_sample()`), since a PROTECT bug is
+  in the glue a shape reaches, not in the values; that cut the run by
+  about 40% (2026-10-15). Add cases freely; add expectations with care.
+  A heavy loop over values in another test file samples the same way.
 - **Keep the suite inside the CRAN time budget.** Not yet measured.
 
 ## Definition of done
 
 `devtools::document()` and `devtools::check()` clean, meaning 0 errors, 0
 warnings and 0 notes. The one allowed note is "New submission" before the first
-release. `devtools::test(shuffle = TRUE)` green. `gctorture(TRUE)` clean when C
-changed. CI green on every leg. A user-facing change also needs a test, roxygen
+release. `devtools::test(shuffle = TRUE)` green. The quick gctorture run green
+on every pull request, and the long one when the pull request carries the
+`gctorture` label (see Continuous integration). CI green on every leg. A user-facing change also needs a test, roxygen
 documentation and a `NEWS.md` entry.
 
 ## Releasing to CRAN
@@ -303,7 +308,14 @@ This package calls:
 - `native-checks.yml`: `sanitizers.yml` (with ASan), `valgrind.yml`,
   `lto.yml`, `gctorture.yml`, `rchk.yml` (with `github-packages:
   pedrobtz/zufast`, since the rchk image ignores `Remotes:`),
-  `analyzers.yml` and `cran-special.yml`, with the same profile expression.
+  `analyzers.yml` and `cran-special.yml`, with the same profile expression,
+  except gctorture: quick (step 500) everywhere, long (step 20, sampled
+  oracle) only on a pull request labelled `gctorture`.
+- `gctorture.yaml`: the long gctorture run every Sunday and on demand
+  (`gh workflow run gctorture.yaml`). Decide per pull request whether the
+  long run is worth an hour: label it `gctorture` when it adds or changes
+  allocation or `PROTECT` code in `src/ztp_r_*.c` or `init.c`. Otherwise
+  the weekly run finds what the quick run misses, and the fix follows.
 - `coverage.yaml`: `coverage.yml` pinned to a commit. The badge is committed
   to `gh-pages` because `main` takes no direct pushes.
 - `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with

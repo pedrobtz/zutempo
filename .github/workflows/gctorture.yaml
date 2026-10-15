@@ -1,0 +1,22 @@
+# The long gctorture run (step 20) every week and on demand. Pull requests
+# and pushes run the quick one in native-checks.yml, and a pull request
+# labelled `gctorture` the long one. The oracle runs one case per shape
+# (tests/testthat/helper-oracle.R): the glue a shape reaches is what
+# gctorture tests, not the values.
+on:
+  schedule:
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
+
+name: gctorture
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gctorture:
+    uses: pedrobtz/r-actions/.github/workflows/gctorture.yml@v1
+    with:
+      profile: full
+      env: ZUTEMPO_GCTORTURE_SAMPLE=true
