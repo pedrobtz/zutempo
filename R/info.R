@@ -77,10 +77,21 @@ print.zutempo_info <- function(x, ...) {
     ")\n",
     sep = ""
   )
-  cat("  tzdata pin: ", x$tzdata, "; link table: ", x$tz_links_version, "\n", sep = "")
+  cat(
+    "  tzdata pin: ",
+    x$tzdata,
+    "; link table: ",
+    x$tz_links_version,
+    "\n",
+    sep = ""
+  )
   cat(
     "  tz database: ",
-    if (is.na(x$tzdir)) "none found" else paste0(x$tzdir, " (", x$tz_version, ", ", x$tz_form, ")"),
+    if (is.na(x$tzdir)) {
+      "none found"
+    } else {
+      paste0(x$tzdir, " (", x$tz_version, ", ", x$tz_form, ")")
+    },
     "\n",
     sep = ""
   )

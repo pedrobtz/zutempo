@@ -29,7 +29,10 @@ ztp_tz_candidates <- function() {
   }
   tried <- unique(tried)
   exists <- dir.exists(tried)
-  list(dir = if (any(exists)) tried[which(exists)[1L]] else NA_character_, tried = tried)
+  list(
+    dir = if (any(exists)) tried[which(exists)[1L]] else NA_character_,
+    tried = tried
+  )
 }
 
 # R's special values for TZDIR.
@@ -85,8 +88,19 @@ ztp_tz_version <- function(dir) {
 ztp_tz_excluded <- function(rel) {
   base <- basename(rel)
   grepl("^(right|posix)/", rel) |
-    base %in% c("posixrules", "localtime", "+VERSION", "VERSION", "tzdata.zi",
-      "leapseconds", "leap-seconds.list", "Factory", "SECURITY", "README") |
+    base %in%
+      c(
+        "posixrules",
+        "localtime",
+        "+VERSION",
+        "VERSION",
+        "tzdata.zi",
+        "leapseconds",
+        "leap-seconds.list",
+        "Factory",
+        "SECURITY",
+        "README"
+      ) |
     grepl("\\.(tab|zi|list)$", base)
 }
 
@@ -94,7 +108,12 @@ ztp_tz_excluded <- function(rel) {
 # 8.3), as a data frame of the identifier in the database's case and its
 # ASCII-lower-cased form.
 ztp_tz_index <- function(dir) {
-  rel <- list.files(dir, recursive = TRUE, all.files = FALSE, include.dirs = FALSE)
+  rel <- list.files(
+    dir,
+    recursive = TRUE,
+    all.files = FALSE,
+    include.dirs = FALSE
+  )
   rel <- rel[!ztp_tz_excluded(rel)]
   data.frame(id = rel, lower = tolower(rel), stringsAsFactors = FALSE)
 }
@@ -103,14 +122,22 @@ ztp_tz_index <- function(dir) {
 # (design 8.4).
 ztp_tz_current <- function() {
   found <- ztp_tz_candidates()
-  key <- paste(getOption("zutempo.tzdir", ""), Sys.getenv("TZDIR", ""), sep = "\r")
+  key <- paste(
+    getOption("zutempo.tzdir", ""),
+    Sys.getenv("TZDIR", ""),
+    sep = "\r"
+  )
   if (!identical(ztp_tz_state$key, key)) {
     ztp_tz_reset_state()
     ztp_tz_state$key <- key
     ztp_tz_state$dir <- found$dir
     ztp_tz_state$tried <- found$tried
     ztp_tz_state$version <- ztp_tz_version(found$dir)
-    ztp_tz_state$index <- if (is.na(found$dir)) NULL else ztp_tz_index(found$dir)
+    ztp_tz_state$index <- if (is.na(found$dir)) {
+      NULL
+    } else {
+      ztp_tz_index(found$dir)
+    }
   }
   ztp_tz_state
 }
@@ -179,7 +206,10 @@ ztp_tz_ensure <- function(id, index = NULL) {
 ztp_tz_ensure_all <- function(ids) {
   out <- ids
   for (id in unique(ids[!is.na(ids)])) {
-    out[!is.na(ids) & ids == id] <- ztp_tz_ensure(id, index = which(!is.na(ids) & ids == id)[1L])
+    out[!is.na(ids) & ids == id] <- ztp_tz_ensure(
+      id,
+      index = which(!is.na(ids) & ids == id)[1L]
+    )
   }
   out
 }
@@ -199,7 +229,13 @@ ztp_tz_form <- function() {
       if (is.na(last)) {
         next
       }
-      return(if (last >= as.numeric(as.POSIXct("2030-01-01", tz = "UTC"))) "fat" else "slim")
+      return(
+        if (last >= as.numeric(as.POSIXct("2030-01-01", tz = "UTC"))) {
+          "fat"
+        } else {
+          "slim"
+        }
+      )
     }
   }
   NA_character_

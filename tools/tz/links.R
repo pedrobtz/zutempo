@@ -11,7 +11,10 @@
 
 pins <- read.dcf("inst/spec/PINS")
 version <- pins[1L, "Tzdata"]
-url <- sprintf("https://data.iana.org/time-zones/releases/tzdata%s.tar.gz", version)
+url <- sprintf(
+  "https://data.iana.org/time-zones/releases/tzdata%s.tar.gz",
+  version
+)
 dir <- tempfile("tzdata")
 dir.create(dir)
 tarball <- file.path(dir, basename(url))
@@ -21,7 +24,11 @@ untar(tarball, exdir = dir)
 found <- trimws(readLines(file.path(dir, "version"), warn = FALSE))
 found <- found[nzchar(found)][1L]
 if (found != version) {
-  stop(sprintf("the tarball says tzdata %s, inst/spec/PINS says %s", found, version))
+  stop(sprintf(
+    "the tarball says tzdata %s, inst/spec/PINS says %s",
+    found,
+    version
+  ))
 }
 
 lines <- readLines(file.path(dir, "backward"), warn = FALSE)
@@ -34,7 +41,9 @@ stopifnot(!anyDuplicated(link), all(nzchar(target)), all(nzchar(link)))
 # Resolve chains (a link to a link) so that every entry names a primary.
 repeat {
   idx <- match(target, link)
-  if (all(is.na(idx))) break
+  if (all(is.na(idx))) {
+    break
+  }
   target[!is.na(idx)] <- target[idx[!is.na(idx)]]
 }
 ord <- order(tolower(link), method = "radix")
@@ -65,4 +74,8 @@ out <- c(
   ""
 )
 writeLines(out, "src/ztp_tz_links.c")
-cat(sprintf("%d links from tzdata %s written to src/ztp_tz_links.c\n", length(link), version))
+cat(sprintf(
+  "%d links from tzdata %s written to src/ztp_tz_links.c\n",
+  length(link),
+  version
+))

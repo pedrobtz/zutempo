@@ -11,33 +11,36 @@
 # transitions.tsv and tests/testthat/tzdata/VERSION.
 
 zones <- c(
-  "America/New_York",     # the design's slim-file regression
-  "Europe/Lisbon",        # last explicit slim transition in 1996
-  "Australia/Lord_Howe",  # 30-minute DST
-  "Pacific/Apia",         # skipped 2011-12-30
-  "Pacific/Kiritimati",   # +14
-  "America/St_Johns",     # -03:30 with DST
-  "Africa/Casablanca",    # Ramadan rules, explicit to 2087, negative DST
-  "Asia/Kolkata",         # +05:30, no DST
-  "Asia/Calcutta",        # its link
-  "Europe/Dublin",        # negative DST in winter
-  "Antarctica/Troll",     # +2 hours of DST
-  "America/Santiago",     # southern DST with a 24:00 rule
-  "Pacific/Auckland",     # southern DST
-  "Asia/Tehran",          # DST abolished in 2022
-  "America/Sao_Paulo",    # DST abolished in 2019
-  "Africa/Cairo",         # DST reinstated in 2023
-  "Europe/Moscow",        # offset changes without DST
-  "Asia/Tokyo",           # no DST since 1951
-  "America/Anchorage",    # -10 to -9, date line history
-  "Etc/UTC",              # the trivial file
-  "UTC",                  # its link
-  "Etc/GMT-14"            # a fixed offset by name
+  "America/New_York", # the design's slim-file regression
+  "Europe/Lisbon", # last explicit slim transition in 1996
+  "Australia/Lord_Howe", # 30-minute DST
+  "Pacific/Apia", # skipped 2011-12-30
+  "Pacific/Kiritimati", # +14
+  "America/St_Johns", # -03:30 with DST
+  "Africa/Casablanca", # Ramadan rules, explicit to 2087, negative DST
+  "Asia/Kolkata", # +05:30, no DST
+  "Asia/Calcutta", # its link
+  "Europe/Dublin", # negative DST in winter
+  "Antarctica/Troll", # +2 hours of DST
+  "America/Santiago", # southern DST with a 24:00 rule
+  "Pacific/Auckland", # southern DST
+  "Asia/Tehran", # DST abolished in 2022
+  "America/Sao_Paulo", # DST abolished in 2019
+  "Africa/Cairo", # DST reinstated in 2023
+  "Europe/Moscow", # offset changes without DST
+  "Asia/Tokyo", # no DST since 1951
+  "America/Anchorage", # -10 to -9, date line history
+  "Etc/UTC", # the trivial file
+  "UTC", # its link
+  "Etc/GMT-14" # a fixed offset by name
 )
 
 pins <- read.dcf("inst/spec/PINS")
 version <- pins[1L, "Tzdata"]
-url <- sprintf("https://data.iana.org/time-zones/releases/tzdata%s.tar.gz", version)
+url <- sprintf(
+  "https://data.iana.org/time-zones/releases/tzdata%s.tar.gz",
+  version
+)
 work <- tempfile("tzdata")
 dir.create(work)
 tarball <- file.path(work, basename(url))
@@ -48,19 +51,35 @@ untar(tarball, exdir = src)
 found <- trimws(readLines(file.path(src, "version"), warn = FALSE))
 found <- found[nzchar(found)][1L]
 if (found != version) {
-  stop(sprintf("the tarball says tzdata %s, inst/spec/PINS says %s", found, version))
+  stop(sprintf(
+    "the tarball says tzdata %s, inst/spec/PINS says %s",
+    found,
+    version
+  ))
 }
-sources <- file.path(src, c(
-  "africa", "antarctica", "asia", "australasia", "europe", "northamerica",
-  "southamerica", "etcetera", "backward"
-))
+sources <- file.path(
+  src,
+  c(
+    "africa",
+    "antarctica",
+    "asia",
+    "australasia",
+    "europe",
+    "northamerica",
+    "southamerica",
+    "etcetera",
+    "backward"
+  )
+)
 
 out <- "tests/testthat/tzdata"
 unlink(out, recursive = TRUE)
 for (form in c("fat", "slim")) {
   built <- file.path(work, form)
   status <- system2("zic", c("-b", form, "-d", built, sources))
-  if (status != 0) stop("zic failed")
+  if (status != 0) {
+    stop("zic failed")
+  }
   for (zone in zones) {
     dest <- file.path(out, form, zone)
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
@@ -85,8 +104,11 @@ parse_offset <- function(x) {
 }
 
 initial_state <- function(zone, dir) {
-  lines <- system2("zdump", c("-i", "-c", "1850,2100", zone),
-    env = paste0("TZDIR=", dir), stdout = TRUE
+  lines <- system2(
+    "zdump",
+    c("-i", "-c", "1850,2100", zone),
+    env = paste0("TZDIR=", dir),
+    stdout = TRUE
   )
   first <- lines[grepl("^-\t", lines)][1L]
   fields <- strsplit(first, "\t")[[1L]]
@@ -101,13 +123,20 @@ initial_state <- function(zone, dir) {
 }
 
 parse_zdump <- function(zone, dir) {
-  lines <- system2("zdump", c("-v", "-c", "1850,2100", zone),
-    env = paste0("TZDIR=", dir), stdout = TRUE
+  lines <- system2(
+    "zdump",
+    c("-v", "-c", "1850,2100", zone),
+    env = paste0("TZDIR=", dir),
+    stdout = TRUE
   )
   re <- "^(\\S+)\\s+(\\S+ \\S+\\s+\\d+ \\d\\d:\\d\\d:\\d\\d \\d+) UT = .* (\\S+) isdst=(\\d) gmtoff=(-?\\d+)$"
   lines <- lines[grepl(re, lines)]
   utc <- sub(re, "\\2", lines)
-  epoch <- as.numeric(as.POSIXct(utc, format = "%a %b %d %H:%M:%S %Y", tz = "UTC"))
+  epoch <- as.numeric(as.POSIXct(
+    utc,
+    format = "%a %b %d %H:%M:%S %Y",
+    tz = "UTC"
+  ))
   data.frame(
     zone = zone,
     utc_seconds = epoch,
@@ -122,7 +151,9 @@ for (zone in zones) {
   d <- parse_zdump(zone, file.path(work, "slim"))
   stopifnot(!anyNA(d$utc_seconds))
   fat <- parse_zdump(zone, file.path(work, "fat"))
-  if (!identical(fat, d)) stop("fat and slim disagree under zdump for ", zone)
+  if (!identical(fat, d)) {
+    stop("fat and slim disagree under zdump for ", zone)
+  }
   # A transition's "after" line is exactly one second past its "before"
   # line; zdump also prints the range boundaries, which have no pair.
   is_after <- c(FALSE, diff(d$utc_seconds) == 1)
@@ -131,10 +162,18 @@ for (zone in zones) {
 }
 transitions <- do.call(rbind, rows)
 rownames(transitions) <- NULL
-write.table(transitions, file.path(out, "transitions.tsv"), sep = "\t",
-  quote = FALSE, row.names = FALSE)
+write.table(
+  transitions,
+  file.path(out, "transitions.tsv"),
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
 writeLines(version, file.path(out, "VERSION"))
 cat(sprintf(
   "%d zones, %d transition rows, tzdata %s -> %s\n",
-  length(zones), nrow(transitions), version, out
+  length(zones),
+  nrow(transitions),
+  version,
+  out
 ))
