@@ -1,0 +1,794 @@
+{
+  "type": "PlainYearMonth",
+  "engine": "temporal-polyfill 1.0.6",
+  "tz": "2025b",
+  "cases": [
+    {
+      "id": "from-string",
+      "op": "from",
+      "args": [
+        "2026-03"
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-basic",
+      "op": "from",
+      "args": [
+        "202603"
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-expanded",
+      "op": "from",
+      "args": [
+        "+010000-01"
+      ],
+      "result": {
+        "string": "+010000-01",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 10000,
+          "month": 1,
+          "monthCode": "M01",
+          "daysInYear": 366,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": true,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-negative",
+      "op": "from",
+      "args": [
+        "-000001-12"
+      ],
+      "result": {
+        "string": "-000001-12",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": -1,
+          "month": 12,
+          "monthCode": "M12",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-year-zero",
+      "op": "from",
+      "args": [
+        "0000-01"
+      ],
+      "result": {
+        "string": "0000-01",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 0,
+          "month": 1,
+          "monthCode": "M01",
+          "daysInYear": 366,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": true,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-max",
+      "op": "from",
+      "args": [
+        "+275760-09"
+      ],
+      "result": {
+        "string": "+275760-09",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 275760,
+          "month": 9,
+          "monthCode": "M09",
+          "daysInYear": 366,
+          "daysInMonth": 30,
+          "monthsInYear": 12,
+          "inLeapYear": true,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-past-max",
+      "op": "from",
+      "args": [
+        "+275760-10"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-min",
+      "op": "from",
+      "args": [
+        "-271821-04"
+      ],
+      "result": {
+        "string": "-271821-04",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": -271821,
+          "month": 4,
+          "monthCode": "M04",
+          "daysInYear": 365,
+          "daysInMonth": 30,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-past-min",
+      "op": "from",
+      "args": [
+        "-271821-03"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-negative-zero",
+      "op": "from",
+      "args": [
+        "-000000-01"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-bad-month",
+      "op": "from",
+      "args": [
+        "2026-13"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-one-digit-month",
+      "op": "from",
+      "args": [
+        "2026-3"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-full-date",
+      "op": "from",
+      "args": [
+        "2026-03-15"
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-full-date-invalid",
+      "op": "from",
+      "args": [
+        "2026-02-30"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-leap-day",
+      "op": "from",
+      "args": [
+        "2024-02-29"
+      ],
+      "result": {
+        "string": "2024-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2024,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 366,
+          "daysInMonth": 29,
+          "monthsInYear": 12,
+          "inLeapYear": true,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-date-time",
+      "op": "from",
+      "args": [
+        "2026-03-15T12:30+01:00"
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-string-date-time-z",
+      "op": "from",
+      "args": [
+        "2026-03-15T12:30Z"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-string-basic-date",
+      "op": "from",
+      "args": [
+        "20260315"
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-fields",
+      "op": "from",
+      "args": [
+        {
+          "year": 2026,
+          "month": 3
+        }
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-fields-month-code",
+      "op": "from",
+      "args": [
+        {
+          "year": 2026,
+          "monthCode": "M03"
+        }
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-fields-constrain",
+      "op": "from",
+      "args": [
+        {
+          "year": 2026,
+          "month": 13
+        }
+      ],
+      "result": {
+        "string": "2026-12",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 12,
+          "monthCode": "M12",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-fields-reject",
+      "op": "from",
+      "args": [
+        {
+          "year": 2026,
+          "month": 13
+        }
+      ],
+      "options": {
+        "overflow": "reject"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-fields-month-zero",
+      "op": "from",
+      "args": [
+        {
+          "year": 2026,
+          "month": 0
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-fields-past-max",
+      "op": "from",
+      "args": [
+        {
+          "year": 275760,
+          "month": 10
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "from-fields-min",
+      "op": "from",
+      "args": [
+        {
+          "year": -271821,
+          "month": 4
+        }
+      ],
+      "result": {
+        "string": "-271821-04",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": -271821,
+          "month": 4,
+          "monthCode": "M04",
+          "daysInYear": 365,
+          "daysInMonth": 30,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "from-plain-date",
+      "op": "from",
+      "args": [
+        {
+          "$type": "PlainDate",
+          "value": "2026-03-15"
+        }
+      ],
+      "result": {
+        "string": "2026-03",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "compare-less",
+      "op": "compare",
+      "args": [
+        "2026-02",
+        "2026-03"
+      ],
+      "result": -1
+    },
+    {
+      "id": "compare-equal-different-days",
+      "op": "compare",
+      "args": [
+        "2026-02-01",
+        "2026-02-28"
+      ],
+      "result": 0
+    },
+    {
+      "id": "compare-greater",
+      "op": "compare",
+      "args": [
+        "2027-01",
+        "2026-12"
+      ],
+      "result": 1
+    },
+    {
+      "id": "equals",
+      "op": "equals",
+      "on": "2026-02",
+      "args": [
+        "2026-02-15"
+      ],
+      "result": true
+    },
+    {
+      "id": "equals-false",
+      "op": "equals",
+      "on": "2026-02",
+      "args": [
+        "2026-03"
+      ],
+      "result": false
+    },
+    {
+      "id": "with-month",
+      "op": "with",
+      "on": "2026-02",
+      "args": [
+        {
+          "month": 14
+        }
+      ],
+      "result": {
+        "string": "2026-12",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 12,
+          "monthCode": "M12",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "with-month-reject",
+      "op": "with",
+      "on": "2026-02",
+      "args": [
+        {
+          "month": 14
+        }
+      ],
+      "options": {
+        "overflow": "reject"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "with-month-code",
+      "op": "with",
+      "on": "2026-02",
+      "args": [
+        {
+          "monthCode": "M12"
+        }
+      ],
+      "result": {
+        "string": "2026-12",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 12,
+          "monthCode": "M12",
+          "daysInYear": 365,
+          "daysInMonth": 31,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "with-year",
+      "op": "with",
+      "on": "2024-02",
+      "args": [
+        {
+          "year": 2026
+        }
+      ],
+      "result": {
+        "string": "2026-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "with-day",
+      "op": "with",
+      "on": "2026-02",
+      "args": [
+        {
+          "day": 5
+        }
+      ],
+      "throws": "TypeError"
+    },
+    {
+      "id": "with-nothing",
+      "op": "with",
+      "on": "2026-02",
+      "args": [
+        {}
+      ],
+      "throws": "TypeError"
+    },
+    {
+      "id": "to-plain-date",
+      "op": "toPlainDate",
+      "on": "2026-02",
+      "args": [
+        {
+          "day": 15
+        }
+      ],
+      "result": {
+        "string": "2026-02-15",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "day": 15,
+          "dayOfWeek": 7,
+          "dayOfYear": 46,
+          "weekOfYear": 7,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 28,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "to-plain-date-constrain",
+      "op": "toPlainDate",
+      "on": "2026-02",
+      "args": [
+        {
+          "day": 31
+        }
+      ],
+      "result": {
+        "string": "2026-02-28",
+        "type": "PlainDate",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "day": 28,
+          "dayOfWeek": 6,
+          "dayOfYear": 59,
+          "weekOfYear": 9,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 28,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "to-plain-date-day-zero",
+      "op": "toPlainDate",
+      "on": "2026-02",
+      "args": [
+        {
+          "day": 0
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-plain-date-past-max",
+      "op": "toPlainDate",
+      "on": "+275760-09",
+      "args": [
+        {
+          "day": 30
+        }
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "to-plain-date-nothing",
+      "op": "toPlainDate",
+      "on": "2026-02",
+      "args": [
+        {}
+      ],
+      "throws": "TypeError"
+    },
+    {
+      "id": "to-string",
+      "op": "toString",
+      "on": "2026-02",
+      "args": [],
+      "result": "2026-02"
+    },
+    {
+      "id": "to-string-expanded",
+      "op": "toString",
+      "on": "+010000-01",
+      "args": [],
+      "result": "+010000-01"
+    },
+    {
+      "id": "fields-leap",
+      "op": "from",
+      "args": [
+        "2024-02"
+      ],
+      "result": {
+        "string": "2024-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2024,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 366,
+          "daysInMonth": 29,
+          "monthsInYear": 12,
+          "inLeapYear": true,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    },
+    {
+      "id": "fields-not-leap",
+      "op": "from",
+      "args": [
+        "2100-02"
+      ],
+      "result": {
+        "string": "2100-02",
+        "type": "PlainYearMonth",
+        "fields": {
+          "year": 2100,
+          "month": 2,
+          "monthCode": "M02",
+          "daysInYear": 365,
+          "daysInMonth": 28,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601"
+        }
+      }
+    }
+  ]
+}

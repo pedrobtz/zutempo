@@ -84,36 +84,39 @@ oracle_skip_until_built <- function(type) {
 }
 
 # Run the member of a case and return its value, or raise its condition.
+# A field bag among the arguments becomes named arguments; a string that
+# names a unit (round()) becomes `smallest_unit`.
 oracle_run <- function(type, case) {
   constructor <- oracle_constructor(type)
   args <- lapply(case[["args"]], oracle_arg)
   options <- oracle_options(case)
-  if (is.null(case[["on"]])) {
-    if (identical(case[["op"]], "from")) {
-      arg <- args[[1L]]
-      call_args <- if (is.list(arg)) arg else list(arg)
-      return(do.call(constructor, c(call_args, options)))
+  splice <- function(args) {
+    out <- list()
+    for (a in args) {
+      if (is.list(a)) out <- c(out, a) else out <- c(out, list(a))
     }
-    fn <- oracle_fn(paste(
-      oracle_snake(type),
-      oracle_snake(case[["op"]]),
-      sep = "_"
-    ))
-    return(do.call(fn, c(args, options)))
+    out
+  }
+  if (is.null(case[["on"]])) {
+    fn <- if (identical(case[["op"]], "from")) {
+      constructor
+    } else {
+      oracle_fn(paste(
+        oracle_snake(type),
+        oracle_snake(case[["op"]]),
+        sep = "_"
+      ))
+    }
+    return(do.call(fn, c(splice(args), options)))
   }
   x <- constructor(case[["on"]])
   fn <- oracle_fn(paste0("temporal_", oracle_snake(case[["op"]])))
-  if (identical(case[["op"]], "with")) {
-    return(do.call(fn, c(list(x), args[[1L]], options)))
+  if (
+    identical(case[["op"]], "round") && length(args) && is.character(args[[1L]])
+  ) {
+    args[[1L]] <- list(smallest_unit = args[[1L]])
   }
-  if (identical(case[["op"]], "round")) {
-    opts <- args[[1L]]
-    if (is.character(opts)) {
-      opts <- list(smallest_unit = opts)
-    }
-    return(do.call(fn, c(list(x), opts, options)))
-  }
-  do.call(fn, c(list(x), args, options))
+  do.call(fn, c(list(x), splice(args), options))
 }
 
 # Compare an R value with the engine's description of its result.
