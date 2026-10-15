@@ -70,6 +70,9 @@ void ztp_iso_date_from_epoch_day(int32_t epoch_day, ztp_iso_date *out);
 int64_t ztp_ns_from_iso_time(const ztp_iso_time *time);
 void ztp_iso_time_from_ns(int64_t ns_of_day, ztp_iso_time *out);
 
+/* ISOYearMonthWithinLimits: every month that holds a representable day. */
+bool ztp_iso_year_month_within_limits(int64_t year, int64_t month);
+
 /* ISODateWithinLimits and ISODateTimeWithinLimits. */
 bool ztp_iso_date_within_limits(int64_t epoch_day);
 bool ztp_iso_date_time_within_limits(int64_t epoch_day, int64_t ns_of_day);

@@ -34,6 +34,12 @@ static const R_CallMethodDef call_methods[] = {
     {"ztp_r_plain_date_time_field", (DL_FUNC)&ztp_r_plain_date_time_field, 2},
     {"ztp_r_plain_date_time_round", (DL_FUNC)&ztp_r_plain_date_time_round, 4},
     {"ztp_r_plain_date_time_format", (DL_FUNC)&ztp_r_plain_date_time_format, 3},
+    {"ztp_r_plain_year_month_from_fields", (DL_FUNC)&ztp_r_plain_year_month_from_fields, 3},
+    {"ztp_r_plain_year_month_parse", (DL_FUNC)&ztp_r_plain_year_month_parse, 1},
+    {"ztp_r_plain_year_month_format", (DL_FUNC)&ztp_r_plain_year_month_format, 2},
+    {"ztp_r_plain_month_day_from_fields", (DL_FUNC)&ztp_r_plain_month_day_from_fields, 4},
+    {"ztp_r_plain_month_day_parse", (DL_FUNC)&ztp_r_plain_month_day_parse, 1},
+    {"ztp_r_plain_month_day_format", (DL_FUNC)&ztp_r_plain_month_day_format, 2},
     {"ztp_r_parse_describe", (DL_FUNC)&ztp_r_parse_describe, 3},
     {NULL, NULL, 0}
 };

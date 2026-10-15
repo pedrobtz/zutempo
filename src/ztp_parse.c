@@ -264,6 +264,8 @@ static bool ztp_parse_goal_date_time(ztp_cursor *c, ztp_parsed *out,
                                      bool time_required)
 {
     if (!ztp_parse_date(c, &out->year, &out->month, &out->day)) return false;
+    out->has_year = true;
+    out->has_day = true;
     if (ztp_is_separator(ztp_peek(c, 0))) {
         c->pos++;
         if (!ztp_parse_time(c, &out->time)) return false;
@@ -302,10 +304,81 @@ static bool ztp_parse_goal_time_only(ztp_cursor *c, ztp_parsed *out)
     return ztp_parse_tail(c);
 }
 
+/* DateSpecYearMonth: a year, an optional "-", a month. */
+static bool ztp_parse_goal_year_month_only(ztp_cursor *c, ztp_parsed *out)
+{
+    size_t at;
+
+    if (!ztp_parse_year(c, &out->year)) return false;
+    if (ztp_peek(c, 0) == '-') c->pos++;
+    at = c->pos;
+    if (!ztp_digits(c, 2, &out->month, "expected a two-digit month")) return false;
+    if (!ztp_in(out->month, 1, 12)) return ztp_fail_at(c, at, "month must be 01 to 12");
+    out->has_year = true;
+    out->has_day = false;
+    out->day = 1;
+    return ztp_parse_tail(c);
+}
+
+/* DateSpecMonthDay: an optional "--", a month, an optional "-", a day,
+   valid in some year (IsValidMonthDay). */
+static bool ztp_parse_goal_month_day_only(ztp_cursor *c, ztp_parsed *out)
+{
+    size_t at;
+
+    if (ztp_peek(c, 0) == '-' && ztp_peek(c, 1) == '-') c->pos += 2;
+    at = c->pos;
+    if (!ztp_digits(c, 2, &out->month, "expected a two-digit month")) return false;
+    if (!ztp_in(out->month, 1, 12)) return ztp_fail_at(c, at, "month must be 01 to 12");
+    if (ztp_peek(c, 0) == '-') c->pos++;
+    at = c->pos;
+    if (!ztp_digits(c, 2, &out->day, "expected a two-digit day")) return false;
+    if (!ztp_in(out->day, 1, 31)) return ztp_fail_at(c, at, "day must be 01 to 31");
+    if (!ztp_is_valid_iso_date(1972, out->month, out->day))
+        return ztp_fail_at(c, at, "no such day in that month");
+    out->has_year = false;
+    out->has_day = true;
+    out->year = 1972;
+    return ztp_parse_tail(c);
+}
+
+/* A goal with two forms: a full date-time (time optional) or the partial
+   form. The date-time form is tried first when the string could start a
+   year; the error of the attempt that read further is kept. */
+static bool ztp_parse_goal_partial(ztp_cursor *c, ztp_parsed *out,
+                                   bool (*partial)(ztp_cursor *, ztp_parsed *))
+{
+    ztp_cursor attempt = *c;
+    ztp_parsed tmp;
+    int ch = ztp_peek(c, 0);
+    bool date_shaped = ztp_is_digit(ch) || ch == '+' ||
+                       (ch == '-' && ztp_peek(c, 1) != '-');
+
+    if (date_shaped) {
+        memset(&tmp, 0, sizeof tmp);
+        if (ztp_parse_goal_date_time(&attempt, &tmp, false)) {
+            *c = attempt;
+            *out = tmp;
+            return true;
+        }
+    }
+    memset(out, 0, sizeof *out);
+    if (partial(c, out)) return true;
+    if (date_shaped && attempt.reason != NULL && attempt.fail_pos > c->fail_pos) {
+        c->reason = attempt.reason;
+        c->fail_pos = attempt.fail_pos;
+    }
+    return false;
+}
+
 static bool ztp_parse_slow(ztp_cursor *c, ztp_parse_goal goal, ztp_parsed *out)
 {
     memset(out, 0, sizeof *out);
     if (goal == ZTP_PARSE_DATE_TIME) return ztp_parse_goal_date_time(c, out, false);
+    if (goal == ZTP_PARSE_YEAR_MONTH)
+        return ztp_parse_goal_partial(c, out, ztp_parse_goal_year_month_only);
+    if (goal == ZTP_PARSE_MONTH_DAY)
+        return ztp_parse_goal_partial(c, out, ztp_parse_goal_month_day_only);
 
     /* TemporalTimeString: a date-time with the time required, or a bare
        time. Try the date-time form when the string can start with a year
@@ -351,7 +424,7 @@ static bool ztp_parse_fast(const char *s, size_t n, ztp_parse_goal goal,
     zuf_datetime dt;
     zuf_result r;
 
-    if (goal != ZTP_PARSE_DATE_TIME || n == 0) return false;
+    if (goal == ZTP_PARSE_TIME || n == 0) return false;
     if (memchr(s, '[', n) != NULL) return false;
     r = zuf_parse_datetime_opt(s, s + n, &dt, ZUF_DT_EXPANDED_YEAR);
     if (r.status != ZUF_OK || r.ptr != s + n) return false;
@@ -372,6 +445,8 @@ static bool ztp_parse_fast(const char *s, size_t n, ztp_parse_goal goal,
     out->year = dt.year;
     out->month = dt.month;
     out->day = dt.day;
+    out->has_year = true;
+    out->has_day = true;
     out->has_time = dt.has_time;
     if (dt.has_time) {
         out->time.hour = dt.hour;
@@ -407,7 +482,10 @@ ztp_status ztp_parse_path(ztp_ctx *ctx, size_t index, const char *s, size_t n,
         shown[k] = '\0';
         return ztp_fail(ctx, ZTP_ERR_PARSE, index,
                         "cannot parse \"%s\" as a %s: %s at byte %lu", shown,
-                        goal == ZTP_PARSE_TIME ? "time" : "date or date-time",
+                        goal == ZTP_PARSE_TIME ? "time"
+                        : goal == ZTP_PARSE_YEAR_MONTH ? "year-month"
+                        : goal == ZTP_PARSE_MONTH_DAY ? "month-day"
+                        : "date or date-time",
                         c.reason ? c.reason : "invalid",
                         (unsigned long)(c.fail_pos + 1));
     }
