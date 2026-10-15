@@ -23,14 +23,16 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 9. The eight types exist with every
+Verified 2026-10-15: stages 0 to 10. The eight types exist with every
 member of the pinned specification: fields, `with*`, `compare`,
 `equals`, `round`, `add`, `subtract`, `since`, `until`, `total`,
 `startOfDay`, `getTimeZoneTransition`, the conversions among the types
 and `toString()` with all its options; every `Now` function works;
 strings are read with every RFC 9557 annotation, and
 `zutempo_parse()` (`R/parse.R`) reads them in bulk with `NA` for
-failures. The ledger's `pending` list is empty. The engine has the ISO
+failures. `R/base-r.R` converts to and from base R's types (design 6.10),
+with the exact double conversions in `src/ztp_instant.c`. The ledger's
+`pending` list is empty. The engine has the ISO
 records (`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
 (`src/ztp_format.c`), the parser with its goals, the annotation rules,
 the time zone and calendar string readers and the zufast fast path

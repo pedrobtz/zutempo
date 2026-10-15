@@ -31,7 +31,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | [#26](https://github.com/pedrobtz/zutempo/pull/26), [#28](https://github.com/pedrobtz/zutempo/pull/28) | 2026-10-15 |
 | 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | [#27](https://github.com/pedrobtz/zutempo/pull/27) | 2026-10-15 |
 | 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | [#31](https://github.com/pedrobtz/zutempo/pull/31) | 2026-10-15 |
-| 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | | |
+| 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | | 2026-10-15 |
 | 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | | |
 | 12 | [Documentation](#stage-12--documentation) | [#15](https://github.com/pedrobtz/zutempo/issues/15) | | |
 | 13 | [v0.1.0 readiness](#stage-13--v010-readiness) | [#16](https://github.com/pedrobtz/zutempo/issues/16) | | |
@@ -757,6 +757,27 @@ exists.
   open question 2 is decided.
 
 **Design.** §4.2, §6.9, §6.10, §14 row 7, D10.
+
+**Deviations (2026-10-15).**
+- Open question 2 is decided: no `pedrobtz/zuint` exists and `zuint` is
+  not on CRAN, so `epoch_nanoseconds()` keeps the exact decimal string of
+  stage 5 and the `zuint` hook stays under "After 0.1.0" (maintainer's
+  call, 2026-10-15). No `Suggests: zuint`, so no note about it.
+- Base R's `as.difftime()` is a function, not a generic, and reads any
+  classed double as a number. The `difftime` rows are therefore
+  `temporal_to_difftime()`, a zutempo generic in the `temporal_to_*`
+  family, chosen by the maintainer on 2026-10-15. The other way is
+  `plain_time(<difftime>)` and `duration(<difftime>)`, as planned.
+- Base R reads only database names and `"UTC"` as a `tzone`, not
+  `"+05:30"` or POSIX TZ strings. A zoned value in a fixed offset becomes
+  a `POSIXct` in `Etc/GMT∓h` when the offset is whole hours and in
+  `"UTC"` otherwise; the instant is unchanged either way.
+- `POSIXlt` gets its zone abbreviation and DST flag from base R for the
+  same instant, since zutempo keeps neither; its fields and `gmtoff` are
+  zutempo's own.
+- Beyond the table: `as.Date()` on a `plain_date_time()`, `as.POSIXlt()`
+  on an `instant()`, and `plain_date()` and `plain_date_time()` from a
+  `POSIXct`, `POSIXlt` or `Date`, each through the rows above.
 
 ## Stage 11 — Conformance, agreement and benchmarks
 
