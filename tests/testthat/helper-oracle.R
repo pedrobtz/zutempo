@@ -47,7 +47,10 @@ oracle_arg <- function(arg) {
   }
   if (is.list(arg)) {
     names(arg) <- oracle_snake(names(arg))
-    return(arg)
+    # Temporal's `offset` field is `offset_string` in R, since `offset`
+    # is the option (design 6.3; roadmap stage 7).
+    names(arg)[names(arg) == "offset"] <- "offset_string"
+    return(lapply(arg, oracle_arg))
   }
   arg
 }

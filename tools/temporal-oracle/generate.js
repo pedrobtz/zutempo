@@ -54,6 +54,12 @@ function materialise(Temporal, arg) {
   if (arg !== null && typeof arg === "object" && "$type" in arg) {
     return Temporal[arg.$type].from(arg.value);
   }
+  if (arg !== null && typeof arg === "object" && !Array.isArray(arg)) {
+    // A bag of fields may hold typed values (toZonedDateTime's plainTime).
+    return Object.fromEntries(
+      Object.entries(arg).map(([k, v]) => [k, materialise(Temporal, v)]),
+    );
+  }
   return arg;
 }
 
