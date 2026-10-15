@@ -323,7 +323,11 @@ ztp_show_offset <- function(offset) {
 # and the like), so that print() and data frames keep working.
 ztp_format <- function(x, ...) {
   dots <- list(...)
-  method <- getS3method("temporal_to_string", class(x)[1L])
+  method <- get(
+    paste0("temporal_to_string.", class(x)[1L]),
+    envir = asNamespace("zutempo"),
+    mode = "function"
+  )
   keep <- setdiff(names(formals(method)), c("x", "..."))
   dots <- dots[!is.null(names(dots)) & names(dots) %in% keep]
   do.call(temporal_to_string, c(list(x), dots))
