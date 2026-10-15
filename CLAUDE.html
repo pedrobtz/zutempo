@@ -43,7 +43,7 @@
 </div>
 <div class="section level2">
 <h2 id="current-state">Current state<a class="anchor" aria-label="anchor" href="#current-state"></a></h2>
-<p>Verified 2026-10-15: package identity only (stage 0). <code>src/</code> holds the registration entry point and nothing else; no R function exists yet. The engine, the types and the time zone reader are not implemented. See the roadmap’s stage table for what is done.</p>
+<p>Verified 2026-10-15: stages 0 and 1. The layering of design §4 exists end to end for one probe (<code>src/ztp_probe.c</code>, reached through the internal <code>ztp_probe_*()</code> functions): engine context and status codes (<code>src/ztp.h</code>), R glue that raises classed conditions with the failing element’s index (<code>src/ztp_r_common.c</code>, <code>R/conditions.R</code>), and <code><a href="reference/zutempo_info.html">zutempo_info()</a></code> with the pins of <code>inst/spec/PINS</code>. The member list of the pinned specification is in <code>inst/spec/members.csv</code>, and <code>tests/testthat/test-members.R</code> lists every member as pending. The oracle loop runs for <code>PlainDate</code> and skips until stage 2. No Temporal type is implemented yet; the engine’s real operations and the time zone reader are not built. See the roadmap’s stage table.</p>
 </div>
 <div class="section level2">
 <h2 id="stage-tracking">Stage tracking<a class="anchor" aria-label="anchor" href="#stage-tracking"></a></h2>
@@ -76,6 +76,15 @@
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::check()'</span>                   <span class="co"># R CMD check</span></span>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="ex">air</span> format .                                     <span class="co"># format R sources</span></span></code></pre></div>
 <p>The default loop is <code>document()</code>, <code>test()</code>, <code>check()</code>. Before the first <code>load_all()</code>, install the development <code>zufast</code>: <code>Rscript -e 'pak::pak("pedrobtz/zufast")'</code>.</p>
+<p>Occasional:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="va">ZUTEMPO_CFLAGS</span><span class="op">=</span>-DZUF_NO_INT128 <span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::clean_dll(); devtools::test()'</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>                                                 <span class="co"># the portable 128-bit build</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="ex">Rscript</span> tools/spec/members.R                     <span class="co"># regenerate inst/spec/members.csv</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="kw">(</span><span class="bu">cd</span> tools/temporal-oracle <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> ci <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run generate<span class="kw">)</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>                                                 <span class="co"># regenerate tests/testthat/oracle/</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="kw">(</span><span class="bu">cd</span> tools/temporal-oracle <span class="kw">&amp;&amp;</span> <span class="ex">npm</span> run check-native<span class="kw">)</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                                                 <span class="co"># Node 26+: polyfill vs native</span></span></code></pre></div>
+<p><code>devtools::clean_dll()</code> matters when <code>ZUTEMPO_CFLAGS</code> changes: <code>load_all()</code> only recompiles files that changed.</p>
 </div>
 <div class="section level2">
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a></h2>
@@ -89,7 +98,13 @@
 <li>
 <code>src/ztp_tz*.c</code>: the zone cache. TZif reader, POSIX TZ footer rules, link table, identifier index.</li>
 <li>
-<code>src/init.c</code>: the only exported symbol, <code>R_init_zutempo</code>.</li>
+<code>src/init.c</code>: the only exported symbol, <code>R_init_zutempo</code>. R reaches the registered routines as <code>C_&lt;name&gt;</code> (<code>useDynLib(..., .fixes = "C_")</code>).</li>
+<li>
+<code>src/ztp.h</code>: <code>ztp_status</code> and <code>ztp_ctx</code>. An engine function takes a context and returns a status; on failure <code>ztp_fail()</code> records the status, the 1-based element index and a message. <code>src/ztp_r.h</code>: <code>ztp_r_raise()</code> turns a failed context into a condition by evaluating <code>stop_zutempo()</code> in the namespace.</li>
+<li>
+<code>inst/spec/PINS</code>: the specification, test262 and tzdata pins (DCF). <code>inst/spec/members.csv</code>: every member of the pinned specification with its R name, written by <code>tools/spec/members.R</code>.</li>
+<li>
+<code>tools/temporal-oracle/</code>: the Node project that writes <code>tests/testthat/oracle/&lt;Type&gt;.json</code> from <code>temporal-polyfill</code>. Cases are data in <code>cases.js</code>; expectations come from the engine.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="invariants-that-are-easy-to-break">Invariants that are easy to break<a class="anchor" aria-label="anchor" href="#invariants-that-are-easy-to-break"></a></h2>
@@ -124,7 +139,9 @@
 <strong>Borrow a conformance suite before writing one.</strong> The oracle is <code>temporal-polyfill</code> under Node (<code>tools/temporal-oracle/</code>, from stage 1), checked against Node 26’s native Temporal; test262’s result assertions are translated in stage 11. Zone cases run against committed TZif fixtures from a pinned tzdata release, not the machine’s database.</li>
 <li><strong>Tests that need the machine’s database skip when it is missing.</strong></li>
 <li>
-<strong>Helpers live in <code>tests/testthat/helper-*.R</code>.</strong> <code>helper-oracle.R</code> runs every case in an oracle JSON file (from stage 1).</li>
+<strong>Helpers live in <code>tests/testthat/helper-*.R</code>.</strong> <code>helper-oracle.R</code> reads an oracle JSON file (<code>oracle_cases()</code>) and holds one checker per type (<code>oracle_check_plain_date()</code>, …), which skips until that type’s constructor exists. <code>test-oracle-&lt;type&gt;.R</code> loops the cases through it.</li>
+<li>
+<strong><code>test-members.R</code> is the member ledger.</strong> When a stage exports a member, remove its name from <code>pending</code> there; the test fails otherwise.</li>
 <li>
 <strong>Keep the suite inside the CRAN time budget.</strong> Not yet measured.</li>
 </ul></div>
@@ -162,7 +179,9 @@
 <ul><li>
 <code>R-CMD-check.yaml</code>: <code>r-cmd-check.yml@v1</code>, quick on pull requests, full on <code>main</code> or with the <code>full-ci</code> label.</li>
 <li>
-<code>native-checks.yml</code>: <code>valgrind.yml</code>, <code>lto.yml</code>, <code>gctorture.yml</code>, <code>rchk.yml</code> (with <code>github-packages: pedrobtz/zufast</code>, since the rchk image ignores <code>Remotes:</code>), <code>analyzers.yml</code> and <code>cran-special.yml</code>, with the same profile expression. <code>sanitizers.yml</code> (with ASan) joins in stage 1, once there is C for it to instrument (pedrobtz/r-actions#68).</li>
+<code>R-CMD-check.yaml</code> also runs <code>R-CMD-check-no-int128</code>, the same check with <code>ZUTEMPO_CFLAGS=-DZUF_NO_INT128</code> in the environment, which <code>src/Makevars</code> adds to <code>PKG_CFLAGS</code>; <code>test-info.R</code> asserts that the flag reached the engine.</li>
+<li>
+<code>native-checks.yml</code>: <code>sanitizers.yml</code> (with ASan), <code>valgrind.yml</code>, <code>lto.yml</code>, <code>gctorture.yml</code>, <code>rchk.yml</code> (with <code>github-packages: pedrobtz/zufast</code>, since the rchk image ignores <code>Remotes:</code>), <code>analyzers.yml</code> and <code>cran-special.yml</code>, with the same profile expression.</li>
 <li>
 <code>coverage.yaml</code>: <code>coverage.yml</code> pinned to a commit. The badge is committed to <code>gh-pages</code> because <code>main</code> takes no direct pushes.</li>
 <li>
