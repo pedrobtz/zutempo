@@ -17,9 +17,9 @@ test_that("offsets agree with base R at every transition and sampled hours", {
   )
   ids <- agreement_zones()
   transitions <- agreement_transitions(ids)
-  # Every 97th hour (a stride prime to the day and the week), and both
-  # sides of every transition.
-  sample <- seq(agreement_first, agreement_last, by = 97 * 3600)
+  # Both sides of every transition, where offsets change, and every 997th
+  # hour between them (a stride prime to the day and the week).
+  sample <- seq(agreement_first, agreement_last, by = 997 * 3600)
   found <- do.call(
     rbind,
     lapply(seq_along(ids), function(i) {

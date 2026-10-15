@@ -847,8 +847,9 @@ recorded.
   128-bit total is the nearest double, where adding two 64-bit halves
   rounded twice.
 - The agreement test runs in two sizes: on every check except CRAN's,
-  every zone at every transition and every 97th hour (18 s); and every
-  zone at every hour (about 11 minutes) only with `ZUTEMPO_EXTENDED_TESTS`,
+  every zone at both sides of every transition and every 997th hour (a
+  few seconds); and every zone at every hour (about 11 minutes) only with
+  `ZUTEMPO_EXTENDED_TESTS`,
   which the `agreement` job of `R-CMD-check.yaml` sets on one Ubuntu leg of
   the full run before submission (the CI policy of stage 13). On macOS the
   exhaustive run found no difference, so `agreement/differences.csv`
