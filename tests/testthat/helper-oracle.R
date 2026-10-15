@@ -196,7 +196,7 @@ oracle_check <- function(type, case) {
 # a failure naming it, and the rest of the file still runs.
 oracle_run_cases <- function(type) {
   oracle_skip_until_built(type)
-  cases <- oracle_cases(type)
+  cases <- oracle_gctorture_sample(oracle_cases(type))
   for (case in cases) {
     tryCatch(
       oracle_check(type, case),
@@ -206,4 +206,39 @@ oracle_run_cases <- function(type) {
     )
   }
   invisible(length(cases))
+}
+
+# The shape of a case: its member, whether it runs on a value, the kind of
+# each argument (a bag by its names, a typed value by its type), its option
+# names, and whether it throws. Cases of one shape reach the same R code
+# and C glue with different values.
+oracle_shape <- function(case) {
+  arg_kind <- function(a) {
+    if (!is.list(a)) {
+      return(class(a)[1L])
+    }
+    if (!is.null(a[["$type"]])) {
+      return(a[["$type"]])
+    }
+    paste0("{", paste(sort(names(a)), collapse = ","), "}")
+  }
+  paste(
+    case[["op"]],
+    !is.null(case[["on"]]),
+    paste(vapply(case[["args"]], arg_kind, ""), collapse = ";"),
+    paste(sort(names(case[["options"]])), collapse = ","),
+    !is.null(case[["throws"]]),
+    sep = "|"
+  )
+}
+
+# The long gctorture run (ZUTEMPO_GCTORTURE_SAMPLE=true, set by
+# .github/workflows/gctorture.yaml and the `gctorture` label) keeps one
+# case per shape. A PROTECT bug lives in the glue a shape reaches, not in
+# the values, and the oracle files are most of the suite's allocations.
+oracle_gctorture_sample <- function(cases) {
+  if (!identical(Sys.getenv("ZUTEMPO_GCTORTURE_SAMPLE"), "true")) {
+    return(cases)
+  }
+  cases[!duplicated(vapply(cases, oracle_shape, ""))]
 }
