@@ -8,6 +8,10 @@
   when the first of a month is not a valid date; a time zone string whose
   offset has seconds is an error even when they are zero; and a duration field
   computed from a large total is the nearest double.
+* Operations on zoned values no longer look for the time zone database on
+  every call: the directory is found once per setting of `zutempo.tzdir` and
+  `TZDIR`, and again after `zutempo_tz_reset()`. Many short calls run several
+  times faster.
 * Conversions with base R's dates and times: `as.Date()`, `as.POSIXct()`
   and `as.POSIXlt()` on the zutempo types, `temporal_to_difftime()` for a
   `plain_time()` or `duration()`, and the other way through the

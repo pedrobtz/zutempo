@@ -491,3 +491,23 @@ test_that("a damaged TZif file is a tz error, not a crash", {
   expect_silent(bad(bytes))
   zutempo_tz_reset()
 })
+
+test_that("the database is looked up once per setting, and again after a reset", {
+  dir <- file.path(withr::local_tempdir(), "zoneinfo")
+  withr::local_options(list(zutempo.tzdir = dir))
+  zutempo_tz_reset()
+  withr::defer(zutempo_tz_reset())
+  # The directory does not exist yet, so the lookup goes past it.
+  expect_false(identical(zutempo_info()[["tzdir"]], dir))
+  dir.create(dir)
+  file.copy(
+    list.files(tz_fixture_dir("slim"), full.names = TRUE),
+    dir,
+    recursive = TRUE
+  )
+  # The lookup is kept for the same setting ...
+  expect_false(identical(zutempo_info()[["tzdir"]], dir))
+  # ... until a reset.
+  zutempo_tz_reset()
+  expect_identical(zutempo_info()[["tzdir"]], dir)
+})

@@ -13,19 +13,22 @@ agreement_last <- 4102444800 # 2100-01-01T00:00Z
 # 1900 and 2100, as a list by zone.
 agreement_transitions <- function(ids) {
   z <- zoned_date_time(paste0("1900-01-01T00:00Z[", ids, "]"))
-  out <- vector("list", length(ids))
   live <- seq_along(ids)
+  which_zone <- list()
+  at <- list()
   while (length(live)) {
-    nxt <- temporal_get_time_zone_transition(z[live], "next")
+    nxt <- temporal_get_time_zone_transition(z, "next")
     secs <- unclass(as.POSIXct(nxt, tz = "UTC"))
     keep <- !is.na(secs) & secs < agreement_last
-    for (k in which(keep)) {
-      out[[live[k]]] <- c(out[[live[k]]], secs[k])
-    }
-    z[live[keep]] <- nxt[keep]
+    which_zone[[length(which_zone) + 1L]] <- live[keep]
+    at[[length(at) + 1L]] <- secs[keep]
+    # Only the zones still in range go on; subsetting is cheap, assigning
+    # into a zoned vector is not.
+    z <- nxt[keep]
     live <- live[keep]
   }
-  out
+  out <- split(unlist(at), factor(unlist(which_zone), levels = seq_along(ids)))
+  unname(out)
 }
 
 # Offsets that differ at `secs` (UTC seconds) in `zone`, as a data frame.
