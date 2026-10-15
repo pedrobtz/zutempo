@@ -12,6 +12,9 @@ with `overflow`. `temporal_with_plain_time()` is `withPlainTime()`, and
 ``` r
 temporal_with(x, ..., overflow = "constrain")
 
+# S3 method for class 'zutempo_duration'
+temporal_with(x, ..., overflow = "constrain")
+
 # S3 method for class 'zutempo_plain_date_time'
 temporal_with(x, ..., overflow = "constrain")
 

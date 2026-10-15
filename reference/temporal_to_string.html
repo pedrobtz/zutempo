@@ -35,7 +35,7 @@ significant digits."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Format a Temporal value as an ISO 8601 string</h1>
-      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/temporal.R" class="external-link"><code>R/temporal.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/plain-date-time.R" class="external-link"><code>R/plain-date-time.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/plain-date.R" class="external-link"><code>R/plain-date.R</code></a>, and 3 more</small>
+      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/temporal.R" class="external-link"><code>R/temporal.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/duration.R" class="external-link"><code>R/duration.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/plain-date-time.R" class="external-link"><code>R/plain-date-time.R</code></a>, and 4 more</small>
       <div class="d-none name"><code>temporal_to_string.Rd</code></div>
     </div>
 
@@ -49,6 +49,9 @@ significant digits.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">temporal_to_string</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_duration'</span></span>
+<span><span class="fu">temporal_to_string</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'zutempo_plain_date_time'</span></span>
 <span><span class="fu">temporal_to_string</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>

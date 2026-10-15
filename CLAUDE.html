@@ -43,7 +43,7 @@
 </div>
 <div class="section level2">
 <h2 id="current-state">Current state<a class="anchor" aria-label="anchor" href="#current-state"></a></h2>
-<p>Verified 2026-10-15: stages 0 to 3. The five plain types exist: <code><a href="reference/plain_date.html">plain_date()</a></code>, <code><a href="reference/plain_time.html">plain_time()</a></code>, <code><a href="reference/plain_date_time.html">plain_date_time()</a></code>, <code><a href="reference/plain_year_month.html">plain_year_month()</a></code> and <code><a href="reference/plain_month_day.html">plain_month_day()</a></code>, with their fields, <code>with</code>, <code>compare</code>, <code>equals</code>, <code>round</code> (time types), conversions among them and default <code><a href="https://rdrr.io/r/base/toString.html" class="external-link">toString()</a></code>; strings are read without annotations (stage 9 adds them). The engine has the ISO date and time records (<code>src/ztp_iso.c</code>), rounding (<code>src/ztp_round.c</code>), formatting (<code>src/ztp_format.c</code>) and the parser with its four goals and the zufast fast path (<code>src/ztp_parse.c</code>); the glue for the plain types is <code>src/ztp_r_plain.c</code>. No <code>Duration</code>, <code>Instant</code>, zone or <code>ZonedDateTime</code> yet; arithmetic (<code>add</code>, <code>subtract</code>, <code>since</code>, <code>until</code>) arrives in stage 4. The oracle has cases for the five plain types. See the roadmap’s stage table.</p>
+<p>Verified 2026-10-15: stages 0 to 4. The five plain types and <code><a href="reference/duration.html">duration()</a></code> exist with every member that needs no time zone: fields, <code>with</code>, <code>compare</code>, <code>equals</code>, <code>round</code>, <code>add</code>, <code>subtract</code>, <code>since</code>, <code>until</code>, <code>total</code>, the conversions among the plain types and default <code><a href="https://rdrr.io/r/base/toString.html" class="external-link">toString()</a></code>; strings are read without annotations (stage 9 adds them). The engine has the ISO records (<code>src/ztp_iso.c</code>), rounding (<code>src/ztp_round.c</code>), formatting (<code>src/ztp_format.c</code>), the parser with its goals and the zufast fast path (<code>src/ztp_parse.c</code>), durations on 128-bit time durations (<code>src/ztp_duration.c</code>) and calendar arithmetic with relative rounding (<code>src/ztp_relative.c</code>); the glue is <code>src/ztp_r_plain.c</code> and <code>src/ztp_r_duration.c</code>. No <code>Instant</code>, zone or <code>ZonedDateTime</code> yet. The oracle covers the six types. See the roadmap’s stage table.</p>
 </div>
 <div class="section level2">
 <h2 id="stage-tracking">Stage tracking<a class="anchor" aria-label="anchor" href="#stage-tracking"></a></h2>
@@ -131,6 +131,10 @@
 <li>
 <strong>The suite must build and pass with <code>ZUF_NO_INT128</code></strong> as well as with <code>__int128</code>. CI runs both.</li>
 <li>
+<strong>The pinned specification has two steps that cannot be followed literally</strong> (recorded in the roadmap under stage 4): <code>ISODateSurpasses</code> returns false when <code>months</code> is 0, which would leave <code>CalendarDateUntil</code>’s day loop without an exit, and <code>ComputeNudgeWindow</code> takes the origin when <code>r1</code> is 0, which drops the larger units of the start duration. The engine does what the reference engines do; <code>src/ztp_relative.c</code> comments both places.</li>
+<li>
+<strong>A list-backed class needs <code><a href="https://rdrr.io/r/base/names.html" class="external-link">names()</a></code> to return <code>NULL</code>.</strong> The fields are the list’s names; base R and vctrs read <code><a href="https://rdrr.io/r/base/names.html" class="external-link">names()</a></code> as element names, and <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code> and <code>vec_c()</code> break without the method. <code><a href="reference/duration.html">duration()</a></code> is the example; <code>ZonedDateTime</code> will be the next.</li>
+<li>
 <strong>Index lists with <code>[[</code>, never <code>$</code>.</strong> <code>$</code> partial-matches names, so <code>fields$month</code> finds <code>month_code</code> when <code>month</code> is absent. This bit once in <code><a href="reference/temporal_with.html">temporal_with()</a></code>.</li>
 <li>
 <strong>An invalid option value is a <code>zutempo_type_error</code></strong> (design 10), where JavaScript throws a RangeError; a value of the right kind that fails a range check (an increment that does not divide, a calendar other than ISO) is a <code>zutempo_range_error</code>. The oracle holds no invalid-option cases for that reason.</li>
@@ -152,6 +156,8 @@
 <strong>Helpers live in <code>tests/testthat/helper-*.R</code>.</strong> <code>helper-oracle.R</code> reads an oracle JSON file (<code>oracle_cases()</code>) and holds one checker per type (<code>oracle_check_plain_date()</code>, …), which skips until that type’s constructor exists. <code>test-oracle-&lt;type&gt;.R</code> loops the cases through it.</li>
 <li>
 <strong><code>test-members.R</code> is the member ledger.</strong> When a stage exports a member, remove its name from <code>pending</code> there; the test fails otherwise.</li>
+<li>
+<strong>Keep the gctorture job inside its 120-minute budget.</strong> Its cost grows with the number of expectations, not test blocks: an oracle file runs all its cases in one <code>test_that()</code> and compares fields in one <code>expect_equal()</code>. Add cases freely; add expectations with care.</li>
 <li>
 <strong>Keep the suite inside the CRAN time budget.</strong> Not yet measured.</li>
 </ul></div>

@@ -11,6 +11,9 @@ and a time's fraction keeps only its significant digits.
 ``` r
 temporal_to_string(x)
 
+# S3 method for class 'zutempo_duration'
+temporal_to_string(x)
+
 # S3 method for class 'zutempo_plain_date_time'
 temporal_to_string(x)
 

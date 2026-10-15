@@ -289,6 +289,97 @@ month_code(x, ...)
 
 # S3 method for class 'zutempo_plain_month_day'
 day(x, ...)
+
+years(x, ...)
+
+# Default S3 method
+years(x, ...)
+
+# S3 method for class 'zutempo_duration'
+years(x, ...)
+
+months(x, ...)
+
+# Default S3 method
+months(x, ...)
+
+# S3 method for class 'zutempo_duration'
+months(x, ...)
+
+weeks(x, ...)
+
+# Default S3 method
+weeks(x, ...)
+
+# S3 method for class 'zutempo_duration'
+weeks(x, ...)
+
+days(x, ...)
+
+# Default S3 method
+days(x, ...)
+
+# S3 method for class 'zutempo_duration'
+days(x, ...)
+
+hours(x, ...)
+
+# Default S3 method
+hours(x, ...)
+
+# S3 method for class 'zutempo_duration'
+hours(x, ...)
+
+minutes(x, ...)
+
+# Default S3 method
+minutes(x, ...)
+
+# S3 method for class 'zutempo_duration'
+minutes(x, ...)
+
+seconds(x, ...)
+
+# Default S3 method
+seconds(x, ...)
+
+# S3 method for class 'zutempo_duration'
+seconds(x, ...)
+
+milliseconds(x, ...)
+
+# Default S3 method
+milliseconds(x, ...)
+
+# S3 method for class 'zutempo_duration'
+milliseconds(x, ...)
+
+microseconds(x, ...)
+
+# Default S3 method
+microseconds(x, ...)
+
+# S3 method for class 'zutempo_duration'
+microseconds(x, ...)
+
+nanoseconds(x, ...)
+
+# Default S3 method
+nanoseconds(x, ...)
+
+# S3 method for class 'zutempo_duration'
+nanoseconds(x, ...)
+
+blank(x, ...)
+
+# Default S3 method
+blank(x, ...)
+
+# S3 method for class 'zutempo_duration'
+blank(x, ...)
+
+# S3 method for class 'zutempo_duration'
+Math(x, ...)
 ```
 
 ## Arguments
