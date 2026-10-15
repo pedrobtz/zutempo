@@ -4662,8 +4662,8 @@
       "on": "2026-03-07T12:00[America/New_York]",
       "args": [
         {
-          "days": 1,
-          "hours": 1
+          "$type": "Duration",
+          "value": "P1DT1H"
         }
       ],
       "result": {
@@ -5346,35 +5346,6 @@
       ],
       "options": {
         "largestUnit": "year"
-      },
-      "result": {
-        "string": "PT0S",
-        "type": "Duration",
-        "fields": {
-          "years": 0,
-          "months": 0,
-          "weeks": 0,
-          "days": 0,
-          "hours": 0,
-          "minutes": 0,
-          "seconds": 0,
-          "milliseconds": 0,
-          "microseconds": 0,
-          "nanoseconds": 0,
-          "sign": 0,
-          "blank": true
-        }
-      }
-    },
-    {
-      "id": "until-equal-other-zone-days",
-      "op": "until",
-      "on": "2026-03-07T12:00[America/New_York]",
-      "args": [
-        "2026-03-07T17:00[Europe/Lisbon]"
-      ],
-      "options": {
-        "largestUnit": "day"
       },
       "result": {
         "string": "PT0S",

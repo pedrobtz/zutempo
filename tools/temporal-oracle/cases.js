@@ -631,7 +631,7 @@ export const cases = {
     { id: "add-month-constrain", on: "2026-01-31T12:00[America/New_York]", op: "add", args: ["P1M"] },
     { id: "add-month-reject", on: "2026-01-31T12:00[America/New_York]", op: "add", args: ["P1M"], options: { overflow: "reject" } },
     { id: "add-negative", on: "2026-03-08T14:00[America/New_York]", op: "add", args: ["-PT25H"] },
-    { id: "add-fields", on: "2026-03-07T12:00[America/New_York]", op: "add", args: [{ days: 1, hours: 1 }] },
+    { id: "add-fields", on: "2026-03-07T12:00[America/New_York]", op: "add", args: [{ $type: "Duration", value: "P1DT1H" }] },
     { id: "add-offset-zone", on: "2026-03-07T12:00[+05:30]", op: "add", args: ["P1DT1H"] },
     { id: "add-past-max", on: "+275760-09-13T00:00Z[UTC]", op: "add", args: ["PT1S"] },
     { id: "add-day-past-max", on: "+275760-09-12T12:00Z[UTC]", op: "add", args: ["P1D"] },
@@ -655,7 +655,10 @@ export const cases = {
     { id: "until-round-years-ceil", on: "2026-01-01T00:00[America/New_York]", op: "until", args: ["2027-01-02T00:00[America/New_York]"], options: { largestUnit: "year", smallestUnit: "year", roundingMode: "ceil" } },
     { id: "until-round-hours-beyond-day", on: "2026-03-07T00:00[America/New_York]", op: "until", args: ["2026-03-08T23:30[America/New_York]"], options: { largestUnit: "day", smallestUnit: "hour" } },
     { id: "until-same", on: "2026-03-07T12:00[America/New_York]", op: "until", args: ["2026-03-07T12:00[America/New_York]"], options: { largestUnit: "year" } },
-    { id: "until-equal-other-zone-days", on: "2026-03-07T12:00[America/New_York]", op: "until", args: ["2026-03-07T17:00[Europe/Lisbon]"], options: { largestUnit: "day" } },
+    // Equal instants in different zones with a date largest unit are not
+    // here: temporal-polyfill 1.0.6 returns PT0S where the specification
+    // checks the zones first and throws (DifferenceTemporalZonedDateTime),
+    // so the package tests that in test-zoned-date-time.R.
     { id: "until-minutes-increment", on: "2026-03-07T12:00[America/New_York]", op: "until", args: ["2026-03-07T12:50[America/New_York]"], options: { smallestUnit: "minute", roundingIncrement: 15 } },
     { id: "until-bad-increment", on: "2026-03-07T12:00[America/New_York]", op: "until", args: ["2026-03-07T12:50[America/New_York]"], options: { smallestUnit: "minute", roundingIncrement: 7 } },
     { id: "since-days", on: "2026-03-08T14:00[America/New_York]", op: "since", args: ["2026-03-07T12:00[America/New_York]"], options: { largestUnit: "day" } },

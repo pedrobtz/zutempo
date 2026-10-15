@@ -660,6 +660,10 @@ specification, and `Duration` rounds relative to zoned values.
   `direction` is a `zutempo_type_error` as every invalid option value is
   (design 10), not the oracle's `RangeError`, so that case is tested in
   the package.
+- Equal instants in two zones with a date largest unit stay out of the
+  oracle: `temporal-polyfill` 1.0.6 returns `PT0S`, where the pinned
+  `DifferenceTemporalZonedDateTime` checks the zones first and throws. The
+  engine follows the specification, and `test-zoned-date-time.R` tests it.
 
 ## Stage 9 — RFC 9557 annotations and formatting options
 

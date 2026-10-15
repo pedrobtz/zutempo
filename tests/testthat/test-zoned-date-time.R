@@ -564,6 +564,15 @@ test_that("zoned arithmetic recycles, propagates NA and keeps each element's zon
       temporal_until(x[1], y[2], largest_unit = "day"),
       class = "zutempo_range_error"
     )
+    # The zones are checked before equal instants return a zero duration.
+    expect_error(
+      temporal_until(
+        zoned_date_time("2026-03-07T12:00[America/New_York]"),
+        zoned_date_time("2026-03-07T17:00[Europe/Lisbon]"),
+        largest_unit = "day"
+      ),
+      class = "zutempo_range_error"
+    )
     expect_error(
       temporal_until(x[1], y[1], largest_unit = "day", smallest_unit = "month"),
       class = "zutempo_range_error"
