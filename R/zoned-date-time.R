@@ -858,20 +858,38 @@ ztp_zoned_with_duration <- function(x, other, negate) {
 
 #' @rdname temporal_add
 #' @export
-temporal_add.zutempo_zoned_date_time <- function(x, other, ..., overflow = "constrain") {
+temporal_add.zutempo_zoned_date_time <- function(
+  x,
+  other,
+  ...,
+  overflow = "constrain"
+) {
   ztp_check_dots_empty(...)
   ov <- ztp_overflow_code(overflow)
   a <- ztp_zoned_with_duration(x, other, negate = FALSE)
-  new_zoned_date_time(.Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov), a$codes, a$zones)
+  new_zoned_date_time(
+    .Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov),
+    a$codes,
+    a$zones
+  )
 }
 
 #' @rdname temporal_add
 #' @export
-temporal_subtract.zutempo_zoned_date_time <- function(x, other, ..., overflow = "constrain") {
+temporal_subtract.zutempo_zoned_date_time <- function(
+  x,
+  other,
+  ...,
+  overflow = "constrain"
+) {
   ztp_check_dots_empty(...)
   ov <- ztp_overflow_code(overflow)
   a <- ztp_zoned_with_duration(x, other, negate = TRUE)
-  new_zoned_date_time(.Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov), a$codes, a$zones)
+  new_zoned_date_time(
+    .Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov),
+    a$codes,
+    a$zones
+  )
 }
 
 ztp_zoned_difference <- function(
@@ -929,7 +947,15 @@ temporal_until.zutempo_zoned_date_time <- function(
   rounding_mode = "trunc"
 ) {
   ztp_check_dots_empty(...)
-  ztp_zoned_difference(x, other, largest_unit, smallest_unit, rounding_increment, rounding_mode, FALSE)
+  ztp_zoned_difference(
+    x,
+    other,
+    largest_unit,
+    smallest_unit,
+    rounding_increment,
+    rounding_mode,
+    FALSE
+  )
 }
 
 #' @rdname temporal_until
@@ -944,7 +970,15 @@ temporal_since.zutempo_zoned_date_time <- function(
   rounding_mode = "trunc"
 ) {
   ztp_check_dots_empty(...)
-  ztp_zoned_difference(x, other, largest_unit, smallest_unit, rounding_increment, rounding_mode, TRUE)
+  ztp_zoned_difference(
+    x,
+    other,
+    largest_unit,
+    smallest_unit,
+    rounding_increment,
+    rounding_mode,
+    TRUE
+  )
 }
 
 #' @rdname temporal_round
@@ -960,7 +994,12 @@ temporal_round.zutempo_zoned_date_time <- function(
   if (is.null(smallest_unit)) {
     stop_zutempo("`smallest_unit` is required", kind = "type")
   }
-  opts <- ztp_round_options(smallest_unit, rounding_increment, rounding_mode, allow_day = TRUE)
+  opts <- ztp_round_options(
+    smallest_unit,
+    rounding_increment,
+    rounding_mode,
+    allow_day = TRUE
+  )
   z <- .Call(
     C_ztp_r_zoned_round,
     ztp_zdt_instant(x),
@@ -994,7 +1033,10 @@ temporal_get_time_zone_transition <- function(x, direction) {
 
 #' @rdname temporal_get_time_zone_transition
 #' @export
-temporal_get_time_zone_transition.zutempo_zoned_date_time <- function(x, direction) {
+temporal_get_time_zone_transition.zutempo_zoned_date_time <- function(
+  x,
+  direction
+) {
   if (missing(direction)) {
     stop_zutempo("`direction` is required", kind = "type")
   }
