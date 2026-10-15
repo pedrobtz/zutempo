@@ -8,6 +8,23 @@
 \description{
 An implementation of the Temporal date and time model of 'ECMA-262' in 'R', with a native 'C' core: 'Instant', 'ZonedDateTime', 'PlainDateTime', 'PlainDate', 'PlainTime', 'PlainYearMonth', 'PlainMonthDay', 'Duration' and 'Now', in the ISO 8601 calendar, with 'IANA' time zones read from the same database that base 'R' uses. Values are stored exactly in 'R' vectors, arithmetic is done over the specification's full ranges with exact 128-bit intermediates, and strings follow RFC 9557 with annotations. Every result is meant to match the result of the same operation in a browser or in 'Node'.
 }
+\section{Scope}{
+
+zutempo implements every member of the eight Temporal types and
+\code{Temporal.Now} in the pinned specification (\code{zutempo_info()}), in the
+ISO 8601 calendar. It does not include:
+\itemize{
+\item calendars other than ISO 8601 (Hebrew, Japanese and the others come
+from ECMA-402, with CLDR data);
+\item locale formatting (\code{toLocaleString()}): convert to \code{POSIXct} and use
+base R's \code{format()};
+\item custom time zones, or POSIX TZ strings as zone identifiers;
+\item arithmetic and comparison operators on dates and times (\code{x + d},
+\code{x < y}): use the functions, such as \code{\link[=temporal_add]{temporal_add()}} and
+\code{\link[=plain_date_compare]{plain_date_compare()}}. Durations do compare with \code{==} and \code{<}.
+}
+}
+
 \seealso{
 Useful links:
 \itemize{
