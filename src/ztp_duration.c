@@ -70,14 +70,41 @@ bool ztp_i128_from_double(double x, zuf_i128 *out)
 
 /* The nearest double: exact when the value has at most 53 significant
    bits, otherwise from the two words (rounded twice, within an ulp). */
+static unsigned ztp_bit_width64(uint64_t x)
+{
+    unsigned w = 0;
+    while (x) {
+        w++;
+        x >>= 1;
+    }
+    return w;
+}
+
+/* 2^k as an unsigned 128-bit integer, k in 0..127. */
+static zuf_u128 ztp_pow2_u128(unsigned k)
+{
+    return k < 64 ? zuf_u128_make(0, (uint64_t)1 << k) : zuf_u128_make((uint64_t)1 << (k - 64), 0);
+}
+
+/* The nearest double, ties to even, as the specification's 𝔽(x) is: the
+   top 53 significant bits, the rest rounded half to even. Adding the two
+   64-bit halves as doubles would round twice. */
 double ztp_i128_to_double(zuf_i128 v)
 {
     double out;
-    zuf_u128 m;
+    zuf_u128 m, q, r;
+    unsigned w, shift;
+    int c;
 
     if (zuf_i128_to_f64(v, &out)) return out;
     m = zuf_u128_from_i128(ztp_i128_abs(v));
-    out = (double)m.high * 18446744073709551616.0 + (double)m.low;
+    w = zuf_u128_high(m) ? 64 + ztp_bit_width64(zuf_u128_high(m)) : ztp_bit_width64(zuf_u128_low(m));
+    shift = w - 53;   /* w > 53: the exact case returned above */
+    zuf_u128_divmod(m, ztp_pow2_u128(shift), &q, &r);
+    c = zuf_u128_cmp(r, ztp_pow2_u128(shift - 1));
+    if (c > 0 || (c == 0 && (zuf_u128_low(q) & 1u)))
+        q = zuf_u128_add_wrap(q, zuf_u128_from_u64(1));
+    out = ldexp((double)zuf_u128_low(q), (int)shift);
     return zuf_i128_is_neg(v) ? -out : out;
 }
 
