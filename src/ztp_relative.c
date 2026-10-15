@@ -217,15 +217,21 @@ static double ztp_round_double_trunc(double x, int64_t increment)
     return trunc(x / (double)increment) * (double)increment;
 }
 
+/* The instant that is `dd` after the origin: the origin's local time on
+   the shifted date, as UTC without a zone and resolved ~compatible~ in
+   one (ComputeNudgeWindow and BubbleRelativeDuration). */
 static ztp_status ztp_epoch_after(ztp_ctx *ctx, size_t index, int32_t origin_day,
-                                  int64_t origin_ns, const ztp_date_duration *dd,
-                                  zuf_i128 *out)
+                                  int64_t origin_ns, const ztp_zone *zone,
+                                  const ztp_date_duration *dd, zuf_i128 *out)
 {
     int32_t day;
     if (ztp_calendar_date_add(ctx, index, origin_day, dd, ZTP_OVERFLOW_CONSTRAIN, &day) != ZTP_OK)
         return ctx->status;
-    *out = ztp_epoch_ns_of(day, origin_ns);
-    return ZTP_OK;
+    if (zone == NULL) {
+        *out = ztp_epoch_ns_of(day, origin_ns);
+        return ZTP_OK;
+    }
+    return ztp_zone_epoch_ns_for(ctx, index, zone, day, origin_ns, ZTP_DISAMBIGUATION_COMPATIBLE, out);
 }
 
 static ztp_status ztp_check_date_duration(ztp_ctx *ctx, size_t index,
@@ -238,12 +244,20 @@ static ztp_status ztp_check_date_duration(ztp_ctx *ctx, size_t index,
     return ZTP_OK;
 }
 
+/* The relative origin: its local date-time, its exact time, and its zone
+   (NULL when unset). */
+typedef struct {
+    int32_t day;
+    int64_t ns;
+    zuf_i128 epoch;
+    const ztp_zone *zone;
+} ztp_origin;
+
 /* ComputeNudgeWindow. */
 static ztp_status ztp_compute_nudge_window(ztp_ctx *ctx, size_t index, int sign,
                                            const ztp_internal_duration *dur,
-                                           int32_t origin_day, int64_t origin_ns,
-                                           int64_t increment, ztp_unit unit,
-                                           bool additional_shift,
+                                           const ztp_origin *o, int64_t increment,
+                                           ztp_unit unit, bool additional_shift,
                                            ztp_nudge_window *w)
 {
     const ztp_date_duration *d = &dur->date;
@@ -272,7 +286,7 @@ static ztp_status ztp_compute_nudge_window(ztp_ctx *ctx, size_t index, int sign,
         ztp_date_duration until;
         double weeks;
 
-        if (ztp_calendar_date_add(ctx, index, origin_day, &years_months,
+        if (ztp_calendar_date_add(ctx, index, o->day, &years_months,
                                   ZTP_OVERFLOW_CONSTRAIN, &weeks_start) != ZTP_OK)
             return ctx->status;
         weeks_end = (int64_t)weeks_start + (int64_t)d->days;
@@ -296,14 +310,18 @@ static ztp_status ztp_compute_nudge_window(ztp_ctx *ctx, size_t index, int sign,
     if (ztp_check_date_duration(ctx, index, &w->start_dur) != ZTP_OK ||
         ztp_check_date_duration(ctx, index, &w->end_dur) != ZTP_OK)
         return ctx->status;
-    /* The pinned text takes the origin itself when r1 is 0, which ignores
-       the larger units kept in the start duration (P1Y rounded to months
-       would start from the origin rather than a year later). Adding the
-       start duration is the same thing when it is zero and right
-       otherwise, and it is what the reference engines compute. */
-    if (ztp_epoch_after(ctx, index, origin_day, origin_ns, &w->start_dur, &w->start_ns) != ZTP_OK)
+    /* The pinned text takes the origin itself whenever r1 is 0, which
+       ignores the larger units kept in the start duration (P1Y rounded to
+       months would start from the origin rather than a year later). The
+       origin is taken when the whole start duration is zero, which is
+       what the text means and what the reference engines compute; a zoned
+       origin in a fold is then kept rather than re-resolved. */
+    if (ztp_date_duration_sign(&w->start_dur) == 0) {
+        w->start_ns = o->epoch;
+    } else if (ztp_epoch_after(ctx, index, o->day, o->ns, o->zone, &w->start_dur, &w->start_ns) != ZTP_OK) {
         return ctx->status;
-    return ztp_epoch_after(ctx, index, origin_day, origin_ns, &w->end_dur, &w->end_ns);
+    }
+    return ztp_epoch_after(ctx, index, o->day, o->ns, o->zone, &w->end_dur, &w->end_ns);
 }
 
 typedef struct {
@@ -322,9 +340,9 @@ static bool ztp_between(zuf_i128 lo, zuf_i128 x, zuf_i128 hi)
    differences rather than on the floating-point progress. */
 static ztp_status ztp_nudge_to_calendar_unit(ztp_ctx *ctx, size_t index, int sign,
                                              const ztp_internal_duration *dur,
-                                             int32_t origin_day, int64_t origin_ns,
-                                             zuf_i128 dest_ns, int64_t increment,
-                                             ztp_unit unit, ztp_rounding_mode mode,
+                                             const ztp_origin *o, zuf_i128 dest_ns,
+                                             int64_t increment, ztp_unit unit,
+                                             ztp_rounding_mode mode,
                                              ztp_nudge_result *res)
 {
     ztp_nudge_window w;
@@ -332,14 +350,12 @@ static ztp_status ztp_nudge_to_calendar_unit(ztp_ctx *ctx, size_t index, int sig
     zuf_i128 d1, d2;
     int cmp;
 
-    if (ztp_compute_nudge_window(ctx, index, sign, dur, origin_day, origin_ns,
-                                 increment, unit, false, &w) != ZTP_OK)
+    if (ztp_compute_nudge_window(ctx, index, sign, dur, o, increment, unit, false, &w) != ZTP_OK)
         return ctx->status;
     in_window = sign == 1 ? ztp_between(w.start_ns, dest_ns, w.end_ns)
                           : ztp_between(w.end_ns, dest_ns, w.start_ns);
     if (!in_window) {
-        if (ztp_compute_nudge_window(ctx, index, sign, dur, origin_day, origin_ns,
-                                     increment, unit, true, &w) != ZTP_OK)
+        if (ztp_compute_nudge_window(ctx, index, sign, dur, o, increment, unit, true, &w) != ZTP_OK)
             return ctx->status;
         did_expand = true;
     }
@@ -387,6 +403,48 @@ static ztp_status ztp_nudge_to_calendar_unit(ztp_ctx *ctx, size_t index, int sig
     return ZTP_OK;
 }
 
+/* NudgeToZonedTime: a time unit relative to a zoned origin, where a day
+   may not be 24 hours. */
+static ztp_status ztp_nudge_to_zoned_time(ztp_ctx *ctx, size_t index, int sign,
+                                          const ztp_internal_duration *dur,
+                                          const ztp_origin *o, int64_t increment,
+                                          ztp_unit unit, ztp_rounding_mode mode,
+                                          ztp_nudge_result *res)
+{
+    int32_t start_day;
+    zuf_i128 start_ns, end_ns, day_span, rounded, beyond;
+    zuf_i128 step = zuf_i128_mul_i64_i64(ztp_unit_length_ns(unit), increment);
+    int day_delta = 0;
+    bool beyond_day;
+
+    if (ztp_calendar_date_add(ctx, index, o->day, &dur->date, ZTP_OVERFLOW_CONSTRAIN, &start_day) != ZTP_OK)
+        return ctx->status;
+    if (ztp_zone_epoch_ns_for(ctx, index, o->zone, start_day, o->ns, ZTP_DISAMBIGUATION_COMPATIBLE, &start_ns) != ZTP_OK ||
+        ztp_zone_epoch_ns_for(ctx, index, o->zone, (int64_t)start_day + sign, o->ns, ZTP_DISAMBIGUATION_COMPATIBLE, &end_ns) != ZTP_OK)
+        return ctx->status;
+    day_span = zuf_i128_sub_wrap(end_ns, start_ns);
+    rounded = ztp_round_i128_to_increment(dur->time, step, mode, false);
+    if (!ztp_time_duration_in_range(rounded))
+        return ztp_fail(ctx, ZTP_ERR_RANGE, index, "the rounded duration exceeds the representable range");
+    beyond = zuf_i128_sub_wrap(rounded, day_span);
+    beyond_day = ztp_time_duration_sign(beyond) != -sign;
+    if (beyond_day) {
+        day_delta = sign;
+        rounded = ztp_round_i128_to_increment(beyond, step, mode, false);
+        if (!ztp_time_duration_in_range(rounded))
+            return ztp_fail(ctx, ZTP_ERR_RANGE, index, "the rounded duration exceeds the representable range");
+        res->nudged_ns = zuf_i128_add_wrap(end_ns, rounded);
+    } else {
+        res->nudged_ns = zuf_i128_add_wrap(start_ns, rounded);
+    }
+    res->duration.date = dur->date;
+    res->duration.date.days += day_delta;
+    res->duration.time = rounded;
+    res->did_expand = beyond_day;
+    res->total = 0;
+    return ZTP_OK;
+}
+
 /* NudgeToDayOrTime. */
 static ztp_status ztp_nudge_to_day_or_time(ztp_ctx *ctx, size_t index,
                                            const ztp_internal_duration *dur,
@@ -430,8 +488,8 @@ static ztp_status ztp_nudge_to_day_or_time(ztp_ctx *ctx, size_t index,
 /* BubbleRelativeDuration. */
 static ztp_status ztp_bubble_relative_duration(ztp_ctx *ctx, size_t index, int sign,
                                                ztp_internal_duration *dur,
-                                               zuf_i128 nudged_ns, int32_t origin_day,
-                                               int64_t origin_ns, ztp_unit largest_unit,
+                                               zuf_i128 nudged_ns, const ztp_origin *o,
+                                               ztp_unit largest_unit,
                                                ztp_unit smallest_unit)
 {
     int unit_index;
@@ -453,7 +511,7 @@ static ztp_status ztp_bubble_relative_duration(ztp_ctx *ctx, size_t index, int s
                                           dur->date.weeks + sign, 0};
         }
         if (ztp_check_date_duration(ctx, index, &end_dur) != ZTP_OK) return ctx->status;
-        if (ztp_epoch_after(ctx, index, origin_day, origin_ns, &end_dur, &end_ns) != ZTP_OK)
+        if (ztp_epoch_after(ctx, index, o->day, o->ns, o->zone, &end_dur, &end_ns) != ZTP_OK)
             return ctx->status;
         beyond = zuf_i128_sub_wrap(nudged_ns, end_ns);
         beyond_sign = ztp_time_duration_sign(beyond);
@@ -476,29 +534,34 @@ static int ztp_internal_sign(const ztp_internal_duration *d)
 ztp_status ztp_round_relative_duration(ztp_ctx *ctx, size_t index,
                                        const ztp_internal_duration *duration,
                                        int32_t origin_day, int64_t origin_ns,
-                                       int32_t dest_day, int64_t dest_ns,
-                                       ztp_unit largest_unit, int64_t increment,
-                                       ztp_unit smallest_unit,
+                                       zuf_i128 origin_epoch, zuf_i128 dest_epoch,
+                                       const ztp_zone *zone, ztp_unit largest_unit,
+                                       int64_t increment, ztp_unit smallest_unit,
                                        ztp_rounding_mode mode,
                                        ztp_internal_duration *out)
 {
-    zuf_i128 dest = ztp_epoch_ns_of(dest_day, dest_ns);
+    ztp_origin o = {origin_day, origin_ns, origin_epoch, zone};
     int sign = ztp_internal_sign(duration) < 0 ? -1 : 1;
+    bool irregular = smallest_unit <= ZTP_UNIT_WEEK || (zone != NULL && smallest_unit == ZTP_UNIT_DAY);
     ztp_nudge_result res;
 
-    if (smallest_unit <= ZTP_UNIT_WEEK) {
-        if (ztp_nudge_to_calendar_unit(ctx, index, sign, duration, origin_day, origin_ns,
-                                       dest, increment, smallest_unit, mode, &res) != ZTP_OK)
+    if (irregular) {
+        if (ztp_nudge_to_calendar_unit(ctx, index, sign, duration, &o, dest_epoch, increment,
+                                       smallest_unit, mode, &res) != ZTP_OK)
             return ctx->status;
-    } else if (ztp_nudge_to_day_or_time(ctx, index, duration, dest, largest_unit,
+    } else if (zone != NULL) {
+        if (ztp_nudge_to_zoned_time(ctx, index, sign, duration, &o, increment, smallest_unit,
+                                    mode, &res) != ZTP_OK)
+            return ctx->status;
+    } else if (ztp_nudge_to_day_or_time(ctx, index, duration, dest_epoch, largest_unit,
                                         increment, smallest_unit, mode, &res) != ZTP_OK) {
         return ctx->status;
     }
     *out = res.duration;
     if (res.did_expand && smallest_unit != ZTP_UNIT_WEEK) {
         ztp_unit start_unit = smallest_unit < ZTP_UNIT_DAY ? smallest_unit : ZTP_UNIT_DAY;
-        if (ztp_bubble_relative_duration(ctx, index, sign, out, res.nudged_ns, origin_day,
-                                         origin_ns, largest_unit, start_unit) != ZTP_OK)
+        if (ztp_bubble_relative_duration(ctx, index, sign, out, res.nudged_ns, &o,
+                                         largest_unit, start_unit) != ZTP_OK)
             return ctx->status;
     }
     return ZTP_OK;
@@ -507,14 +570,14 @@ ztp_status ztp_round_relative_duration(ztp_ctx *ctx, size_t index,
 ztp_status ztp_total_relative_duration(ztp_ctx *ctx, size_t index,
                                        const ztp_internal_duration *duration,
                                        int32_t origin_day, int64_t origin_ns,
-                                       int32_t dest_day, int64_t dest_ns,
-                                       ztp_unit unit, double *out)
+                                       zuf_i128 origin_epoch, zuf_i128 dest_epoch,
+                                       const ztp_zone *zone, ztp_unit unit, double *out)
 {
-    if (unit <= ZTP_UNIT_WEEK) {
+    if (unit <= ZTP_UNIT_WEEK || (zone != NULL && unit == ZTP_UNIT_DAY)) {
+        ztp_origin o = {origin_day, origin_ns, origin_epoch, zone};
         int sign = ztp_internal_sign(duration) < 0 ? -1 : 1;
         ztp_nudge_result res;
-        if (ztp_nudge_to_calendar_unit(ctx, index, sign, duration, origin_day, origin_ns,
-                                       ztp_epoch_ns_of(dest_day, dest_ns), 1, unit,
+        if (ztp_nudge_to_calendar_unit(ctx, index, sign, duration, &o, dest_epoch, 1, unit,
                                        ZTP_ROUND_TRUNC, &res) != ZTP_OK)
             return ctx->status;
         *out = res.total;
@@ -549,7 +612,8 @@ ztp_status ztp_difference_plain_date_time_rounded(
         *out = diff;
         return ZTP_OK;
     }
-    return ztp_round_relative_duration(ctx, index, &diff, day1, ns1, day2, ns2, largest_unit,
+    return ztp_round_relative_duration(ctx, index, &diff, day1, ns1, ztp_epoch_ns_of(day1, ns1),
+                                       ztp_epoch_ns_of(day2, ns2), NULL, largest_unit,
                                        increment, smallest_unit, mode, out);
 }
 
@@ -572,5 +636,161 @@ ztp_status ztp_difference_plain_date_time_total(ztp_ctx *ctx, size_t index,
         *out = ztp_i128_to_double(diff.time);
         return ZTP_OK;
     }
-    return ztp_total_relative_duration(ctx, index, &diff, day1, ns1, day2, ns2, unit, out);
+    return ztp_total_relative_duration(ctx, index, &diff, day1, ns1, ztp_epoch_ns_of(day1, ns1),
+                                       ztp_epoch_ns_of(day2, ns2), NULL, unit, out);
+}
+
+/* --- zoned arithmetic (Temporal 6.5) ------------------------------------ */
+
+static ztp_status ztp_add_instant(ztp_ctx *ctx, size_t index, zuf_i128 epoch,
+                                  zuf_i128 time, zuf_i128 *out)
+{
+    *out = zuf_i128_add_wrap(epoch, time);
+    if (!ztp_is_valid_epoch_ns(*out))
+        return ztp_fail(ctx, ZTP_ERR_RANGE, index, "the instant is outside the representable range");
+    return ZTP_OK;
+}
+
+ztp_status ztp_add_zoned_date_time(ztp_ctx *ctx, size_t index, zuf_i128 epoch,
+                                   const ztp_zone *zone,
+                                   const ztp_internal_duration *duration,
+                                   ztp_overflow overflow, zuf_i128 *out)
+{
+    int32_t day, added;
+    int64_t ns_of_day;
+    zuf_i128 intermediate;
+
+    if (ztp_date_duration_sign(&duration->date) == 0)
+        return ztp_add_instant(ctx, index, epoch, duration->time, out);
+    ztp_zoned_local(zone, epoch, &day, &ns_of_day, NULL);
+    if (ztp_calendar_date_add(ctx, index, day, &duration->date, overflow, &added) != ZTP_OK)
+        return ctx->status;
+    if (!ztp_iso_date_time_within_limits(added, ns_of_day))
+        return ztp_fail(ctx, ZTP_ERR_RANGE, index, "the result is outside the representable range");
+    if (ztp_zone_epoch_ns_for(ctx, index, zone, added, ns_of_day, ZTP_DISAMBIGUATION_COMPATIBLE,
+                              &intermediate) != ZTP_OK)
+        return ctx->status;
+    return ztp_add_instant(ctx, index, intermediate, duration->time, out);
+}
+
+ztp_status ztp_difference_zoned_date_time(ztp_ctx *ctx, size_t index, zuf_i128 ns1,
+                                          zuf_i128 ns2, const ztp_zone *zone,
+                                          ztp_unit largest_unit,
+                                          ztp_internal_duration *out)
+{
+    int32_t day1, day2;
+    int64_t t1, t2, intermediate_day = 0;
+    int sign, max_day_correction, day_correction = 0;
+    zuf_i128 time_duration;
+    bool success = false;
+    ztp_unit date_largest;
+
+    memset(out, 0, sizeof *out);
+    out->time = zuf_i128_from_i64(0);
+    if (zuf_i128_cmp(ns1, ns2) == 0) return ZTP_OK;
+    ztp_zoned_local(zone, ns1, &day1, &t1, NULL);
+    ztp_zoned_local(zone, ns2, &day2, &t2, NULL);
+    if (day1 == day2) {
+        out->time = zuf_i128_sub_wrap(ns2, ns1);
+        return ZTP_OK;
+    }
+    sign = zuf_i128_cmp(ns2, ns1) < 0 ? 1 : -1;
+    max_day_correction = sign == -1 ? 2 : 1;
+    time_duration = zuf_i128_from_i64(t2 - t1);
+    if (ztp_time_duration_sign(time_duration) == sign) day_correction++;
+    while (day_correction <= max_day_correction && !success) {
+        zuf_i128 intermediate_ns;
+        intermediate_day = (int64_t)day2 + (int64_t)day_correction * sign;
+        if (ztp_zone_epoch_ns_for(ctx, index, zone, intermediate_day, t1,
+                                  ZTP_DISAMBIGUATION_COMPATIBLE, &intermediate_ns) != ZTP_OK)
+            return ctx->status;
+        time_duration = zuf_i128_sub_wrap(ns2, intermediate_ns);
+        if (ztp_time_duration_sign(time_duration) != sign) success = true;
+        day_correction++;
+    }
+    if (!success)
+        return ztp_fail(ctx, ZTP_ERR_RANGE, index, "cannot take the difference in this time zone");
+    date_largest = largest_unit < ZTP_UNIT_DAY ? largest_unit : ZTP_UNIT_DAY;
+    ztp_calendar_date_until(day1, (int32_t)intermediate_day, date_largest, &out->date);
+    out->time = time_duration;
+    return ZTP_OK;
+}
+
+ztp_status ztp_difference_zoned_rounded(ztp_ctx *ctx, size_t index, zuf_i128 ns1,
+                                        zuf_i128 ns2, const ztp_zone *zone,
+                                        ztp_unit largest_unit, int64_t increment,
+                                        ztp_unit smallest_unit, ztp_rounding_mode mode,
+                                        ztp_internal_duration *out)
+{
+    ztp_internal_duration diff;
+    int32_t day;
+    int64_t ns_of_day;
+
+    if (largest_unit >= ZTP_UNIT_HOUR) {
+        /* DifferenceInstant. */
+        memset(out, 0, sizeof *out);
+        return ztp_time_duration_round(ctx, index, zuf_i128_sub_wrap(ns2, ns1), increment,
+                                       smallest_unit, mode, &out->time);
+    }
+    if (ztp_difference_zoned_date_time(ctx, index, ns1, ns2, zone, largest_unit, &diff) != ZTP_OK)
+        return ctx->status;
+    if (smallest_unit == ZTP_UNIT_NANOSECOND && increment == 1) {
+        *out = diff;
+        return ZTP_OK;
+    }
+    ztp_zoned_local(zone, ns1, &day, &ns_of_day, NULL);
+    return ztp_round_relative_duration(ctx, index, &diff, day, ns_of_day, ns1, ns2, zone,
+                                       largest_unit, increment, smallest_unit, mode, out);
+}
+
+ztp_status ztp_difference_zoned_total(ztp_ctx *ctx, size_t index, zuf_i128 ns1,
+                                      zuf_i128 ns2, const ztp_zone *zone, ztp_unit unit,
+                                      double *out)
+{
+    ztp_internal_duration diff;
+    int32_t day;
+    int64_t ns_of_day;
+
+    if (unit >= ZTP_UNIT_HOUR) {
+        *out = ztp_time_duration_total(zuf_i128_sub_wrap(ns2, ns1), unit);
+        return ZTP_OK;
+    }
+    if (ztp_difference_zoned_date_time(ctx, index, ns1, ns2, zone, unit, &diff) != ZTP_OK)
+        return ctx->status;
+    ztp_zoned_local(zone, ns1, &day, &ns_of_day, NULL);
+    return ztp_total_relative_duration(ctx, index, &diff, day, ns_of_day, ns1, ns2, zone, unit, out);
+}
+
+ztp_status ztp_round_zoned_date_time(ztp_ctx *ctx, size_t index, zuf_i128 epoch,
+                                     const ztp_zone *zone, int64_t increment,
+                                     ztp_unit unit, ztp_rounding_mode mode, zuf_i128 *out)
+{
+    int32_t day;
+    int64_t ns_of_day, offset;
+
+    if (unit == ZTP_UNIT_NANOSECOND && increment == 1) {
+        *out = epoch;
+        return ZTP_OK;
+    }
+    ztp_zoned_local(zone, epoch, &day, &ns_of_day, &offset);
+    if (unit == ZTP_UNIT_DAY) {
+        zuf_i128 start, end;
+        int64_t day_length, progress, rounded;
+        if (ztp_zone_start_of_day(ctx, index, zone, day, &start) != ZTP_OK ||
+            ztp_zone_start_of_day(ctx, index, zone, (int64_t)day + 1, &end) != ZTP_OK)
+            return ctx->status;
+        zuf_i128_to_i64(zuf_i128_sub_wrap(end, start), &day_length);
+        zuf_i128_to_i64(zuf_i128_sub_wrap(epoch, start), &progress);
+        rounded = ztp_round_to_increment(progress, day_length, mode);
+        *out = zuf_i128_add_wrap(start, zuf_i128_from_i64(rounded));
+        return ZTP_OK;
+    }
+    {
+        int64_t rounded_ns, days;
+        ztp_round_time(ns_of_day, increment, unit, mode, &rounded_ns, &days);
+        return ztp_interpret_iso_date_time_offset(ctx, index, (int64_t)day + days, rounded_ns,
+                                                  ZTP_OFFSET_BEHAVIOUR_OPTION, offset, zone,
+                                                  ZTP_DISAMBIGUATION_COMPATIBLE, ZTP_OFFSET_PREFER,
+                                                  false, out);
+    }
 }
