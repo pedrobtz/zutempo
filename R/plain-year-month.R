@@ -29,6 +29,7 @@
 #' plain_year_month(plain_date("2026-03-15"))
 #' temporal_to_plain_date(plain_year_month("2026-02"), day = 31)
 #' plain_year_month_compare("2026-02", "2026-03")
+#' @eval ztp_doc_members("PlainYearMonth")
 #' @export
 plain_year_month <- function(
   year,

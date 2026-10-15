@@ -37,6 +37,32 @@ imaginary part is the nanoseconds within that second (design 4.1). The
 range is 10^8 days either side of the epoch. The constructor is
 \code{Temporal.Instant} and \code{Temporal.Instant.from()} in one.
 }
+\section{Members}{
+
+Every member of \code{Temporal.Instant} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \verb{new Temporal.Instant()} \tab \code{\link[=instant]{instant()}} \cr
+   \code{Temporal.Instant.from()} \tab \code{\link[=instant]{instant()}} \cr
+   \code{Temporal.Instant.fromEpochMilliseconds()} \tab \code{\link[=instant_from_epoch_milliseconds]{instant_from_epoch_milliseconds()}} \cr
+   \code{Temporal.Instant.fromEpochNanoseconds()} \tab \code{\link[=instant_from_epoch_nanoseconds]{instant_from_epoch_nanoseconds()}} \cr
+   \code{Temporal.Instant.compare()} \tab \code{\link[=instant_compare]{instant_compare()}} \cr
+   \code{.epochMilliseconds} \tab \code{\link[=epoch_milliseconds]{epoch_milliseconds()}} \cr
+   \code{.epochNanoseconds} \tab \code{\link[=epoch_nanoseconds]{epoch_nanoseconds()}} \cr
+   \code{.add()} \tab \code{\link[=temporal_add]{temporal_add()}} \cr
+   \code{.subtract()} \tab \code{\link[=temporal_subtract]{temporal_subtract()}} \cr
+   \code{.until()} \tab \code{\link[=temporal_until]{temporal_until()}} \cr
+   \code{.since()} \tab \code{\link[=temporal_since]{temporal_since()}} \cr
+   \code{.round()} \tab \code{\link[=temporal_round]{temporal_round()}} \cr
+   \code{.equals()} \tab \code{\link[=temporal_equals]{temporal_equals()}} \cr
+   \code{.toString()} \tab \code{\link[=temporal_to_string]{temporal_to_string()}} \cr
+   \code{.toLocaleString()} \tab none: ECMA-402 (locale formatting) is out of scope \cr
+   \code{.toJSON()} \tab none: format() covers it \cr
+   \code{.valueOf()} \tab none: throws in JavaScript; no R counterpart \cr
+   \code{.toZonedDateTimeISO()} \tab \code{\link[=temporal_to_zoned_date_time_iso]{temporal_to_zoned_date_time_iso()}} \cr
+}
+}
+
 \examples{
 instant("2026-01-31T12:30:45.123456789Z")
 instant("2026-01-31T12:30+05:30")

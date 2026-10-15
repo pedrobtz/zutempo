@@ -20,10 +20,13 @@ Depends:
     R (>= 4.1)
 Suggests: 
     jsonlite,
+    knitr,
     pillar,
+    rmarkdown,
     testthat (>= 3.0.0),
     vctrs,
     withr
+VignetteBuilder: knitr
 LinkingTo: 
     zufast (>= 0.1.0.9000)
 Remotes: 

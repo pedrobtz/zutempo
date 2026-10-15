@@ -47,6 +47,40 @@ a list of ten double vectors (design 4.1). All fields share one sign.
 Years, months and weeks are calendar units: operations that need their
 length take \code{relative_to}, a date, and fail without it (design 6.5).
 }
+\section{Members}{
+
+Every member of \code{Temporal.Duration} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \verb{new Temporal.Duration()} \tab \code{\link[=duration]{duration()}} \cr
+   \code{Temporal.Duration.from()} \tab \code{\link[=duration]{duration()}} \cr
+   \code{Temporal.Duration.compare()} \tab \code{\link[=duration_compare]{duration_compare()}} \cr
+   \code{.years} \tab \code{\link[=years]{years()}} \cr
+   \code{.months} \tab \code{\link[=months]{months()}} \cr
+   \code{.weeks} \tab \code{\link[=weeks]{weeks()}} \cr
+   \code{.days} \tab \code{\link[=days]{days()}} \cr
+   \code{.hours} \tab \code{\link[=hours]{hours()}} \cr
+   \code{.minutes} \tab \code{\link[=minutes]{minutes()}} \cr
+   \code{.seconds} \tab \code{\link[=seconds]{seconds()}} \cr
+   \code{.milliseconds} \tab \code{\link[=milliseconds]{milliseconds()}} \cr
+   \code{.microseconds} \tab \code{\link[=microseconds]{microseconds()}} \cr
+   \code{.nanoseconds} \tab \code{\link[=nanoseconds]{nanoseconds()}} \cr
+   \code{.sign} \tab \code{\link[=sign]{sign()}} \cr
+   \code{.blank} \tab \code{\link[=blank]{blank()}} \cr
+   \code{.with()} \tab \code{\link[=temporal_with]{temporal_with()}} \cr
+   \code{.negated()} \tab \code{\link[=temporal_negated]{temporal_negated()}} \cr
+   \code{.abs()} \tab \code{\link[=temporal_abs]{temporal_abs()}} \cr
+   \code{.add()} \tab \code{\link[=temporal_add]{temporal_add()}} \cr
+   \code{.subtract()} \tab \code{\link[=temporal_subtract]{temporal_subtract()}} \cr
+   \code{.round()} \tab \code{\link[=temporal_round]{temporal_round()}} \cr
+   \code{.total()} \tab \code{\link[=temporal_total]{temporal_total()}} \cr
+   \code{.toString()} \tab \code{\link[=temporal_to_string]{temporal_to_string()}} \cr
+   \code{.toJSON()} \tab none: format() covers it \cr
+   \code{.toLocaleString()} \tab none: ECMA-402 (locale formatting) is out of scope \cr
+   \code{.valueOf()} \tab none: throws in JavaScript; no R counterpart \cr
+}
+}
+
 \examples{
 duration("P1Y2M3DT4H5M6.789S")
 duration(hours = 25)

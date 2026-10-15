@@ -25,6 +25,7 @@
 #' plain_month_day(2, 29, year = 2025)
 #' plain_month_day(plain_date("2026-03-14"))
 #' temporal_to_plain_date(plain_month_day("02-29"), year = 2025)
+#' @eval ztp_doc_members("PlainMonthDay")
 #' @export
 plain_month_day <- function(
   month,

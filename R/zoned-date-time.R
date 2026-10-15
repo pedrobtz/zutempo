@@ -57,6 +57,7 @@
 #'   "2026-03-07T12:00[America/New_York]",
 #'   "2026-03-07T18:00[Europe/Lisbon]"
 #' )
+#' @eval ztp_doc_members("ZonedDateTime")
 #' @export
 zoned_date_time <- function(
   year,
@@ -715,6 +716,7 @@ temporal_to_string.zutempo_zoned_date_time <- function(
 #' now_plain_date_time_iso("Asia/Tokyo")
 #' now_plain_date_iso("Pacific/Auckland")
 #' now_plain_time_iso("UTC")
+#' @eval ztp_doc_members("Now")
 #' @export
 now_time_zone_id <- function() {
   # TZ first, as the C library base R formats with does; Sys.timezone()

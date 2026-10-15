@@ -32,6 +32,7 @@
 #' plain_date_time(2026, 1, 31, 12, 30)
 #' plain_date_time(plain_date("2026-01-31"))
 #' plain_date_time_compare("2026-01-31T12:30", "2026-01-31T12:31")
+#' @eval ztp_doc_members("PlainDateTime")
 #' @export
 plain_date_time <- function(
   year,

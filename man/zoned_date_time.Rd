@@ -89,6 +89,65 @@ offset, \code{"ignore"} trusts the zone, \code{"prefer"} (the default for
 \code{temporal_with()}) trusts the offset when it is one of the zone's
 candidates and the zone otherwise.
 }
+\section{Members}{
+
+Every member of \code{Temporal.ZonedDateTime} in the pinned specification
+(\code{inst/spec/PINS}) and the R function that implements it:\tabular{ll}{
+   Temporal \tab R \cr
+   \verb{new Temporal.ZonedDateTime()} \tab \code{\link[=zoned_date_time]{zoned_date_time()}} \cr
+   \code{Temporal.ZonedDateTime.from()} \tab \code{\link[=zoned_date_time]{zoned_date_time()}} \cr
+   \code{Temporal.ZonedDateTime.compare()} \tab \code{\link[=zoned_date_time_compare]{zoned_date_time_compare()}} \cr
+   \code{.calendarId} \tab \code{\link[=calendar_id]{calendar_id()}} \cr
+   \code{.timeZoneId} \tab \code{\link[=time_zone_id]{time_zone_id()}} \cr
+   \code{.era} \tab \code{\link[=era]{era()}} \cr
+   \code{.eraYear} \tab \code{\link[=era_year]{era_year()}} \cr
+   \code{.year} \tab \code{\link[=year]{year()}} \cr
+   \code{.month} \tab \code{\link[=month]{month()}} \cr
+   \code{.monthCode} \tab \code{\link[=month_code]{month_code()}} \cr
+   \code{.day} \tab \code{\link[=day]{day()}} \cr
+   \code{.hour} \tab \code{\link[=hour]{hour()}} \cr
+   \code{.minute} \tab \code{\link[=minute]{minute()}} \cr
+   \code{.second} \tab \code{\link[=second]{second()}} \cr
+   \code{.millisecond} \tab \code{\link[=millisecond]{millisecond()}} \cr
+   \code{.microsecond} \tab \code{\link[=microsecond]{microsecond()}} \cr
+   \code{.nanosecond} \tab \code{\link[=nanosecond]{nanosecond()}} \cr
+   \code{.epochMilliseconds} \tab \code{\link[=epoch_milliseconds]{epoch_milliseconds()}} \cr
+   \code{.epochNanoseconds} \tab \code{\link[=epoch_nanoseconds]{epoch_nanoseconds()}} \cr
+   \code{.dayOfWeek} \tab \code{\link[=day_of_week]{day_of_week()}} \cr
+   \code{.dayOfYear} \tab \code{\link[=day_of_year]{day_of_year()}} \cr
+   \code{.weekOfYear} \tab \code{\link[=week_of_year]{week_of_year()}} \cr
+   \code{.yearOfWeek} \tab \code{\link[=year_of_week]{year_of_week()}} \cr
+   \code{.hoursInDay} \tab \code{\link[=hours_in_day]{hours_in_day()}} \cr
+   \code{.daysInWeek} \tab \code{\link[=days_in_week]{days_in_week()}} \cr
+   \code{.daysInMonth} \tab \code{\link[=days_in_month]{days_in_month()}} \cr
+   \code{.daysInYear} \tab \code{\link[=days_in_year]{days_in_year()}} \cr
+   \code{.monthsInYear} \tab \code{\link[=months_in_year]{months_in_year()}} \cr
+   \code{.inLeapYear} \tab \code{\link[=in_leap_year]{in_leap_year()}} \cr
+   \code{.offsetNanoseconds} \tab \code{\link[=offset_nanoseconds]{offset_nanoseconds()}} \cr
+   \code{.offset} \tab \code{\link[=offset]{offset()}} \cr
+   \code{.with()} \tab \code{\link[=temporal_with]{temporal_with()}} \cr
+   \code{.withPlainTime()} \tab \code{\link[=temporal_with_plain_time]{temporal_with_plain_time()}} \cr
+   \code{.withTimeZone()} \tab \code{\link[=temporal_with_time_zone]{temporal_with_time_zone()}} \cr
+   \code{.withCalendar()} \tab \code{\link[=temporal_with_calendar]{temporal_with_calendar()}} \cr
+   \code{.add()} \tab \code{\link[=temporal_add]{temporal_add()}} \cr
+   \code{.subtract()} \tab \code{\link[=temporal_subtract]{temporal_subtract()}} \cr
+   \code{.until()} \tab \code{\link[=temporal_until]{temporal_until()}} \cr
+   \code{.since()} \tab \code{\link[=temporal_since]{temporal_since()}} \cr
+   \code{.round()} \tab \code{\link[=temporal_round]{temporal_round()}} \cr
+   \code{.equals()} \tab \code{\link[=temporal_equals]{temporal_equals()}} \cr
+   \code{.toString()} \tab \code{\link[=temporal_to_string]{temporal_to_string()}} \cr
+   \code{.toLocaleString()} \tab none: ECMA-402 (locale formatting) is out of scope \cr
+   \code{.toJSON()} \tab none: format() covers it \cr
+   \code{.valueOf()} \tab none: throws in JavaScript; no R counterpart \cr
+   \code{.startOfDay()} \tab \code{\link[=temporal_start_of_day]{temporal_start_of_day()}} \cr
+   \code{.getTimeZoneTransition()} \tab \code{\link[=temporal_get_time_zone_transition]{temporal_get_time_zone_transition()}} \cr
+   \code{.toInstant()} \tab \code{\link[=temporal_to_instant]{temporal_to_instant()}} \cr
+   \code{.toPlainDate()} \tab \code{\link[=temporal_to_plain_date]{temporal_to_plain_date()}} \cr
+   \code{.toPlainTime()} \tab \code{\link[=temporal_to_plain_time]{temporal_to_plain_time()}} \cr
+   \code{.toPlainDateTime()} \tab \code{\link[=temporal_to_plain_date_time]{temporal_to_plain_date_time()}} \cr
+}
+}
+
 \examples{
 zoned_date_time("2026-03-07T12:00[America/New_York]")
 zoned_date_time(2026, 3, 8, 2, 30, time_zone = "America/New_York")

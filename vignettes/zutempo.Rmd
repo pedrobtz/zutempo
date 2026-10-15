@@ -1,0 +1,118 @@
+---
+title: "One zoned value, start to finish"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{One zoned value, start to finish}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+library(zutempo)
+# The examples need a time zone database, which a machine may lack.
+has_tzdb <- !is.na(zutempo_info()[["tzdir"]])
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = has_tzdb)
+```
+
+This vignette follows one value, a meeting in New York, through what
+zutempo does with it: building it, moving it in time, rounding it, and
+handing it to base R.
+
+## A meeting in New York
+
+A `zoned_date_time()` is an exact moment, the wall-clock time in a time
+zone, and the zone itself. It reads RFC 9557 strings, with the zone in
+brackets:
+
+```{r}
+meeting <- zoned_date_time("2026-03-07T09:30[America/New_York]")
+meeting
+offset(meeting)
+hours_in_day(meeting)
+```
+
+The same moment can be built from fields and a zone:
+
+```{r}
+zoned_date_time(2026, 3, 7, 9, 30, time_zone = "America/New_York")
+```
+
+## Moving it
+
+New York's clocks go forward at 02:00 on Sunday 8 March. A day later and
+24 hours later are different moments:
+
+```{r}
+temporal_add(meeting, "P1D")
+temporal_add(meeting, "PT24H")
+hours_in_day(temporal_add(meeting, "P1D"))
+```
+
+A wall-clock time can also fall in that gap. `disambiguation` says which
+moment it means:
+
+```{r}
+skipped <- plain_date_time("2026-03-08T02:30")
+temporal_to_zoned_date_time(skipped, "America/New_York")
+temporal_to_zoned_date_time(skipped, "America/New_York", disambiguation = "earlier")
+try(temporal_to_zoned_date_time(skipped, "America/New_York", disambiguation = "reject"))
+```
+
+The time between two zoned values counts in hours by default, since days
+need not be 24 hours long. Ask for days and they follow the calendar:
+
+```{r}
+follow_up <- zoned_date_time("2026-03-09T09:30[America/New_York]")
+temporal_until(meeting, follow_up)
+temporal_until(meeting, follow_up, largest_unit = "day")
+```
+
+## Rounding it
+
+```{r}
+late <- zoned_date_time("2026-03-07T09:47:31.25[America/New_York]")
+temporal_round(late, "minute")
+temporal_round(late, "minute", rounding_increment = 15, rounding_mode = "floor")
+temporal_to_string(late, smallest_unit = "second")
+```
+
+Durations round too, relative to a moment when they hold days in a zone:
+
+```{r}
+temporal_round(duration(hours = 47), largest_unit = "day", relative_to = meeting)
+```
+
+## The same moment elsewhere
+
+```{r}
+tokyo <- temporal_with_time_zone(meeting, "Asia/Tokyo")
+tokyo
+```
+
+`temporal_equals()` compares the zone as well as the moment, so the two
+are not equal; their instants are:
+
+```{r}
+temporal_equals(meeting, tokyo)
+temporal_equals(temporal_to_instant(meeting), temporal_to_instant(tokyo))
+zoned_date_time_compare(meeting, tokyo)
+```
+
+## Handing it to base R
+
+```{r}
+as.POSIXct(meeting)
+as.POSIXlt(meeting)
+as.Date(meeting)
+```
+
+And back, from a `POSIXct` with its `tzone`:
+
+```{r}
+zoned_date_time(as.POSIXct("2026-03-07 09:30:00", tz = "America/New_York"))
+```
+
+A `POSIXct` is a double, precise to about a quarter of a microsecond at
+today's dates, where zutempo keeps nanoseconds. See `?base-r` for what each
+conversion keeps and loses, and `?zutempo_options` for the options used
+above.

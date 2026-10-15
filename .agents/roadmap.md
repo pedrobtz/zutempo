@@ -33,7 +33,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | [#31](https://github.com/pedrobtz/zutempo/pull/31) | 2026-10-15 |
 | 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | [#34](https://github.com/pedrobtz/zutempo/pull/34) | 2026-10-15 |
 | 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | [#43](https://github.com/pedrobtz/zutempo/pull/43), [#44](https://github.com/pedrobtz/zutempo/pull/44) | 2026-10-15 |
-| 12 | [Documentation](#stage-12--documentation) | [#15](https://github.com/pedrobtz/zutempo/issues/15) | | |
+| 12 | [Documentation](#stage-12--documentation) | [#15](https://github.com/pedrobtz/zutempo/issues/15) | [#45](https://github.com/pedrobtz/zutempo/pull/45) | 2026-10-15 |
 | 13 | [v0.1.0 readiness](#stage-13--v010-readiness) | [#16](https://github.com/pedrobtz/zutempo/issues/16) | | |
 
 Stage 6 depends on nothing after stage 1 and can run in parallel with
@@ -897,6 +897,19 @@ knows base R finds the way in.
 
 **Design.** §2, §5, §6.10, §14 row 9.
 
+**Deviations (2026-10-15).**
+- Each type's topic lists its members in a table generated when roxygen
+  runs, from `inst/spec/members.csv` (`@eval ztp_doc_members()`), so the
+  topics and the member ledger cannot drift apart.
+- The options are explained on one topic, `?zutempo_options`, rather than
+  shared through `@inheritParams`: their defaults and the types they apply
+  to differ from function to function (`rounding_mode` is `"trunc"` for a
+  difference and `"halfExpand"` for `round()`), so each function keeps its
+  own parameter text. A topic of `@param`s without a usage is also an
+  R CMD check warning.
+- Open question 3 is answered by the plan: the vignette is in, and its
+  chunks run only where a time zone database is found.
+
 ## Stage 13 — v0.1.0 readiness
 
 **Issue.** [#16](https://github.com/pedrobtz/zutempo/issues/16), sub-issue of
@@ -980,4 +993,4 @@ knows base R finds the way in.
    call; it changes stage 10's work and exit criteria.
 3. **Is a vignette part of 0.1.0?** The design does not mention one.
    Stage 12 includes a single short vignette; drop it from the stage if
-   not wanted.
+   not wanted. Decided in stage 12: kept, `vignette("zutempo")`.
