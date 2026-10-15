@@ -30,7 +30,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | [#25](https://github.com/pedrobtz/zutempo/pull/25) | 2026-10-15 |
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | [#26](https://github.com/pedrobtz/zutempo/pull/26), [#28](https://github.com/pedrobtz/zutempo/pull/28) | 2026-10-15 |
 | 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | [#27](https://github.com/pedrobtz/zutempo/pull/27) | 2026-10-15 |
-| 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | | 2026-10-15 |
+| 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | [#31](https://github.com/pedrobtz/zutempo/pull/31) | 2026-10-15 |
 | 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | | |
 | 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | | |
 | 12 | [Documentation](#stage-12--documentation) | [#15](https://github.com/pedrobtz/zutempo/issues/15) | | |
