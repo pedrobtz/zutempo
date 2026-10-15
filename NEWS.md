@@ -1,5 +1,13 @@
 # zutempo 0.0.0.9000
 
+* Named IANA time zones resolve from the time zone database base R reads,
+  in base R's lookup order (option `zutempo.tzdir`, `TZDIR`, then the
+  platform's copies), on fat and slim files alike, with case-insensitive
+  identifiers returned in the database's case. `temporal_to_string()` on an
+  `instant()` takes a named `time_zone`; `zutempo_tz_reset()` forgets the
+  parsed zones; `zutempo_info()` reports the database's directory, tzdata
+  version and form (fat or slim) and the link table's version. A named zone
+  without a database is a `zutempo_tz_error` naming the directories tried.
 * `instant()`: Temporal's `Instant` over its full range, from strings with
   `Z` or an offset, `instant_from_epoch_milliseconds()` and
   `instant_from_epoch_nanoseconds()` (numbers or decimal strings), with

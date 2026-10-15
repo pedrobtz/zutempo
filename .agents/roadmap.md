@@ -27,7 +27,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | [#22](https://github.com/pedrobtz/zutempo/pull/22) | 2026-10-15 |
 | 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | [#23](https://github.com/pedrobtz/zutempo/pull/23) | 2026-10-15 |
 | 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | [#24](https://github.com/pedrobtz/zutempo/pull/24) | 2026-10-15 |
-| 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | | |
+| 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | | 2026-10-15 |
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | | |
 | 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | | |
 | 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | | |
@@ -505,6 +505,28 @@ slim and fat files alike, with Temporal's identifier rules.
 
 **Design.** §0, §6.7, §8, §11 (fixtures, fuzzing), §13, §14 row 4,
 §15 criterion 5.
+
+**Deviations (2026-10-15).**
+- The fixtures are built by `tools/tz/fixtures.R` (base R driving `zic`
+  and `zdump`), not a shell script `fetch-fixtures.sh`: the same script
+  compiles both forms and records the expected transitions, so one tool
+  owns the fixture directory.
+- The expected offsets come from `zdump` over the compiled fixtures, not
+  from the oracle: `temporal-polyfill` reads the host's ICU data, whose
+  tzdata release is not the pinned one, so the oracle cannot vouch for a
+  given release. `zdump` reads the very bytes the reader reads. 3351
+  transitions over 22 zones from 1850 to 2100, both forms, are checked;
+  the DST flag is checked against the file's types rather than `zdump`,
+  whose flag for negative-DST zones (Dublin, Casablanca) comes from the C
+  library and Temporal has no DST flag.
+- The footer rule is evaluated per call rather than cached per year; the
+  evaluation is two civil-date computations and nothing measured needs
+  the cache. Stage 11's benchmarks decide.
+- The fixtures take 308 KB uncompressed (about 60 KB in the tarball) for
+  22 zones rather than 20; `Asia/Tehran`, `America/Sao_Paulo`,
+  `Africa/Cairo`, `Europe/Moscow`, `Asia/Tokyo`, `America/Anchorage`,
+  `Etc/UTC`, `UTC` and `Etc/GMT-14` were added for abolished and
+  reinstated DST, offset changes without DST and footer-only files.
 
 ## Stage 7 — ZonedDateTime
 
