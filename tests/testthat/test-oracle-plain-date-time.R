@@ -1,3 +1,5 @@
 test_that("every oracle case for PlainDateTime agrees with the engine", {
-  oracle_run_cases("PlainDateTime")
+  # On the committed slim fixtures, so the result does not depend on the
+  # machine's database, which may lack the backward links.
+  with_tzdir(tz_fixture_dir("slim"), oracle_run_cases("PlainDateTime"))
 })
