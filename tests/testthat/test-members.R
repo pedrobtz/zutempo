@@ -6,14 +6,7 @@
 
 test_that("every in-scope member has an exported function, or is pending", {
   pending <- c(
-    "epoch_milliseconds",
-    "epoch_nanoseconds",
     "hours_in_day",
-    "instant",
-    "instant_compare",
-    "instant_from_epoch_milliseconds",
-    "instant_from_epoch_nanoseconds",
-    "now_instant",
     "now_plain_date_iso",
     "now_plain_date_time_iso",
     "now_plain_time_iso",
