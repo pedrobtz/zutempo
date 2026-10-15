@@ -211,6 +211,7 @@ temporal_round.zutempo_plain_date_time <- function(
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_plain_date_time <- function(x) {
+temporal_to_string.zutempo_plain_date_time <- function(x, ...) {
+  ztp_check_dots_empty(...)
   .Call(C_ztp_r_plain_date_time_format, unclass(x), -1L, 0L)
 }

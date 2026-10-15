@@ -7,7 +7,8 @@ ztp_plain_classes <- c(
   "zutempo_plain_time",
   "zutempo_plain_date_time",
   "zutempo_plain_year_month",
-  "zutempo_plain_month_day"
+  "zutempo_plain_month_day",
+  "zutempo_instant"
 )
 
 new_plain_date <- function(days = integer()) {
@@ -237,8 +238,9 @@ as.data.frame.zutempo_plain_date_time <- function(x, ...) {
 xtfrm.zutempo_plain_date <- function(x) as.vector(unclass(x))
 #' @export
 xtfrm.zutempo_plain_time <- function(x) as.vector(unclass(x))
-#' @export
-xtfrm.zutempo_plain_date_time <- function(x) {
+# Chronological order of a complex value: by its real part then its
+# imaginary part, exactly, through order() rather than a lossy double.
+ztp_order_key_complex <- function(x) {
   z <- unclass(x)
   o <- order(Re(z), Im(z), na.last = NA)
   out <- rep(NA_real_, length(z))
@@ -250,6 +252,9 @@ xtfrm.zutempo_plain_date_time <- function(x) {
   }
   out
 }
+
+#' @export
+xtfrm.zutempo_plain_date_time <- function(x) ztp_order_key_complex(x)
 
 # --- text -------------------------------------------------------------------
 
