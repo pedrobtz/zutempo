@@ -2,6 +2,29 @@
 
 ## zutempo 0.0.0.9000
 
+- Strings are read with every RFC 9557 annotation: any number of
+  key-value annotations after the time zone, `[u-ca=iso8601]` in any
+  case, and the `!` critical flag, which makes an unknown annotation or
+  a second calendar an error. A calendar other than ISO 8601 is a
+  `zutempo_range_error` on the types with a date and is ignored by
+  [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  and
+  [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md),
+  as in Temporal. A `zutempo_parse_error` carries `position`, the byte
+  where the string failed. Time zone and calendar arguments take an ISO
+  string that names one (`time_zone = "2026-03-07T12:00+01:00"`).
+- [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
+  and [`format()`](https://rdrr.io/r/base/format.html) take the options
+  of each type’s Temporal
+  [`toString()`](https://rdrr.io/r/base/toString.html):
+  `fractional_second_digits`, `smallest_unit` and `rounding_mode` on the
+  types with a time and on durations, `calendar_name` on the types with
+  a date, and `time_zone_name` and `offset` on a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md).
+- `zutempo_parse(x, type)` reads a character vector as any of the eight
+  types, with `NA` for the strings it cannot read, and
+  [`zutempo_parse_errors()`](https://pedrobtz.github.io/zutempo/reference/zutempo_parse_errors.md)
+  lists them with their index, byte position, class and message.
 - Zone-aware arithmetic:
   [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
   [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
