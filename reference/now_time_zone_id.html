@@ -23,6 +23,14 @@ plain_time() in that zone or in time_zone."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/zutempo.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plain-types.html">Plain dates and times</a></li>
+    <li><a class="dropdown-item" href="../articles/durations.html">Durations</a></li>
+    <li><a class="dropdown-item" href="../articles/time-zones.html">Instants and time zones</a></li>
+    <li><a class="dropdown-item" href="../articles/strings.html">Strings and formatting</a></li>
+    <li><a class="dropdown-item" href="../articles/base-r.html">Base R and data frames</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -85,16 +93,16 @@ time as a <code><a href="zoned_date_time.html">zoned_date_time()</a></code>, <co
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "UTC"</span>
 <span class="r-in"><span><span class="fu">now_zoned_date_time_iso</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;zutempo_zoned_date_time[1]&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2026-10-15T18:10:42.249287605+00:00[UTC]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2026-10-15T18:25:12.828510046+00:00[UTC]</span>
 <span class="r-in"><span><span class="fu">now_plain_date_time_iso</span><span class="op">(</span><span class="st">"Asia/Tokyo"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;zutempo_plain_date_time[1]&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2026-10-16T03:10:42.256935596</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2026-10-16T03:25:12.84662652</span>
 <span class="r-in"><span><span class="fu">now_plain_date_iso</span><span class="op">(</span><span class="st">"Pacific/Auckland"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;zutempo_plain_date[1]&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2026-10-16</span>
 <span class="r-in"><span><span class="fu">now_plain_time_iso</span><span class="op">(</span><span class="st">"UTC"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;zutempo_plain_time[1]&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 18:10:42.266308308</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 18:25:12.865318775</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

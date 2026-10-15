@@ -17,6 +17,14 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="articles/zutempo.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/plain-types.html">Plain dates and times</a></li>
+    <li><a class="dropdown-item" href="articles/durations.html">Durations</a></li>
+    <li><a class="dropdown-item" href="articles/time-zones.html">Instants and time zones</a></li>
+    <li><a class="dropdown-item" href="articles/strings.html">Strings and formatting</a></li>
+    <li><a class="dropdown-item" href="articles/base-r.html">Base R and data frames</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json"></form></li>
@@ -194,6 +202,7 @@
 <h2 id="editing-rules">Editing rules<a class="anchor" aria-label="anchor" href="#editing-rules"></a></h2>
 <ul><li>roxygen comments are the source. Never edit <code>man/</code> or <code>NAMESPACE</code> by hand.</li>
 <li>Edit <code>README.Rmd</code>, not the generated <code>README.md</code> (from stage 12).</li>
+<li>Long-form documentation is pkgdown articles under <code>vignettes/articles/</code>, which R CMD build ignores: the package ships no vignette. Each article runs its zone examples only where a time zone database is found.</li>
 <li>Keep prose simple and short. One idea per sentence. British spelling.</li>
 <li>Wrap roxygen text at 80 characters and run <code>air format .</code> on R sources.</li>
 <li>Use <code>lower_snake_case</code>. R names follow design §5: constructors named after the type, <code>temporal_</code> for methods, accessors named after the property, <code>now_</code> for <code>Temporal.Now</code>, <code>zutempo_</code> for package helpers. Internal native symbols are prefixed <code>ztp_</code>; the public C prefix is <code>zutempo_</code>.</li>

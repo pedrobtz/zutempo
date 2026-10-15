@@ -1,4 +1,4 @@
-# One zoned value, start to finish
+# Get started: one zoned value, start to finish
 
 This vignette follows one value, a meeting in New York, through what
 zutempo does with it: building it, moving it in time, rounding it, and

@@ -2,12 +2,13 @@
 
 ## zutempo 0.0.0.9000
 
-- Documentation: a README from Temporal to R,
-  [`vignette("zutempo")`](https://pedrobtz.github.io/zutempo/articles/zutempo.md)
-  following one zoned value from construction to base R, a table of
-  every Temporal member and its R function on each type’s help page, and
+- Documentation: a README from Temporal to R, a table of every Temporal
+  member and its R function on each type’s help page,
   [`?zutempo_options`](https://pedrobtz.github.io/zutempo/reference/zutempo_options.md)
-  for the options the functions share.
+  for the options the functions share, and articles on the package
+  website: “Get started”, following one zoned value from construction to
+  base R, and articles on plain dates and times, durations, instants and
+  time zones, strings and formatting, and base R and data frames.
 - Checked against test262’s Temporal tests (39,263 cases from 2,715
   files) and against base R’s offsets for every zone. Fixes from that:
   the constructors read a
