@@ -13,13 +13,17 @@ ztp_register_vctrs <- function(cls) {
     cls,
     zutempo_plain_date = new_plain_date,
     zutempo_plain_time = new_plain_time,
-    zutempo_plain_date_time = new_plain_date_time
+    zutempo_plain_date_time = new_plain_date_time,
+    zutempo_plain_year_month = new_plain_year_month,
+    zutempo_plain_month_day = new_plain_month_day
   )
   abbr <- switch(
     cls,
     zutempo_plain_date = "pl_date",
     zutempo_plain_time = "pl_time",
-    zutempo_plain_date_time = "pl_dttm"
+    zutempo_plain_date_time = "pl_dttm",
+    zutempo_plain_year_month = "pl_ym",
+    zutempo_plain_month_day = "pl_md"
   )
   self <- paste0(cls, ".", cls)
   ztp_s3_register("vctrs::vec_ptype2", self, function(x, y, ...) constructor())

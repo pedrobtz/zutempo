@@ -250,6 +250,23 @@ ztp_time_or_midnight <- function(time) {
   unclass(plain_time(time))
 }
 
+#' @rdname temporal_to_plain_date
+#' @export
+temporal_to_plain_year_month.zutempo_plain_date <- function(x) {
+  ztp_year_month_from_fields(as.double(year(x)), as.double(month(x)), 0L)
+}
+
+#' @rdname temporal_to_plain_date
+#' @export
+temporal_to_plain_month_day.zutempo_plain_date <- function(x) {
+  ztp_month_day_from_fields(
+    as.double(year(x)),
+    as.double(month(x)),
+    as.double(day(x)),
+    0L
+  )
+}
+
 #' @rdname temporal_equals
 #' @export
 temporal_equals.zutempo_plain_date <- function(x, other) {

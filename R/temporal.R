@@ -45,21 +45,32 @@ temporal_with_calendar <- function(x, calendar) {
 
 #' Convert between the plain types
 #'
-#' Temporal's `toPlainDate()`, `toPlainTime()` and `toPlainDateTime()`.
+#' Temporal's `toPlainDate()`, `toPlainTime()`, `toPlainDateTime()`,
+#' `toPlainYearMonth()` and `toPlainMonthDay()`. A `plain_year_month()`
+#' needs the `day` and a `plain_month_day()` the `year` to become a date;
+#' both resolve it with `overflow = "constrain"`, as Temporal does.
 #'
 #' @param x A zutempo value.
+#' @param ... Must be empty.
 #' @param time For `temporal_to_plain_date_time()` on a `plain_date()`: a
 #'   `plain_time()`, a string a `plain_time()` reads, or `NULL` for
 #'   midnight.
-#' @return A `plain_date()`, `plain_time()` or `plain_date_time()`.
+#' @param day The day of the month that completes a `plain_year_month()`.
+#' @param year The year that completes a `plain_month_day()`.
+#' @return A `plain_date()`, `plain_time()`, `plain_date_time()`,
+#'   `plain_year_month()` or `plain_month_day()`.
 #' @examples
 #' x <- plain_date_time("2026-01-31T12:30:45")
 #' temporal_to_plain_date(x)
 #' temporal_to_plain_time(x)
 #' temporal_to_plain_date_time(plain_date("2026-01-31"), "08:00")
+#' temporal_to_plain_year_month(plain_date("2026-01-31"))
+#' temporal_to_plain_month_day(plain_date("2026-01-31"))
+#' temporal_to_plain_date(plain_year_month("2026-02"), day = 31)
+#' temporal_to_plain_date(plain_month_day("02-29"), year = 2025)
 #' @order 1
 #' @export
-temporal_to_plain_date <- function(x) {
+temporal_to_plain_date <- function(x, ...) {
   UseMethod("temporal_to_plain_date")
 }
 
@@ -73,6 +84,18 @@ temporal_to_plain_time <- function(x) {
 #' @export
 temporal_to_plain_date_time <- function(x, time = NULL) {
   UseMethod("temporal_to_plain_date_time")
+}
+
+#' @rdname temporal_to_plain_date
+#' @export
+temporal_to_plain_year_month <- function(x) {
+  UseMethod("temporal_to_plain_year_month")
+}
+
+#' @rdname temporal_to_plain_date
+#' @export
+temporal_to_plain_month_day <- function(x) {
+  UseMethod("temporal_to_plain_month_day")
 }
 
 #' Compare Temporal values

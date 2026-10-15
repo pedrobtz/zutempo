@@ -164,7 +164,8 @@ temporal_with_calendar.zutempo_plain_date_time <- function(x, calendar) {
 
 #' @rdname temporal_to_plain_date
 #' @export
-temporal_to_plain_date.zutempo_plain_date_time <- function(x) {
+temporal_to_plain_date.zutempo_plain_date_time <- function(x, ...) {
+  ztp_check_dots_empty(...)
   new_plain_date(ztp_date_time_days(x))
 }
 

@@ -90,6 +90,19 @@
 \alias{nanosecond.default}
 \alias{nanosecond.zutempo_plain_time}
 \alias{nanosecond.zutempo_plain_date_time}
+\alias{calendar_id.zutempo_plain_year_month}
+\alias{era.zutempo_plain_year_month}
+\alias{era_year.zutempo_plain_year_month}
+\alias{year.zutempo_plain_year_month}
+\alias{month.zutempo_plain_year_month}
+\alias{month_code.zutempo_plain_year_month}
+\alias{days_in_year.zutempo_plain_year_month}
+\alias{days_in_month.zutempo_plain_year_month}
+\alias{months_in_year.zutempo_plain_year_month}
+\alias{in_leap_year.zutempo_plain_year_month}
+\alias{calendar_id.zutempo_plain_month_day}
+\alias{month_code.zutempo_plain_month_day}
+\alias{day.zutempo_plain_month_day}
 \title{Fields of a Temporal value}
 \usage{
 calendar_id(x, ...)
@@ -267,6 +280,32 @@ nanosecond(x, ...)
 \method{nanosecond}{zutempo_plain_time}(x, ...)
 
 \method{nanosecond}{zutempo_plain_date_time}(x, ...)
+
+\method{calendar_id}{zutempo_plain_year_month}(x, ...)
+
+\method{era}{zutempo_plain_year_month}(x, ...)
+
+\method{era_year}{zutempo_plain_year_month}(x, ...)
+
+\method{year}{zutempo_plain_year_month}(x, ...)
+
+\method{month}{zutempo_plain_year_month}(x, ...)
+
+\method{month_code}{zutempo_plain_year_month}(x, ...)
+
+\method{days_in_year}{zutempo_plain_year_month}(x, ...)
+
+\method{days_in_month}{zutempo_plain_year_month}(x, ...)
+
+\method{months_in_year}{zutempo_plain_year_month}(x, ...)
+
+\method{in_leap_year}{zutempo_plain_year_month}(x, ...)
+
+\method{calendar_id}{zutempo_plain_month_day}(x, ...)
+
+\method{month_code}{zutempo_plain_month_day}(x, ...)
+
+\method{day}{zutempo_plain_month_day}(x, ...)
 }
 \arguments{
 \item{x}{A zutempo value.}
