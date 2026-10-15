@@ -93,7 +93,11 @@ oracle_run <- function(type, case) {
   splice <- function(args) {
     out <- list()
     for (a in args) {
-      if (is.list(a)) out <- c(out, a) else out <- c(out, list(a))
+      if (is.list(a) && is.null(oldClass(a))) {
+        out <- c(out, a)
+      } else {
+        out <- c(out, list(a))
+      }
     }
     out
   }
@@ -115,6 +119,11 @@ oracle_run <- function(type, case) {
     identical(case[["op"]], "round") && length(args) && is.character(args[[1L]])
   ) {
     args[[1L]] <- list(smallest_unit = args[[1L]])
+  }
+  if (
+    identical(case[["op"]], "total") && length(args) && is.character(args[[1L]])
+  ) {
+    args[[1L]] <- list(unit = args[[1L]])
   }
   do.call(fn, c(list(x), splice(args), options))
 }

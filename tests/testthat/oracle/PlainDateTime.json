@@ -923,6 +923,556 @@
       "throws": "RangeError"
     },
     {
+      "id": "add-hours-carries",
+      "op": "add",
+      "on": "2026-01-31T23:00",
+      "args": [
+        "PT2H"
+      ],
+      "result": {
+        "string": "2026-02-01T01:00:00",
+        "type": "PlainDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "day": 1,
+          "dayOfWeek": 7,
+          "dayOfYear": 32,
+          "weekOfYear": 5,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 28,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 1,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "add-month-constrain",
+      "op": "add",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "P1M"
+      ],
+      "result": {
+        "string": "2026-02-28T12:00:00",
+        "type": "PlainDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "day": 28,
+          "dayOfWeek": 6,
+          "dayOfYear": 59,
+          "weekOfYear": 9,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 28,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 12,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "add-month-and-hours",
+      "op": "add",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "P1MT25H"
+      ],
+      "result": {
+        "string": "2026-03-01T13:00:00",
+        "type": "PlainDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 3,
+          "monthCode": "M03",
+          "day": 1,
+          "dayOfWeek": 7,
+          "dayOfYear": 60,
+          "weekOfYear": 9,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 31,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 13,
+          "minute": 0,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "add-month-reject",
+      "op": "add",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "P1M"
+      ],
+      "options": {
+        "overflow": "reject"
+      },
+      "throws": "RangeError"
+    },
+    {
+      "id": "add-past-max",
+      "op": "add",
+      "on": "+275760-09-13T23:00",
+      "args": [
+        "PT2H"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "subtract-hours-borrows",
+      "op": "subtract",
+      "on": "2026-03-01T00:30",
+      "args": [
+        "PT1H"
+      ],
+      "result": {
+        "string": "2026-02-28T23:30:00",
+        "type": "PlainDateTime",
+        "fields": {
+          "year": 2026,
+          "month": 2,
+          "monthCode": "M02",
+          "day": 28,
+          "dayOfWeek": 6,
+          "dayOfYear": 59,
+          "weekOfYear": 9,
+          "yearOfWeek": 2026,
+          "daysInWeek": 7,
+          "daysInMonth": 28,
+          "daysInYear": 365,
+          "monthsInYear": 12,
+          "inLeapYear": false,
+          "era": null,
+          "eraYear": null,
+          "calendarId": "iso8601",
+          "hour": 23,
+          "minute": 30,
+          "second": 0,
+          "millisecond": 0,
+          "microsecond": 0,
+          "nanosecond": 0
+        }
+      }
+    },
+    {
+      "id": "add-huge-time",
+      "op": "add",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "PT9007199254740991S"
+      ],
+      "throws": "RangeError"
+    },
+    {
+      "id": "until-default",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "result": {
+        "string": "P28DT23H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 28,
+          "hours": 23,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-months",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "options": {
+        "largestUnit": "month"
+      },
+      "result": {
+        "string": "P28DT23H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 28,
+          "hours": 23,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-years",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "options": {
+        "largestUnit": "year"
+      },
+      "result": {
+        "string": "P28DT23H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 28,
+          "hours": 23,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-backwards-months",
+      "op": "until",
+      "on": "2026-03-01T11:00",
+      "args": [
+        "2026-01-31T12:00"
+      ],
+      "options": {
+        "largestUnit": "month"
+      },
+      "result": {
+        "string": "-P1MT23H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": -1,
+          "weeks": 0,
+          "days": 0,
+          "hours": -23,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-hours",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "options": {
+        "largestUnit": "hour"
+      },
+      "result": {
+        "string": "PT695H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 695,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-round-day",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "options": {
+        "smallestUnit": "day",
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "P29D",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 29,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-round-month",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "options": {
+        "smallestUnit": "month",
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "P1M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 1,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-weeks",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "options": {
+        "largestUnit": "week"
+      },
+      "result": {
+        "string": "P4WT23H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 4,
+          "days": 0,
+          "hours": 23,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-same",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-01-31T12:00"
+      ],
+      "result": {
+        "string": "PT0S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 0,
+          "blank": true
+        }
+      }
+    },
+    {
+      "id": "since-months",
+      "op": "since",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-03-01T11:00"
+      ],
+      "options": {
+        "largestUnit": "month"
+      },
+      "result": {
+        "string": "-P28DT23H",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": -28,
+          "hours": -23,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": -1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-nanosecond-day",
+      "op": "until",
+      "on": "2026-01-01T00:00",
+      "args": [
+        "2026-01-01T00:00:00.000000001"
+      ],
+      "options": {
+        "largestUnit": "day"
+      },
+      "result": {
+        "string": "PT0.000000001S",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 1,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-increment-minutes-floor",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2026-01-31T13:34"
+      ],
+      "options": {
+        "smallestUnit": "minute",
+        "roundingIncrement": 10,
+        "roundingMode": "floor"
+      },
+      "result": {
+        "string": "PT1H30M",
+        "type": "Duration",
+        "fields": {
+          "years": 0,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 1,
+          "minutes": 30,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
+      "id": "until-year-round-half",
+      "op": "until",
+      "on": "2026-01-31T12:00",
+      "args": [
+        "2027-08-01T00:00"
+      ],
+      "options": {
+        "smallestUnit": "year",
+        "roundingMode": "halfExpand"
+      },
+      "result": {
+        "string": "P1Y",
+        "type": "Duration",
+        "fields": {
+          "years": 1,
+          "months": 0,
+          "weeks": 0,
+          "days": 0,
+          "hours": 0,
+          "minutes": 0,
+          "seconds": 0,
+          "milliseconds": 0,
+          "microseconds": 0,
+          "nanoseconds": 0,
+          "sign": 1,
+          "blank": false
+        }
+      }
+    },
+    {
       "id": "to-plain-date",
       "op": "toPlainDate",
       "on": "2026-01-31T12:30",
