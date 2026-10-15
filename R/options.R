@@ -127,6 +127,26 @@ ztp_increment <- function(rounding_increment, maximum, inclusive) {
   as.double(increment)
 }
 
+# GetRoundingIncrementOption alone, for a date unit, which has no maximum:
+# a positive integer up to 10^9.
+ztp_increment_unchecked <- function(rounding_increment) {
+  if (
+    !is.numeric(rounding_increment) ||
+      length(rounding_increment) != 1L ||
+      is.na(rounding_increment)
+  ) {
+    stop_zutempo("`rounding_increment` must be a single number", kind = "type")
+  }
+  increment <- trunc(rounding_increment)
+  if (!is.finite(increment) || increment < 1 || increment > 1e9) {
+    stop_zutempo(
+      "`rounding_increment` must be between 1 and 1000000000",
+      kind = "range"
+    )
+  }
+  as.double(increment)
+}
+
 # "Maximum duration rounding increment" of the units table.
 ztp_unit_maximum <- c(
   hour = 24,
