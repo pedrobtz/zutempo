@@ -79,6 +79,9 @@ SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
 SEXP ztp_r_instant_round(SEXP x, SEXP increment, SEXP unit, SEXP mode);
 SEXP ztp_r_instant_format(SEXP x, SEXP zone, SEXP precision);
 SEXP ztp_r_zone_normalise(SEXP x);
+SEXP ztp_r_instant_from_seconds(SEXP x);
+SEXP ztp_r_instant_to_seconds(SEXP x);
+SEXP ztp_r_seconds_split(SEXP x);
 
 /* ztp_r_zoned.c */
 ztp_zone *ztp_r_zones_open(SEXP zones);
