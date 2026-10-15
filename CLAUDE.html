@@ -168,7 +168,7 @@
 </ul></div>
 <div class="section level2">
 <h2 id="definition-of-done">Definition of done<a class="anchor" aria-label="anchor" href="#definition-of-done"></a></h2>
-<p><code>devtools::document()</code> and <code>devtools::check()</code> clean, meaning 0 errors, 0 warnings and 0 notes. The one allowed note is “New submission” before the first release. <code>devtools::test(shuffle = TRUE)</code> green. The quick gctorture run green on every pull request; the long one green once, on the release candidate (see Continuous integration). CI green on every leg. A user-facing change also needs a test, roxygen documentation and a <code>NEWS.md</code> entry.</p>
+<p><code>devtools::document()</code> and <code>devtools::check()</code> clean, meaning 0 errors, 0 warnings and 0 notes. The one allowed note is “New submission” before the first release. <code>devtools::test(shuffle = TRUE)</code> green. CI green on every leg of the quick run; the full run (<code>full-ci</code>) green once, before submission (see Continuous integration). A user-facing change also needs a test, roxygen documentation and a <code>NEWS.md</code> entry.</p>
 </div>
 <div class="section level2">
 <h2 id="releasing-to-cran">Releasing to CRAN<a class="anchor" aria-label="anchor" href="#releasing-to-cran"></a></h2>
@@ -196,21 +196,22 @@
 <div class="section level2">
 <h2 id="continuous-integration">Continuous integration<a class="anchor" aria-label="anchor" href="#continuous-integration"></a></h2>
 <p>Workflows come from <code>pedrobtz/r-actions</code>. Call those reusable workflows instead of writing bespoke ones, and pin a released tag rather than <code>main</code>. Pin a workflow that holds a write token, such as <code>coverage.yml</code>, to a commit, with the tag in a comment. The <code>R-CMD-check</code> workflow must call <code>r-cmd-check.yml</code>, because a hand-rolled one does not count as the pre-submission check.</p>
+<p>Every run is the quick one: each job finishes in under five minutes, on pull requests and on pushes to <code>main</code> alike. The full run, the slow jobs at their full length, happens once, before submission (roadmap stage 13): put the <code>full-ci</code> label on the release pull request and run <code>gh workflow run gctorture.yaml</code> if the long gctorture is wanted alone. A finding of the full run is fixed then. Do not add <code>full-ci</code> to an ordinary pull request.</p>
 <p>This package calls:</p>
 <ul><li>
 <code>R-CMD-check.yaml</code>: <code>r-cmd-check.yml@v1</code>, quick on pull requests, full on <code>main</code> or with the <code>full-ci</code> label.</li>
 <li>
 <code>R-CMD-check.yaml</code> also runs <code>R-CMD-check-no-int128</code>, the same check with <code>ZUTEMPO_CFLAGS=-DZUF_NO_INT128</code> in the environment, which <code>src/Makevars</code> adds to <code>PKG_CFLAGS</code>; <code>test-info.R</code> asserts that the flag reached the engine.</li>
 <li>
-<code>native-checks.yml</code>: <code>sanitizers.yml</code> (with ASan), <code>valgrind.yml</code>, <code>lto.yml</code>, <code>gctorture.yml</code>, <code>rchk.yml</code> (with <code>github-packages: pedrobtz/zufast</code>, since the rchk image ignores <code>Remotes:</code>), <code>analyzers.yml</code> and <code>cran-special.yml</code>, with the same profile expression, except gctorture: quick (step 500) everywhere, long (step 20, sampled oracle) only on a pull request labelled <code>gctorture</code>.</li>
+<code>native-checks.yml</code>: <code>sanitizers.yml</code> (UBSan and ASan), <code>lto.yml</code>, <code>rchk.yml</code> (with <code>github-packages: pedrobtz/zufast</code>, since the rchk image ignores <code>Remotes:</code>), <code>analyzers.yml</code> and <code>cran-special.yml</code> in full on every run, two or three minutes each; <code>valgrind.yml</code> (about eleven minutes) only with <code>full-ci</code>; <code>gctorture.yml</code> at step 1000 over the sampled oracle, and at step 20 (about an hour) with <code>full-ci</code> or the <code>gctorture</code> label.</li>
 <li>
-<code>gctorture.yaml</code>: the long gctorture run on demand (<code>gh workflow run gctorture.yaml</code>). It runs once in stage 13 on the release candidate (roadmap); until then every run is the quick one, and a PROTECT bug the long run finds is fixed then. The <code>gctorture</code> label runs it on a pull request; use it only when asked.</li>
+<code>gctorture.yaml</code>: the long gctorture run alone, on demand (<code>gh workflow run gctorture.yaml</code>).</li>
 <li>
 <code>coverage.yaml</code>: <code>coverage.yml</code> pinned to a commit. The badge is committed to <code>gh-pages</code> because <code>main</code> takes no direct pushes.</li>
 <li>
 <code>pkgdown.yaml</code>: the r-lib site build, deploying to <code>gh-pages</code> with <code>force: false</code> so it does not overwrite the badge.</li>
 <li>
-<code>hardening.yaml</code>: <code>fuzz.yml</code> three times, one job per harness under <code>tools/fuzz/</code> (TZif, RFC 9557, duration), against the engine sources (the glue excluded). The TZif job is seeded from the slim fixtures, the others from <code>tools/fuzz/corpus/</code>; two minutes each on a pull request, thirty nightly, with the corpus carried between runs. The harnesses build without R: Homebrew’s <code>clang -fsanitize=fuzzer,address,undefined</code> over <code>src/ztp_*.c</code> minus <code>src/ztp_r_*.c</code> with <code>zufast</code>’s headers is the local smoke test (Apple’s clang has no libFuzzer). The engine’s strings are length-delimited, so never print one with a plain <code>%s</code>.</li>
+<code>hardening.yaml</code>: <code>fuzz.yml</code> three times, one job per harness under <code>tools/fuzz/</code> (TZif, RFC 9557, duration), against the engine sources (the glue excluded). The TZif job is seeded from the slim fixtures, the others from <code>tools/fuzz/corpus/</code>; two minutes each on a pull request and a push to <code>main</code>, thirty with <code>full-ci</code> or on demand (<code>gh workflow run hardening.yaml</code>), with the corpus carried between runs. The harnesses build without R: Homebrew’s <code>clang -fsanitize=fuzzer,address,undefined</code> over <code>src/ztp_*.c</code> minus <code>src/ztp_r_*.c</code> with <code>zufast</code>’s headers is the local smoke test (Apple’s clang has no libFuzzer). The engine’s strings are length-delimited, so never print one with a plain <code>%s</code>.</li>
 </ul><p>Small edits get a small run. The shared workflows look at the files a pull request changes, compared with its merge base:</p>
 <ul><li>
 <strong>Markdown only</strong>, such as <code>README.md</code>, <code>NEWS.md</code> or <code>cran-comments.md</code>, skips every check. Only coverage and the pkgdown site run.</li>

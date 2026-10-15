@@ -285,11 +285,10 @@ Design §4 is the reference. The layers, top down:
 
 `devtools::document()` and `devtools::check()` clean, meaning 0 errors,
 0 warnings and 0 notes. The one allowed note is “New submission” before
-the first release. `devtools::test(shuffle = TRUE)` green. The quick
-gctorture run green on every pull request; the long one green once, on
-the release candidate (see Continuous integration). CI green on every
-leg. A user-facing change also needs a test, roxygen documentation and a
-`NEWS.md` entry.
+the first release. `devtools::test(shuffle = TRUE)` green. CI green on
+every leg of the quick run; the full run (`full-ci`) green once, before
+submission (see Continuous integration). A user-facing change also needs
+a test, roxygen documentation and a `NEWS.md` entry.
 
 ## Releasing to CRAN
 
@@ -335,6 +334,14 @@ to a commit, with the tag in a comment. The `R-CMD-check` workflow must
 call `r-cmd-check.yml`, because a hand-rolled one does not count as the
 pre-submission check.
 
+Every run is the quick one: each job finishes in under five minutes, on
+pull requests and on pushes to `main` alike. The full run, the slow jobs
+at their full length, happens once, before submission (roadmap stage
+13): put the `full-ci` label on the release pull request and run
+`gh workflow run gctorture.yaml` if the long gctorture is wanted alone.
+A finding of the full run is fixed then. Do not add `full-ci` to an
+ordinary pull request.
+
 This package calls:
 
 - `R-CMD-check.yaml`: `r-cmd-check.yml@v1`, quick on pull requests, full
@@ -343,18 +350,15 @@ This package calls:
   with `ZUTEMPO_CFLAGS=-DZUF_NO_INT128` in the environment, which
   `src/Makevars` adds to `PKG_CFLAGS`; `test-info.R` asserts that the
   flag reached the engine.
-- `native-checks.yml`: `sanitizers.yml` (with ASan), `valgrind.yml`,
-  `lto.yml`, `gctorture.yml`, `rchk.yml` (with
-  `github-packages: pedrobtz/zufast`, since the rchk image ignores
-  `Remotes:`), `analyzers.yml` and `cran-special.yml`, with the same
-  profile expression, except gctorture: quick (step 500) everywhere,
-  long (step 20, sampled oracle) only on a pull request labelled
-  `gctorture`.
-- `gctorture.yaml`: the long gctorture run on demand
-  (`gh workflow run gctorture.yaml`). It runs once in stage 13 on the
-  release candidate (roadmap); until then every run is the quick one,
-  and a PROTECT bug the long run finds is fixed then. The `gctorture`
-  label runs it on a pull request; use it only when asked.
+- `native-checks.yml`: `sanitizers.yml` (UBSan and ASan), `lto.yml`,
+  `rchk.yml` (with `github-packages: pedrobtz/zufast`, since the rchk
+  image ignores `Remotes:`), `analyzers.yml` and `cran-special.yml` in
+  full on every run, two or three minutes each; `valgrind.yml` (about
+  eleven minutes) only with `full-ci`; `gctorture.yml` at step 1000 over
+  the sampled oracle, and at step 20 (about an hour) with `full-ci` or
+  the `gctorture` label.
+- `gctorture.yaml`: the long gctorture run alone, on demand
+  (`gh workflow run gctorture.yaml`).
 - `coverage.yaml`: `coverage.yml` pinned to a commit. The badge is
   committed to `gh-pages` because `main` takes no direct pushes.
 - `pkgdown.yaml`: the r-lib site build, deploying to `gh-pages` with
@@ -363,8 +367,9 @@ This package calls:
   `tools/fuzz/` (TZif, RFC 9557, duration), against the engine sources
   (the glue excluded). The TZif job is seeded from the slim fixtures,
   the others from `tools/fuzz/corpus/`; two minutes each on a pull
-  request, thirty nightly, with the corpus carried between runs. The
-  harnesses build without R: Homebrew’s
+  request and a push to `main`, thirty with `full-ci` or on demand
+  (`gh workflow run hardening.yaml`), with the corpus carried between
+  runs. The harnesses build without R: Homebrew’s
   `clang -fsanitize=fuzzer,address,undefined` over `src/ztp_*.c` minus
   `src/ztp_r_*.c` with `zufast`’s headers is the local smoke test
   (Apple’s clang has no libFuzzer). The engine’s strings are
