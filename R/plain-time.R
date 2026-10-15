@@ -44,6 +44,10 @@ plain_time <- function(
   if (inherits(hour, "zutempo_plain_date_time")) {
     return(new_plain_time(ztp_date_time_ns(hour)))
   }
+  # ToTemporalTime reads a zoned value's wall-clock time.
+  if (inherits(hour, "zutempo_zoned_date_time")) {
+    return(temporal_to_plain_time(hour))
+  }
   if (is.character(hour)) {
     return(new_plain_time(.Call(C_ztp_r_plain_time_parse, hour)))
   }

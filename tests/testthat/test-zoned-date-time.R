@@ -643,3 +643,16 @@ test_that("zoned arithmetic recycles, propagates NA and keeps each element's zon
     })
   })
 })
+
+test_that("the constructors read a zoned value as ToTemporal* does", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    z <- zoned_date_time("2026-03-07T12:30:45.5[America/New_York]")
+    expect_identical(plain_date(z), plain_date("2026-03-07"))
+    expect_identical(plain_time(z), plain_time("12:30:45.5"))
+    expect_identical(
+      plain_date_time(z),
+      plain_date_time("2026-03-07T12:30:45.5")
+    )
+    expect_identical(instant(z), instant("2026-03-07T17:30:45.5Z"))
+  })
+})

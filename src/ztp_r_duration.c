@@ -788,6 +788,15 @@ SEXP ztp_r_plain_year_month_until(SEXP ym1, SEXP ym2, SEXP largest, SEXP smalles
         }
         this_day = ztp_r_year_month_first_day(p1[i]);
         other_day = ztp_r_year_month_first_day(p2[i]);
+        /* CalendarDateFromFields throws when the first of either month is
+           outside the dates' limits (-271821-04 is a year-month, but its
+           first day is not a date); equal year-months return zero first. */
+        if (p1[i] != p2[i] &&
+            (!ztp_iso_date_within_limits(this_day) || !ztp_iso_date_within_limits(other_day))) {
+            ztp_fail(&ctx, ZTP_ERR_RANGE, idx,
+                     "the first day of the year-month is outside the range of a PlainDate");
+            ztp_r_raise(&ctx);
+        }
         ztp_calendar_date_until(this_day, other_day, largest_unit, &diff.date);
         diff.date.weeks = 0;
         diff.date.days = 0;

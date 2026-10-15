@@ -24,3 +24,12 @@ r_zoneinfo <- function() {
   dir <- file.path(R.home("share"), "zoneinfo")
   if (dir.exists(dir)) dir else NA_character_
 }
+
+# Skip a test that needs the machine's time zone database when there is
+# none.
+skip_without_tzdb <- function() {
+  skip_if(
+    is.na(zutempo_info()[["tzdir"]]),
+    "no time zone database on this machine"
+  )
+}

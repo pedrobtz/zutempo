@@ -90,8 +90,13 @@ oracle_skip_until_built <- function(type) {
 # A field bag among the arguments becomes named arguments; a string that
 # names a unit (round()) becomes `smallest_unit`.
 oracle_run <- function(type, case) {
+  oracle_run_with(type, case, lapply(case[["args"]], oracle_arg))
+}
+
+# The same with the arguments already read (helper-test262.R converts some
+# first).
+oracle_run_with <- function(type, case, args) {
   constructor <- oracle_constructor(type)
-  args <- lapply(case[["args"]], oracle_arg)
   options <- oracle_options(case)
   splice <- function(args) {
     out <- list()
@@ -116,7 +121,12 @@ oracle_run <- function(type, case) {
     }
     return(do.call(fn, c(splice(args), options)))
   }
-  x <- constructor(case[["on"]])
+  # A duration may come as its fields (helper-test262.R).
+  x <- if (is.list(case[["on"]])) {
+    do.call(constructor, case[["on"]][["fields"]])
+  } else {
+    constructor(case[["on"]])
+  }
   fn <- oracle_fn(paste0("temporal_", oracle_snake(case[["op"]])))
   if (
     identical(case[["op"]], "round") && length(args) && is.character(args[[1L]])

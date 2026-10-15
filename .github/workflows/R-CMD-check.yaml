@@ -32,3 +32,17 @@ jobs:
       profile: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-ci') && 'quick' || 'full' }}
       env: |
         ZUTEMPO_CFLAGS=-DZUF_NO_INT128
+
+  # Every zone's UTC offset against base R's at every hour from 1900 to
+  # 2100 (design 11, test-agreement.R): about a quarter of an hour, so it
+  # runs on one Ubuntu leg of the full run before submission only. Every
+  # other run checks transitions and a sample of hours in seconds.
+  agreement:
+    if: contains(github.event.pull_request.labels.*.name, 'full-ci')
+    uses: pedrobtz/r-actions/.github/workflows/r-cmd-check.yml@v1
+    with:
+      profile: full
+      runners: '[{"os": "ubuntu-latest", "r": "release"}]'
+      containers: "[]"
+      env: |
+        ZUTEMPO_EXTENDED_TESTS=true

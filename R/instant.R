@@ -28,6 +28,10 @@ instant <- function(x) {
   if (inherits(x, "zutempo_instant")) {
     return(x)
   }
+  # ToTemporalInstant takes a zoned value's exact time.
+  if (inherits(x, "zutempo_zoned_date_time")) {
+    return(temporal_to_instant(x))
+  }
   if (inherits(x, "POSIXt")) {
     return(new_instant(.Call(
       C_ztp_r_instant_from_seconds,

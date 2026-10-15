@@ -51,6 +51,11 @@ plain_date <- function(
     ztp_check_no_fields(month, day, month_code)
     return(new_plain_date(ztp_date_time_days(year)))
   }
+  # ToTemporalDate reads a zoned value's date in its zone.
+  if (inherits(year, "zutempo_zoned_date_time")) {
+    ztp_check_no_fields(month, day, month_code)
+    return(temporal_to_plain_date(year))
+  }
   if (is.character(year)) {
     ztp_check_no_fields(month, day, month_code)
     return(new_plain_date(.Call(C_ztp_r_plain_date_parse, year)))

@@ -5,9 +5,30 @@
 
 ztp_tz_state <- new.env(parent = emptyenv())
 
+# The lookup of design 8.1, done again only when the settings that decide
+# it change (the option and TZDIR) or zutempo_tz_reset() is called: every
+# call that takes a zone asks for it, and finding the directory reads
+# version files.
+ztp_tz_lookup <- new.env(parent = emptyenv())
+
+ztp_tz_candidates <- function() {
+  key <- paste(
+    format(getOption("zutempo.tzdir", "")),
+    Sys.getenv("TZDIR", ""),
+    sep = "\r"
+  )
+  if (identical(ztp_tz_lookup[["key"]], key)) {
+    return(ztp_tz_lookup[["found"]])
+  }
+  found <- ztp_tz_find()
+  ztp_tz_lookup[["key"]] <- key
+  ztp_tz_lookup[["found"]] <- found
+  found
+}
+
 # The directories to try, in the order of design 8.1, as a list with the
 # directory that exists first (or NA) and everything tried.
-ztp_tz_candidates <- function() {
+ztp_tz_find <- function() {
   tried <- character()
   opt <- getOption("zutempo.tzdir")
   if (!is.null(opt)) {
@@ -151,14 +172,15 @@ ztp_tz_reset_state <- function() {
 #' zutempo reads the time zone database the way base R does, and keeps the
 #' zones it has parsed for the session (design 8.4). The cache clears by
 #' itself when the option `zutempo.tzdir` or the `TZDIR` variable changes;
-#' `zutempo_tz_reset()` clears it on demand, for a database that changed
-#' under a running session.
+#' `zutempo_tz_reset()` clears it on demand, and looks for the database
+#' again, for a database that appeared or changed under a running session.
 #'
 #' @return `NULL`, invisibly.
 #' @examples
 #' zutempo_tz_reset()
 #' @export
 zutempo_tz_reset <- function() {
+  rm(list = ls(ztp_tz_lookup, all.names = TRUE), envir = ztp_tz_lookup)
   ztp_tz_reset_state()
   invisible(NULL)
 }

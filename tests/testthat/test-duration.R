@@ -231,3 +231,32 @@ test_that("vctrs and pillar handle durations", {
   skip_if_not_installed("pillar")
   expect_s3_class(pillar::pillar_shaft(d), "pillar_shaft")
 })
+
+test_that("a relative_to string is a date, valid down to the first PlainDate", {
+  # Its midnight is before the first PlainDateTime, which does not matter
+  # (test262 Duration/prototype/round/relativeto-date-limits.js).
+  expect_identical(
+    format(temporal_round(
+      duration(0),
+      largest_unit = "year",
+      relative_to = "-271821-04-19"
+    )),
+    "PT0S"
+  )
+  expect_identical(
+    temporal_total(duration(0), "year", relative_to = "-271821-04-19"),
+    0
+  )
+})
+
+test_that("fields from a 128-bit total are the nearest double, ties to even", {
+  # 8692288669465520373761 microseconds is not a double; adding its two
+  # 64-bit halves as doubles rounded twice and missed by one ulp (test262
+  # Duration/prototype/round/precision-exact-in-balance-time-duration.js).
+  d <- duration(seconds = 8692288669465520, microseconds = 373761)
+  r <- temporal_round(d, largest_unit = "microseconds")
+  expect_identical(format(r), "PT8692288669465520.898048S")
+  # Compared as the double's exact digits: R's parser does not always round
+  # a long decimal literal to the nearest double.
+  expect_identical(sprintf("%.0f", microseconds(r)), "8692288669465520898048")
+})

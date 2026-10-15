@@ -60,6 +60,11 @@ plain_date_time <- function(
     ztp_check_no_fields(month, day, month_code)
     return(temporal_to_plain_date_time(year))
   }
+  # ToTemporalDateTime reads a zoned value's wall clock.
+  if (inherits(year, "zutempo_zoned_date_time")) {
+    ztp_check_no_fields(month, day, month_code)
+    return(temporal_to_plain_date_time(year))
+  }
   if (is.character(year)) {
     ztp_check_no_fields(month, day, month_code)
     return(new_plain_date_time(.Call(C_ztp_r_plain_date_time_parse, year)))

@@ -23,7 +23,7 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 10. The eight types exist with every
+Verified 2026-10-15: stages 0 to 11. The eight types exist with every
 member of the pinned specification: fields, `with*`, `compare`,
 `equals`, `round`, `add`, `subtract`, `since`, `until`, `total`,
 `startOfDay`, `getTimeZoneTransition`, the conversions among the types
@@ -175,6 +175,15 @@ Design §4 is the reference. The layers, top down:
   corpora under `tools/fuzz/corpus/` come from `tools/fuzz/seeds.mjs`
   (the oracle's strings and test262's); regenerate them when the oracle
   changes much.
+- `tools/test262/`: `extract.mjs` translates test262's Temporal tests into
+  `tests/testthat/test262/*.json.gz` (README there for the sparse
+  checkout); `test-test262.R` runs them, and `differences.csv` lists
+  every case that differs on purpose, with the reason. A new failure is
+  a bug or a difference to justify, never a row added to get green.
+- `tests/testthat/test-agreement.R`: offsets against base R, sampled
+  always, exhaustive with `ZUTEMPO_EXTENDED_TESTS=true`.
+- `tools/bench/`: `bench.R` and `RESULTS.md` for design 12; a miss is an
+  issue labelled `performance`.
 - `inst/spec/PINS`: the specification, test262 and tzdata pins (DCF).
   `inst/spec/members.csv`: every member of the pinned specification with
   its R name, written by `tools/spec/members.R`.

@@ -54,3 +54,6 @@ CRAN-SUBMISSION
 
 # testthat 3.3 failure snapshots
 tests/testthat/_problems/
+
+# test262 checkout of tools/test262/extract.mjs
+tools/test262/cache/

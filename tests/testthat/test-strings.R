@@ -200,6 +200,12 @@ test_that("time zone arguments read ISO strings (ParseTemporalTimeZoneString)", 
       temporal_to_string(x, time_zone = "2026-01-01T00:00+01:00:30"),
       class = "zutempo_range_error"
     )
+    # A seconds part is an error even when it is zero
+    # (ParseTimeZoneIdentifier reads no sub-minute precision).
+    expect_error(
+      temporal_to_string(x, time_zone = "2026-01-01T00:00+01:00:00.000"),
+      class = "zutempo_range_error"
+    )
     expect_error(
       temporal_to_string(x, time_zone = "2026-01-01"),
       class = "zutempo_range_error"

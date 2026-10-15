@@ -127,3 +127,20 @@ test_that("with, compare, equals and to_plain_date follow the specification", {
     plain_year_month("2026-01")
   )
 })
+
+test_that("a difference needs the first of both months to be a date", {
+  # -271821-04 is a year-month, but its first day is before the first
+  # PlainDate (CalendarDateFromFields; test262
+  # PlainYearMonth/prototype/since/throws-if-year-outside-valid-iso-range.js).
+  ym <- plain_year_month("1970-01")
+  expect_error(temporal_since(ym, "-271821-04"), class = "zutempo_range_error")
+  expect_error(temporal_until(ym, "-271821-04"), class = "zutempo_range_error")
+  expect_identical(
+    format(temporal_until(plain_year_month("-271821-04"), "-271821-04")),
+    "PT0S"
+  )
+  expect_identical(
+    format(temporal_until(ym, "+275760-09")),
+    "P273790Y8M"
+  )
+})
