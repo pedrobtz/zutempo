@@ -93,7 +93,9 @@ ztp_register_vctrs_zoned <- function() {
   ztp_s3_register("vctrs::vec_restore", cls, function(x, to, ...) {
     ztp_zoned_build(as.complex(x[["instant"]]), as.character(x[["zone"]]))
   })
-  ztp_s3_register("vctrs::vec_ptype2", self, function(x, y, ...) new_zoned_date_time())
+  ztp_s3_register("vctrs::vec_ptype2", self, function(x, y, ...) {
+    new_zoned_date_time()
+  })
   ztp_s3_register("vctrs::vec_cast", self, function(x, to, ...) x)
   ztp_s3_register("vctrs::vec_ptype_abbr", cls, function(x, ...) "zdt")
   ztp_s3_register("vctrs::vec_ptype_full", cls, function(x, ...) cls)

@@ -118,7 +118,11 @@ zoned_date_time <- function(
     microsecond,
     nanosecond
   )
-  fields <- ztp_recycle(c(date, time, list(time_zone = ztp_zone_ids(time_zone))))
+  fields <- ztp_recycle(c(
+    date,
+    time,
+    list(time_zone = ztp_zone_ids(time_zone))
+  ))
   local <- do.call(
     .Call,
     c(list(C_ztp_r_plain_date_time_from_fields), unname(fields[1:9]), list(ov))
@@ -135,7 +139,11 @@ zoned_date_time <- function(
 
 # --- construction helpers -----------------------------------------------------
 
-new_zoned_date_time <- function(z = complex(), codes = integer(), zones = character()) {
+new_zoned_date_time <- function(
+  z = complex(),
+  codes = integer(),
+  zones = character()
+) {
   z[is.na(z)] <- NA_complex_
   codes[is.na(z)] <- NA_integer_
   # Drop identifiers no element uses and recode in order of first use, so
@@ -207,7 +215,14 @@ ztp_zoned_from_strings <- function(x, dis, off) {
 # and nanoseconds of day) with a zone identifier per element and an
 # optional offset string per element. `behaviour_default` is the
 # behaviour without an offset: 2 wall, 3 start of day.
-ztp_zoned_resolve <- function(local, ids, offset_string, dis, off, behaviour_default = 2L) {
+ztp_zoned_resolve <- function(
+  local,
+  ids,
+  offset_string,
+  dis,
+  off,
+  behaviour_default = 2L
+) {
   n <- length(local)
   zones <- unique(ids[!is.na(ids)])
   codes <- match(ids, zones)
@@ -244,11 +259,13 @@ ztp_disambiguation_code <- function(disambiguation) {
     disambiguation,
     c("compatible", "earlier", "later", "reject"),
     "disambiguation"
-  ) - 1L
+  ) -
+    1L
 }
 
 ztp_offset_option_code <- function(offset) {
-  ztp_match_option(offset, c("prefer", "use", "ignore", "reject"), "offset") - 1L
+  ztp_match_option(offset, c("prefer", "use", "ignore", "reject"), "offset") -
+    1L
 }
 
 ztp_as_zoned_date_time <- function(x) {
@@ -257,7 +274,9 @@ ztp_as_zoned_date_time <- function(x) {
 
 # A single time zone identifier argument, resolved.
 ztp_single_zone <- function(time_zone, name = "time_zone") {
-  if (inherits(time_zone, "zutempo_zoned_date_time") && length(time_zone) == 1L) {
+  if (
+    inherits(time_zone, "zutempo_zoned_date_time") && length(time_zone) == 1L
+  ) {
     return(ztp_zdt_ids(time_zone))
   }
   if (!is.character(time_zone) || length(time_zone) != 1L || is.na(time_zone)) {
@@ -282,7 +301,11 @@ zoned_date_time_compare <- function(x, y) {
 temporal_equals.zutempo_zoned_date_time <- function(x, other) {
   other <- ztp_as_zoned_date_time(other)
   args <- ztp_recycle(list(ztp_zdt_instant(x), ztp_zdt_instant(other)))
-  same_instant <- instant_compare(new_instant(args[[1L]]), new_instant(args[[2L]])) == 0L
+  same_instant <- instant_compare(
+    new_instant(args[[1L]]),
+    new_instant(args[[2L]])
+  ) ==
+    0L
   ztp_zdt_zones_ready(x)
   ztp_zdt_zones_ready(other)
   ids <- ztp_recycle(list(ztp_zdt_ids(x), ztp_zdt_ids(other)))
@@ -294,7 +317,10 @@ temporal_equals.zutempo_zoned_date_time <- function(x, other) {
 
 #' @rdname temporal_to_plain_date
 #' @export
-temporal_to_plain_date_time.zutempo_zoned_date_time <- function(x, time = NULL) {
+temporal_to_plain_date_time.zutempo_zoned_date_time <- function(
+  x,
+  time = NULL
+) {
   if (!is.null(time)) {
     stop_zutempo("`time` is not used for a zoned_date_time", kind = "type")
   }
@@ -391,10 +417,24 @@ temporal_to_zoned_date_time.zutempo_plain_date <- function(
   id <- ztp_single_zone(time_zone)
   if (is.null(plain_time)) {
     local <- unclass(temporal_to_plain_date_time(x))
-    return(ztp_zoned_resolve(local, rep(id, length(local)), NULL, 0L, 3L, behaviour_default = 3L))
+    return(ztp_zoned_resolve(
+      local,
+      rep(id, length(local)),
+      NULL,
+      0L,
+      3L,
+      behaviour_default = 3L
+    ))
   }
   local <- unclass(temporal_to_plain_date_time(x, plain_time))
-  ztp_zoned_resolve(local, rep(id, length(local)), NULL, 0L, 3L, behaviour_default = 2L)
+  ztp_zoned_resolve(
+    local,
+    rep(id, length(local)),
+    NULL,
+    0L,
+    3L,
+    behaviour_default = 2L
+  )
 }
 
 #' @rdname temporal_to_instant
@@ -409,7 +449,14 @@ temporal_to_zoned_date_time.zutempo_plain_date_time <- function(
   id <- ztp_single_zone(time_zone)
   dis <- ztp_disambiguation_code(disambiguation)
   local <- unclass(x)
-  ztp_zoned_resolve(local, rep(id, length(local)), NULL, dis, 3L, behaviour_default = 2L)
+  ztp_zoned_resolve(
+    local,
+    rep(id, length(local)),
+    NULL,
+    dis,
+    3L,
+    behaviour_default = 2L
+  )
 }
 
 #' @rdname temporal_fields
@@ -435,7 +482,12 @@ offset_nanoseconds.default <- function(x, ...) {
 #' @rdname temporal_fields
 #' @export
 offset_nanoseconds.zutempo_zoned_date_time <- function(x, ...) {
-  .Call(C_ztp_r_zoned_offset, ztp_zdt_instant(x), ztp_zdt_codes(x), ztp_zdt_zones_ready(x))
+  .Call(
+    C_ztp_r_zoned_offset,
+    ztp_zdt_instant(x),
+    ztp_zdt_codes(x),
+    ztp_zdt_zones_ready(x)
+  )
 }
 
 #' @rdname temporal_fields
@@ -469,7 +521,12 @@ hours_in_day.default <- function(x, ...) ztp_masked("hours_in_day", x, ...)
 #' @rdname temporal_fields
 #' @export
 hours_in_day.zutempo_zoned_date_time <- function(x, ...) {
-  .Call(C_ztp_r_zoned_hours_in_day, ztp_zdt_instant(x), ztp_zdt_codes(x), ztp_zdt_zones_ready(x))
+  .Call(
+    C_ztp_r_zoned_hours_in_day,
+    ztp_zdt_instant(x),
+    ztp_zdt_codes(x),
+    ztp_zdt_zones_ready(x)
+  )
 }
 
 # --- with ----------------------------------------------------------------------
@@ -485,7 +542,14 @@ temporal_with.zutempo_zoned_date_time <- function(
 ) {
   fields <- ztp_partial_fields(
     list(...),
-    c("year", "month", "month_code", "day", ztp_time_field_names, "offset_string")
+    c(
+      "year",
+      "month",
+      "month_code",
+      "day",
+      ztp_time_field_names,
+      "offset_string"
+    )
   )
   dis <- ztp_disambiguation_code(disambiguation)
   off <- ztp_offset_option_code(offset)
@@ -513,12 +577,22 @@ temporal_with.zutempo_zoned_date_time <- function(
     fields[["offset_string"]]
   }
   ztp_zdt_zones_ready(x)
-  merged <- ztp_recycle(c(date, time, list(ids = ztp_zdt_ids(x), offset_string = offset_string)))
+  merged <- ztp_recycle(c(
+    date,
+    time,
+    list(ids = ztp_zdt_ids(x), offset_string = offset_string)
+  ))
   regulated <- do.call(
     .Call,
     c(list(C_ztp_r_plain_date_time_from_fields), unname(merged[1:9]), list(ov))
   )
-  ztp_zoned_resolve(regulated, merged[["ids"]], merged[["offset_string"]], dis, off)
+  ztp_zoned_resolve(
+    regulated,
+    merged[["ids"]],
+    merged[["offset_string"]],
+    dis,
+    off
+  )
 }
 
 #' @rdname temporal_with
@@ -678,7 +752,10 @@ ztp_zdt_assign <- function(x, i, value) {
     stop_zutempo("cannot assign NULL", kind = "type")
   }
   if (is.logical(value) && all(is.na(value))) {
-    value <- new_zoned_date_time(rep(NA_complex_, length(value)), rep(NA_integer_, length(value)))
+    value <- new_zoned_date_time(
+      rep(NA_complex_, length(value)),
+      rep(NA_integer_, length(value))
+    )
   } else {
     ztp_check_same_class(x, value, "the replacement value")
   }
@@ -690,9 +767,13 @@ ztp_zdt_assign <- function(x, i, value) {
 }
 
 #' @export
-`[<-.zutempo_zoned_date_time` <- function(x, i, value) ztp_zdt_assign(x, i, value)
+`[<-.zutempo_zoned_date_time` <- function(x, i, value) {
+  ztp_zdt_assign(x, i, value)
+}
 #' @export
-`[[<-.zutempo_zoned_date_time` <- function(x, i, value) ztp_zdt_assign(x, i, value)
+`[[<-.zutempo_zoned_date_time` <- function(x, i, value) {
+  ztp_zdt_assign(x, i, value)
+}
 
 #' @export
 c.zutempo_zoned_date_time <- function(...) {
@@ -701,7 +782,10 @@ c.zutempo_zoned_date_time <- function(...) {
   x <- dots[[1L]]
   parts <- lapply(dots, function(d) {
     if (is.logical(d) && all(is.na(d))) {
-      return(list(z = rep(NA_complex_, length(d)), ids = rep(NA_character_, length(d))))
+      return(list(
+        z = rep(NA_complex_, length(d)),
+        ids = rep(NA_character_, length(d))
+      ))
     }
     ztp_check_same_class(x, d, "every argument of c()")
     list(z = ztp_zdt_instant(d), ids = ztp_zdt_ids(d))
@@ -739,7 +823,9 @@ as.data.frame.zutempo_zoned_date_time <- function(x, ...) {
 }
 
 #' @export
-xtfrm.zutempo_zoned_date_time <- function(x) ztp_order_key_complex(ztp_zdt_instant(x))
+xtfrm.zutempo_zoned_date_time <- function(x) {
+  ztp_order_key_complex(ztp_zdt_instant(x))
+}
 
 #' @export
 format.zutempo_zoned_date_time <- function(x, ...) temporal_to_string(x)

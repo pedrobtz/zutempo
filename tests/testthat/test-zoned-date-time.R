@@ -16,14 +16,20 @@ test_that("a vector mixing three zones survives subsetting, combination and a ro
     expect_identical(time_zone_id(x[c(3, 1)]), ids[c(3, 1)])
     expect_identical(attr(x[3], "zones"), "Asia/Calcutta")
     expect_identical(attr(x[3], "zone"), 1L)
-    expect_identical(time_zone_id(c(x[2], x[3], x[1], x)), ids[c(2, 3, 1, 1, 2, 3)])
+    expect_identical(
+      time_zone_id(c(x[2], x[3], x[1], x)),
+      ids[c(2, 3, 1, 1, 2, 3)]
+    )
     expect_identical(time_zone_id(rep(x, 2)), rep(ids, 2))
     expect_identical(time_zone_id(rep(x, each = 2)), rep(ids, each = 2))
     expect_identical(time_zone_id(rev(x)), rev(ids))
     # One instant three times: sorting is stable and keeps the zones.
     expect_identical(format(sort(x)), format(x))
     expect_identical(order(x), 1:3)
-    expect_identical(order(c(x[3], temporal_with(x[1], minute = 1), x[2])), c(1L, 3L, 2L))
+    expect_identical(
+      order(c(x[3], temporal_with(x[1], minute = 1), x[2])),
+      c(1L, 3L, 2L)
+    )
     expect_identical(format(unique(c(x, x[2], x[1]))), format(x))
     y <- x
     y[2] <- x[3]
@@ -51,20 +57,32 @@ test_that("a vector mixing three zones survives subsetting, combination and a ro
     expect_match(capture.output(print(x))[1], "zutempo_zoned_date_time\\[3\\]")
     expect_identical(c(zoned_date_time(character()), x), x)
     expect_length(zoned_date_time(character()), 0L)
-    expect_identical(time_zone_id(zoned_date_time(c(NA, "2026-03-07T12:00[UTC]"))), c(NA, "UTC"))
+    expect_identical(
+      time_zone_id(zoned_date_time(c(NA, "2026-03-07T12:00[UTC]"))),
+      c(NA, "UTC")
+    )
     # The same instant in two zones is one instant.
     expect_identical(temporal_to_instant(x[1]), instant("2026-03-07T17:00Z"))
-    expect_identical(epoch_milliseconds(x), rep(epoch_milliseconds(instant("2026-03-07T17:00Z")), 3))
+    expect_identical(
+      epoch_milliseconds(x),
+      rep(epoch_milliseconds(instant("2026-03-07T17:00Z")), 3)
+    )
   })
 })
 
 test_that("vctrs sees a record of instant and zone", {
   skip_if_not_installed("vctrs")
   with_tzdir(tz_fixture_dir("slim"), {
-    x <- zoned_date_time(c("2026-03-07T12:00[America/New_York]", "2026-03-07T18:00[Europe/Lisbon]"))
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-07T18:00[Europe/Lisbon]"
+    ))
     expect_identical(vctrs::vec_c(x[2], x[1]), x[2:1])
     expect_identical(vctrs::vec_slice(x, 2), x[2])
-    expect_identical(vctrs::vec_rbind(data.frame(z = x), data.frame(z = x))$z, c(x, x))
+    expect_identical(
+      vctrs::vec_rbind(data.frame(z = x), data.frame(z = x))$z,
+      c(x, x)
+    )
     expect_identical(vctrs::vec_ptype_abbr(x), "zdt")
     expect_identical(vctrs::vec_size(x), 2L)
   })
@@ -74,17 +92,37 @@ test_that("the ends of the instant range hold in any zone", {
   with_tzdir(tz_fixture_dir("slim"), {
     top <- zoned_date_time("+275760-09-13T00:00Z[UTC]")
     expect_identical(temporal_to_instant(top), instant("+275760-09-13T00:00Z"))
-    expect_identical(temporal_to_string(zoned_date_time("+275760-09-13T01:00[+01:00]")), "+275760-09-13T01:00:00+01:00[+01:00]")
-    expect_error(zoned_date_time("+275760-09-13T01:00:00.000000001[+01:00]"), class = "zutempo_range_error")
-    expect_error(zoned_date_time("+275760-09-13T00:00:00.000000001Z[UTC]"), class = "zutempo_range_error")
+    expect_identical(
+      temporal_to_string(zoned_date_time("+275760-09-13T01:00[+01:00]")),
+      "+275760-09-13T01:00:00+01:00[+01:00]"
+    )
+    expect_error(
+      zoned_date_time("+275760-09-13T01:00:00.000000001[+01:00]"),
+      class = "zutempo_range_error"
+    )
+    expect_error(
+      zoned_date_time("+275760-09-13T00:00:00.000000001Z[UTC]"),
+      class = "zutempo_range_error"
+    )
     bottom <- zoned_date_time("-271821-04-20T00:00Z[UTC]")
-    expect_identical(temporal_to_instant(bottom), instant("-271821-04-20T00:00Z"))
+    expect_identical(
+      temporal_to_instant(bottom),
+      instant("-271821-04-20T00:00Z")
+    )
     expect_identical(hours_in_day(bottom), 24)
     # New York's local mean time, -04:56:02, puts the first instant on the
     # evening of the day before the UTC date; the candidate is the minimum
     # instant and valid (GetPossibleEpochNanoseconds).
-    expect_identical(temporal_to_instant(zoned_date_time("-271821-04-19T19:03:58[America/New_York]")), instant("-271821-04-20T00:00Z"))
-    expect_error(zoned_date_time("-271821-04-19T19:03:57[America/New_York]"), class = "zutempo_range_error")
+    expect_identical(
+      temporal_to_instant(zoned_date_time(
+        "-271821-04-19T19:03:58[America/New_York]"
+      )),
+      instant("-271821-04-20T00:00Z")
+    )
+    expect_error(
+      zoned_date_time("-271821-04-19T19:03:57[America/New_York]"),
+      class = "zutempo_range_error"
+    )
     # hoursInDay needs the next day's start, which the top of the range has
     # not got.
     expect_error(hours_in_day(top), class = "zutempo_range_error")
@@ -93,9 +131,18 @@ test_that("the ends of the instant range hold in any zone", {
       temporal_start_of_day(zoned_date_time("+275760-09-13T00:00Z[+01:00]")),
       zoned_date_time("+275760-09-12T23:00Z[+01:00]")
     )
-    expect_error(temporal_with_plain_time(top, "00:00:00.000000001"), class = "zutempo_range_error")
-    expect_identical(temporal_to_zoned_date_time(plain_date("+275760-09-13"), "UTC"), top)
-    expect_error(temporal_to_zoned_date_time(plain_date("+275760-09-13"), "-01:00"), class = "zutempo_range_error")
+    expect_error(
+      temporal_with_plain_time(top, "00:00:00.000000001"),
+      class = "zutempo_range_error"
+    )
+    expect_identical(
+      temporal_to_zoned_date_time(plain_date("+275760-09-13"), "UTC"),
+      top
+    )
+    expect_error(
+      temporal_to_zoned_date_time(plain_date("+275760-09-13"), "-01:00"),
+      class = "zutempo_range_error"
+    )
   })
 })
 
@@ -111,13 +158,21 @@ test_that("Now follows the system zone as base R reads it", {
   z <- now_zoned_date_time_iso()
   expect_identical(time_zone_id(z), id)
   expect_true(abs(epoch_milliseconds(z) / 1000 - as.numeric(before)) < 5)
-  expect_s3_class(now_plain_date_time_iso("Asia/Tokyo"), "zutempo_plain_date_time")
+  expect_s3_class(
+    now_plain_date_time_iso("Asia/Tokyo"),
+    "zutempo_plain_date_time"
+  )
   expect_s3_class(now_plain_date_iso("Asia/Tokyo"), "zutempo_plain_date")
   expect_s3_class(now_plain_time_iso("UTC"), "zutempo_plain_time")
   today_utc <- as.Date(format(Sys.time(), tz = "UTC"))
-  expect_true(abs(as.numeric(as.Date(format(now_plain_date_iso("UTC"))) - today_utc)) <= 1)
+  expect_true(
+    abs(as.numeric(as.Date(format(now_plain_date_iso("UTC"))) - today_utc)) <= 1
+  )
   expect_identical(time_zone_id(now_zoned_date_time_iso("+05:30")), "+05:30")
-  expect_error(now_zoned_date_time_iso("Mars/Olympus_Mons"), class = "zutempo_tz_error")
+  expect_error(
+    now_zoned_date_time_iso("Mars/Olympus_Mons"),
+    class = "zutempo_tz_error"
+  )
 })
 
 test_that("the system zone falls back to UTC when base R has none", {
@@ -129,20 +184,71 @@ test_that("constructor arguments are checked", {
   with_tzdir(tz_fixture_dir("slim"), {
     expect_error(zoned_date_time(), class = "zutempo_type_error")
     expect_error(zoned_date_time(2026, 3, 7), class = "zutempo_type_error")
-    expect_error(zoned_date_time("2026-03-07T12:00[UTC]", time_zone = "UTC"), class = "zutempo_type_error")
-    expect_error(zoned_date_time(2026, 3, 7, time_zone = 1), class = "zutempo_type_error")
-    expect_error(zoned_date_time(2026, 3, 7, time_zone = "UTC", disambiguation = "sometimes"), class = "zutempo_type_error")
-    expect_error(zoned_date_time(2026, 3, 7, time_zone = "UTC", offset = "maybe"), class = "zutempo_type_error")
-    expect_error(zoned_date_time(2026, 3, 7, time_zone = "UTC", offset_string = 5), class = "zutempo_type_error")
-    expect_error(zoned_date_time(2026, 3, 7, time_zone = "UTC", offset_string = "noon"), class = "zutempo_range_error")
+    expect_error(
+      zoned_date_time("2026-03-07T12:00[UTC]", time_zone = "UTC"),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      zoned_date_time(2026, 3, 7, time_zone = 1),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      zoned_date_time(
+        2026,
+        3,
+        7,
+        time_zone = "UTC",
+        disambiguation = "sometimes"
+      ),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      zoned_date_time(2026, 3, 7, time_zone = "UTC", offset = "maybe"),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      zoned_date_time(2026, 3, 7, time_zone = "UTC", offset_string = 5),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      zoned_date_time(2026, 3, 7, time_zone = "UTC", offset_string = "noon"),
+      class = "zutempo_range_error"
+    )
     expect_error(zoned_date_time(Sys.Date()), class = "zutempo_type_error")
-    expect_error(zoned_date_time("2026-03-07T12:00[Mars/Olympus_Mons]"), class = "zutempo_tz_error")
-    expect_error(zoned_date_time("2026-03-07T12:00[America/New_York]", "extra"), class = "zutempo_type_error")
-    expect_error(temporal_with(zoned_date_time("2026-03-07T12:00[UTC]"), time_zone = "UTC"), class = "zutempo_type_error")
-    expect_error(temporal_with_time_zone(zoned_date_time("2026-03-07T12:00[UTC]"), 3), class = "zutempo_type_error")
-    expect_error(temporal_to_zoned_date_time(plain_date("2026-03-07"), c("UTC", "UTC")), class = "zutempo_type_error")
-    expect_error(temporal_to_plain_date_time(zoned_date_time("2026-03-07T12:00[UTC]"), "12:00"), class = "zutempo_type_error")
-    expect_error(zoned_date_time(c(2026, 2027), 3, 7, time_zone = c("UTC", "UTC", "UTC")), class = "zutempo_type_error")
+    expect_error(
+      zoned_date_time("2026-03-07T12:00[Mars/Olympus_Mons]"),
+      class = "zutempo_tz_error"
+    )
+    expect_error(
+      zoned_date_time("2026-03-07T12:00[America/New_York]", "extra"),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      temporal_with(
+        zoned_date_time("2026-03-07T12:00[UTC]"),
+        time_zone = "UTC"
+      ),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      temporal_with_time_zone(zoned_date_time("2026-03-07T12:00[UTC]"), 3),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      temporal_to_zoned_date_time(plain_date("2026-03-07"), c("UTC", "UTC")),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      temporal_to_plain_date_time(
+        zoned_date_time("2026-03-07T12:00[UTC]"),
+        "12:00"
+      ),
+      class = "zutempo_type_error"
+    )
+    expect_error(
+      zoned_date_time(c(2026, 2027), 3, 7, time_zone = c("UTC", "UTC", "UTC")),
+      class = "zutempo_type_error"
+    )
     # NA fields and NA zones give NA elements.
     x <- zoned_date_time(c(2026, NA), 3, 7, time_zone = "UTC")
     expect_identical(is.na(x), c(FALSE, TRUE))
@@ -150,14 +256,32 @@ test_that("constructor arguments are checked", {
     expect_identical(is.na(x), c(FALSE, TRUE))
     expect_identical(time_zone_id(x), c("UTC", NA))
     # Zones recycle with the fields, one per element.
-    x <- zoned_date_time(2026, 3, 7, 12, time_zone = c("America/New_York", "Europe/Lisbon"))
+    x <- zoned_date_time(
+      2026,
+      3,
+      7,
+      12,
+      time_zone = c("America/New_York", "Europe/Lisbon")
+    )
     expect_identical(
       format(x),
-      c("2026-03-07T12:00:00-05:00[America/New_York]", "2026-03-07T12:00:00+00:00[Europe/Lisbon]")
+      c(
+        "2026-03-07T12:00:00-05:00[America/New_York]",
+        "2026-03-07T12:00:00+00:00[Europe/Lisbon]"
+      )
     )
     # A zoned value is accepted as a time zone argument.
-    expect_identical(time_zone_id(temporal_with_time_zone(x[2], x[1])), "America/New_York")
-    expect_identical(time_zone_id(temporal_to_zoned_date_time_iso(instant("2026-03-07T17:00Z"), x[1])), "America/New_York")
+    expect_identical(
+      time_zone_id(temporal_with_time_zone(x[2], x[1])),
+      "America/New_York"
+    )
+    expect_identical(
+      time_zone_id(temporal_to_zoned_date_time_iso(
+        instant("2026-03-07T17:00Z"),
+        x[1]
+      )),
+      "America/New_York"
+    )
   })
 })
 
@@ -190,7 +314,10 @@ test_that("fields of zoned values are the local date-time's", {
     expect_identical(offset_nanoseconds(x), -18000e9)
     expect_identical(time_zone_id(x), "America/New_York")
     expect_identical(hours_in_day(x), 24)
-    expect_identical(epoch_nanoseconds(x), epoch_nanoseconds(temporal_to_instant(x)))
+    expect_identical(
+      epoch_nanoseconds(x),
+      epoch_nanoseconds(temporal_to_instant(x))
+    )
     na <- zoned_date_time(NA_character_)
     expect_true(is.na(year(na)))
     expect_true(is.na(offset(na)))
@@ -207,12 +334,25 @@ test_that("fields of zoned values are the local date-time's", {
 
 test_that("equality and comparison recycle and propagate NA", {
   with_tzdir(tz_fixture_dir("slim"), {
-    x <- zoned_date_time(c("2026-03-07T12:00[America/New_York]", "2026-03-07T17:00[Europe/Lisbon]", NA))
-    expect_identical(temporal_equals(x, "2026-03-07T12:00[America/New_York]"), c(TRUE, FALSE, NA))
-    expect_identical(zoned_date_time_compare(x, "2026-03-07T17:00[UTC]"), c(0L, 0L, NA))
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-07T17:00[Europe/Lisbon]",
+      NA
+    ))
+    expect_identical(
+      temporal_equals(x, "2026-03-07T12:00[America/New_York]"),
+      c(TRUE, FALSE, NA)
+    )
+    expect_identical(
+      zoned_date_time_compare(x, "2026-03-07T17:00[UTC]"),
+      c(0L, 0L, NA)
+    )
     expect_identical(zoned_date_time_compare(x[1], x[2]), 0L)
     expect_identical(temporal_equals(x[1], x[2]), FALSE)
-    expect_identical(temporal_equals(x[1], temporal_with_time_zone(x[2], "america/new_york")), TRUE)
+    expect_identical(
+      temporal_equals(x[1], temporal_with_time_zone(x[2], "america/new_york")),
+      TRUE
+    )
     expect_identical(order(x, na.last = TRUE), c(1L, 2L, 3L))
   })
 })
@@ -225,31 +365,73 @@ test_that("the zone cache may be cleared under a vector and it still formats", {
     zutempo_tz_reset()
     expect_identical(hour(x), 12L)
     zutempo_tz_reset()
-    expect_identical(format(temporal_with(x, hour = 1)), "2026-03-07T01:00:00-05:00[America/New_York]")
+    expect_identical(
+      format(temporal_with(x, hour = 1)),
+      "2026-03-07T01:00:00-05:00[America/New_York]"
+    )
     # ... but a zone that is not in the current database cannot be read.
     withr::with_options(list(zutempo.tzdir = withr::local_tempdir()), {
       expect_error(format(x), class = "zutempo_tz_error")
-      expect_identical(format(zoned_date_time("2026-03-07T12:00[+05:30]")), "2026-03-07T12:00:00+05:30[+05:30]")
+      expect_identical(
+        format(zoned_date_time("2026-03-07T12:00[+05:30]")),
+        "2026-03-07T12:00:00+05:30[+05:30]"
+      )
     })
   })
 })
 
 test_that("strings with a zone annotation are read by the other types and ignored", {
   with_tzdir(tz_fixture_dir("slim"), {
-    expect_identical(plain_date("2026-03-07[America/New_York]"), plain_date("2026-03-07"))
-    expect_identical(plain_date_time("2026-03-07T12:00[Europe/Lisbon]"), plain_date_time("2026-03-07T12:00"))
+    expect_identical(
+      plain_date("2026-03-07[America/New_York]"),
+      plain_date("2026-03-07")
+    )
+    expect_identical(
+      plain_date_time("2026-03-07T12:00[Europe/Lisbon]"),
+      plain_date_time("2026-03-07T12:00")
+    )
     expect_identical(plain_time("12:00[+05:30]"), plain_time("12:00"))
-    expect_identical(plain_year_month("2026-03[UTC]"), plain_year_month("2026-03"))
+    expect_identical(
+      plain_year_month("2026-03[UTC]"),
+      plain_year_month("2026-03")
+    )
     expect_identical(plain_month_day("03-07[!UTC]"), plain_month_day("03-07"))
-    expect_identical(instant("2026-03-07T12:00Z[America/New_York]"), instant("2026-03-07T12:00Z"))
-    expect_identical(instant("2026-03-07T12:00+01:00[Mars/Olympus_Mons]"), instant("2026-03-07T11:00Z"))
+    expect_identical(
+      instant("2026-03-07T12:00Z[America/New_York]"),
+      instant("2026-03-07T12:00Z")
+    )
+    expect_identical(
+      instant("2026-03-07T12:00+01:00[Mars/Olympus_Mons]"),
+      instant("2026-03-07T11:00Z")
+    )
     expect_error(plain_date("2026-03-07[]"), class = "zutempo_parse_error")
-    expect_error(plain_date("2026-03-07[America/New_York"), class = "zutempo_parse_error")
-    expect_error(plain_date("2026-03-07[u-ca=iso8601]"), class = "zutempo_parse_error")
-    expect_error(plain_date("2026-03-07[America/New_York][u-ca=iso8601]"), class = "zutempo_parse_error")
-    expect_error(plain_date("2026-03-07[+05:30:00]"), class = "zutempo_parse_error")
-    expect_error(plain_date("2026-03-07[1America]"), class = "zutempo_parse_error")
-    expect_error(zoned_date_time("2026-03-07T12:00[America/New_York]x"), class = "zutempo_parse_error")
-    expect_error(zoned_date_time(paste0("2026-03-07T12:00[", strrep("A", 60), "]")), class = "zutempo_parse_error")
+    expect_error(
+      plain_date("2026-03-07[America/New_York"),
+      class = "zutempo_parse_error"
+    )
+    expect_error(
+      plain_date("2026-03-07[u-ca=iso8601]"),
+      class = "zutempo_parse_error"
+    )
+    expect_error(
+      plain_date("2026-03-07[America/New_York][u-ca=iso8601]"),
+      class = "zutempo_parse_error"
+    )
+    expect_error(
+      plain_date("2026-03-07[+05:30:00]"),
+      class = "zutempo_parse_error"
+    )
+    expect_error(
+      plain_date("2026-03-07[1America]"),
+      class = "zutempo_parse_error"
+    )
+    expect_error(
+      zoned_date_time("2026-03-07T12:00[America/New_York]x"),
+      class = "zutempo_parse_error"
+    )
+    expect_error(
+      zoned_date_time(paste0("2026-03-07T12:00[", strrep("A", 60), "]")),
+      class = "zutempo_parse_error"
+    )
   })
 })
