@@ -25,7 +25,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 1 | [Engine scaffold, pinned specification and oracle](#stage-1--engine-scaffold-pinned-specification-and-oracle) | [#4](https://github.com/pedrobtz/zutempo/issues/4) | [#20](https://github.com/pedrobtz/zutempo/pull/20) | 2026-10-15 |
 | 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | [#21](https://github.com/pedrobtz/zutempo/pull/21) | 2026-10-15 |
 | 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | [#22](https://github.com/pedrobtz/zutempo/pull/22) | 2026-10-15 |
-| 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | | 2026-10-15 |
+| 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | [#23](https://github.com/pedrobtz/zutempo/pull/23) | 2026-10-15 |
 | 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | | |
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | | |
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | | |
