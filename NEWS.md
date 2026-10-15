@@ -1,5 +1,13 @@
 # zutempo 0.0.0.9000
 
+* Zone-aware arithmetic: `temporal_add()`, `temporal_subtract()`,
+  `temporal_since()`, `temporal_until()` and `temporal_round()` on a
+  `zoned_date_time()`, with date units through the calendar in the value's
+  zone and time units on the exact time, so a day across a clock change is
+  not 24 hours; `temporal_get_time_zone_transition()`; and
+  `temporal_round()`, `temporal_total()` and `duration_compare()` with a
+  `zoned_date_time()` as `relative_to`, where days follow the zone
+  (`PT25H` rounded to days relative to 2026-03-07 in New York is `P1DT2H`).
 * `zoned_date_time()`: Temporal's `ZonedDateTime` as an R vector with a
   time zone per element, from RFC 9557 strings with the zone in brackets
   (`"2026-03-07T12:00[America/New_York]"`) or from fields with `time_zone`,

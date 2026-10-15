@@ -29,7 +29,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | [#24](https://github.com/pedrobtz/zutempo/pull/24) | 2026-10-15 |
 | 6 | [Time zone database](#stage-6--time-zone-database) | [#9](https://github.com/pedrobtz/zutempo/issues/9) | [#25](https://github.com/pedrobtz/zutempo/pull/25) | 2026-10-15 |
 | 7 | [ZonedDateTime](#stage-7--zoneddatetime) | [#10](https://github.com/pedrobtz/zutempo/issues/10) | [#26](https://github.com/pedrobtz/zutempo/pull/26) | 2026-10-15 |
-| 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | | |
+| 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | | 2026-10-15 |
 | 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | | |
 | 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | | |
 | 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | | |
@@ -643,6 +643,23 @@ specification, and `Duration` rounds relative to zoned values.
   formatting options remain.
 
 **Design.** §0 (oracle table), §6.5, §6.6, §8.2, §14 row 5.
+
+**Deviations (2026-10-15).**
+- `relative_to` recycles with the duration by R's rules (a vector of
+  zoned values gives one result per element), where Temporal's option is a
+  single value; a scalar behaves as in Temporal.
+- `temporal_get_time_zone_transition()` returns `NA` where Temporal
+  returns `null`: for a fixed-offset zone, for `UTC`, and when no
+  transition lies within the representable range.
+- `ComputeNudgeWindow` takes the origin's exact time when the whole start
+  duration is zero rather than when its rounded unit alone is zero (the
+  stage 4 reading), so a zoned origin inside a fold keeps its offset.
+- Oracle cases whose result lies on the last day of the range stay out
+  (the generator reads `hoursInDay`, as in stage 7); rounding up to the
+  very last instant is tested in `test-zoned-date-time.R`. An invalid
+  `direction` is a `zutempo_type_error` as every invalid option value is
+  (design 10), not the oracle's `RangeError`, so that case is tested in
+  the package.
 
 ## Stage 9 — RFC 9557 annotations and formatting options
 
