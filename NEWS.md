@@ -1,5 +1,9 @@
 # zutempo 0.0.0.9000
 
+* Documentation: a README from Temporal to R, `vignette("zutempo")`
+  following one zoned value from construction to base R, a table of every
+  Temporal member and its R function on each type's help page, and
+  `?zutempo_options` for the options the functions share.
 * Checked against test262's Temporal tests (39,263 cases from 2,715 files)
   and against base R's offsets for every zone. Fixes from that: the
   constructors read a `zoned_date_time()` (`plain_date(z)`, `plain_time(z)`,
