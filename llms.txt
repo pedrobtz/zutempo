@@ -27,6 +27,19 @@ library(zutempo)
 
 ## All functions
 
+- [`as.Date(`*`<zutempo_plain_date>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.Date(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.Date(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.Date(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXct(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXct(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXct(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXlt(`*`<zutempo_zoned_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXlt(`*`<zutempo_instant>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`as.POSIXlt(`*`<zutempo_plain_date_time>`*`)`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  [`temporal_to_difftime()`](https://pedrobtz.github.io/zutempo/reference/base-r.md)
+  : Convert Temporal values to base R dates and times
+
 - [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
   [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
   : Durations: Temporal's Duration

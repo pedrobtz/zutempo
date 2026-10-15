@@ -25,7 +25,7 @@ roadmap says what each stage builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 9. The eight types exist with every
+Verified 2026-10-15: stages 0 to 10. The eight types exist with every
 member of the pinned specification: fields, `with*`, `compare`,
 `equals`, `round`, `add`, `subtract`, `since`, `until`, `total`,
 `startOfDay`, `getTimeZoneTransition`, the conversions among the types
@@ -33,24 +33,25 @@ and [`toString()`](https://rdrr.io/r/base/toString.html) with all its
 options; every `Now` function works; strings are read with every RFC
 9557 annotation, and
 [`zutempo_parse()`](https://pedrobtz.github.io/zutempo/reference/zutempo_parse.md)
-(`R/parse.R`) reads them in bulk with `NA` for failures. The ledger’s
-`pending` list is empty. The engine has the ISO records
-(`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
-(`src/ztp_format.c`), the parser with its goals, the annotation rules,
-the time zone and calendar string readers and the zufast fast path
-(`src/ztp_parse.c`), durations on 128-bit time durations
-(`src/ztp_duration.c`), calendar arithmetic with relative rounding with
-and without a zone and the zoned arithmetic (`src/ztp_relative.c`),
-instants with the UTC, fixed-offset and IANA zone kinds
-(`src/ztp_instant.c`) and the time zone database: TZif reader and footer
-rules (`src/ztp_tz.c`), the session cache (`src/ztp_tz_cache.c`) and the
-generated link table (`src/ztp_tz_links.c`); the glue is
-`src/ztp_r_plain.c`, `src/ztp_r_duration.c`, `src/ztp_r_instant.c`,
-`src/ztp_r_tz.c` and `src/ztp_r_zoned.c` (`src/ztp_zoned.c` holds the
-candidate search, disambiguation, start of day and the zoned string
-form). `R/tz.R` finds the database and reads the files;
-`R/zoned-date-time.R` is the zoned type. The oracle covers the eight
-types. See the roadmap’s stage table.
+(`R/parse.R`) reads them in bulk with `NA` for failures. `R/base-r.R`
+converts to and from base R’s types (design 6.10), with the exact double
+conversions in `src/ztp_instant.c`. The ledger’s `pending` list is
+empty. The engine has the ISO records (`src/ztp_iso.c`), rounding
+(`src/ztp_round.c`), formatting (`src/ztp_format.c`), the parser with
+its goals, the annotation rules, the time zone and calendar string
+readers and the zufast fast path (`src/ztp_parse.c`), durations on
+128-bit time durations (`src/ztp_duration.c`), calendar arithmetic with
+relative rounding with and without a zone and the zoned arithmetic
+(`src/ztp_relative.c`), instants with the UTC, fixed-offset and IANA
+zone kinds (`src/ztp_instant.c`) and the time zone database: TZif reader
+and footer rules (`src/ztp_tz.c`), the session cache
+(`src/ztp_tz_cache.c`) and the generated link table
+(`src/ztp_tz_links.c`); the glue is `src/ztp_r_plain.c`,
+`src/ztp_r_duration.c`, `src/ztp_r_instant.c`, `src/ztp_r_tz.c` and
+`src/ztp_r_zoned.c` (`src/ztp_zoned.c` holds the candidate search,
+disambiguation, start of day and the zoned string form). `R/tz.R` finds
+the database and reads the files; `R/zoned-date-time.R` is the zoned
+type. The oracle covers the eight types. See the roadmap’s stage table.
 
 ## Stage tracking
 
