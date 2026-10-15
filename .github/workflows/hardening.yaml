@@ -1,0 +1,27 @@
+on:
+  pull_request:
+  schedule:
+    # A long run nightly. The corpus cache is what makes the short PR runs
+    # and this one add up to a single campaign.
+    - cron: "0 3 * * *"
+
+name: hardening
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  fuzz-tzif:
+    uses: pedrobtz/r-actions/.github/workflows/fuzz.yml@v1
+    with:
+      harness: tools/fuzz/tzif.c
+      sources: src/*.c
+      # The glue and the entry point need R's headers; the engine does not.
+      exclude-sources: |
+        src/init.c
+        src/ztp_r_*.c
+      seed-corpus: tests/testthat/tzdata/slim
+      github-packages: pedrobtz/zufast
+      cflags: -g -O1 -fno-omit-frame-pointer -I.github-packages/zufast/inst/include
+      max-total-time: ${{ github.event_name == 'schedule' && 1800 || 120 }}
