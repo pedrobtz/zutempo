@@ -15,6 +15,11 @@ test_that("offsets agree with base R at every transition and sampled hours", {
     is.na(zutempo_info()[["tzdir"]]),
     "no time zone database on this machine"
   )
+  # Both read the same files: base R's default can be another database
+  # than zutempo's (R's own copy on macOS even when the system's is newer),
+  # and a version that changed a zone's rules would differ for that reason
+  # alone. TZDIR is what both look at first.
+  withr::local_envvar(TZDIR = zutempo_info()[["tzdir"]])
   ids <- agreement_zones()
   transitions <- agreement_transitions(ids)
   # Both sides of every transition, where offsets change, and every 997th
@@ -41,6 +46,11 @@ test_that("offsets agree with base R at every hour from 1900 to 2100", {
     is.na(zutempo_info()[["tzdir"]]),
     "no time zone database on this machine"
   )
+  # Both read the same files: base R's default can be another database
+  # than zutempo's (R's own copy on macOS even when the system's is newer),
+  # and a version that changed a zone's rules would differ for that reason
+  # alone. TZDIR is what both look at first.
+  withr::local_envvar(TZDIR = zutempo_info()[["tzdir"]])
   hours <- seq(agreement_first, agreement_last, by = 3600)
   found <- do.call(
     rbind,

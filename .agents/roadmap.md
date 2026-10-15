@@ -32,7 +32,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | [#27](https://github.com/pedrobtz/zutempo/pull/27) | 2026-10-15 |
 | 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | [#31](https://github.com/pedrobtz/zutempo/pull/31) | 2026-10-15 |
 | 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | [#34](https://github.com/pedrobtz/zutempo/pull/34) | 2026-10-15 |
-| 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | [#43](https://github.com/pedrobtz/zutempo/pull/43) | 2026-10-15 |
+| 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | [#43](https://github.com/pedrobtz/zutempo/pull/43), [#44](https://github.com/pedrobtz/zutempo/pull/44) | 2026-10-15 |
 | 12 | [Documentation](#stage-12--documentation) | [#15](https://github.com/pedrobtz/zutempo/issues/15) | | |
 | 13 | [v0.1.0 readiness](#stage-13--v010-readiness) | [#16](https://github.com/pedrobtz/zutempo/issues/16) | | |
 
@@ -854,6 +854,13 @@ recorded.
   the full run before submission (the CI policy of stage 13). On macOS the
   exhaustive run found no difference, so `agreement/differences.csv`
   starts empty; the first full run adds what Linux finds.
+- On macOS zutempo now reads R's own tzdata before the system's, where
+  design §8.1 said the newer of the two (amended there, with the
+  maintainer's approval, in #44). R 4.6 does not do what its `?timezones`
+  says: with the system at 2026e and R's copy at 2026b, base R read 2026b,
+  and zutempo and `POSIXct` disagreed on Africa/Casablanca from 2026 on.
+  The agreement test also points `TZDIR` at zutempo's database, so it
+  compares like with like whatever the defaults.
 - Every §12 target is missed, by 1.2 to 5 times, and three operations are
   slower than `clock`: issues #35 to #42, labelled `performance`
   (`tools/bench/RESULTS.md`).
