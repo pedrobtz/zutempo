@@ -32,7 +32,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | 8 | [Zone-aware arithmetic and transitions](#stage-8--zone-aware-arithmetic-and-transitions) | [#11](https://github.com/pedrobtz/zutempo/issues/11) | [#27](https://github.com/pedrobtz/zutempo/pull/27) | 2026-10-15 |
 | 9 | [RFC 9557 annotations and formatting options](#stage-9--rfc-9557-annotations-and-formatting-options) | [#12](https://github.com/pedrobtz/zutempo/issues/12) | [#31](https://github.com/pedrobtz/zutempo/pull/31) | 2026-10-15 |
 | 10 | [Base R conversions and epoch nanoseconds](#stage-10--base-r-conversions-and-epoch-nanoseconds) | [#13](https://github.com/pedrobtz/zutempo/issues/13) | [#34](https://github.com/pedrobtz/zutempo/pull/34) | 2026-10-15 |
-| 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | | |
+| 11 | [Conformance, agreement and benchmarks](#stage-11--conformance-agreement-and-benchmarks) | [#14](https://github.com/pedrobtz/zutempo/issues/14) | | 2026-10-15 |
 | 12 | [Documentation](#stage-12--documentation) | [#15](https://github.com/pedrobtz/zutempo/issues/15) | | |
 | 13 | [v0.1.0 readiness](#stage-13--v010-readiness) | [#16](https://github.com/pedrobtz/zutempo/issues/16) | | |
 
@@ -817,6 +817,45 @@ recorded.
   shared `clock` operation.
 
 **Design.** §11, §12, §14 row 8, §15 criteria 2 and 4.
+
+**Deviations (2026-10-15).**
+- test262 is translated by running it, not by reading its assertions:
+  `tools/test262/extract.mjs` runs each file under Node with
+  `temporal-polyfill`'s script build, records every call the file makes
+  into Temporal, and keeps the calls of files whose assertions all pass,
+  so the recorded results are the values test262 accepts (and the calls
+  it makes on the way, asserted or not). 2715 of 4605 files (59%) give
+  39263 cases; 16 files fail on the polyfill and are left out, and the
+  rest hold only JavaScript mechanics, other calendars or calls already
+  recorded (`tools/test262/REPORT.md`). The cases ship gzipped (400 KB),
+  run on every check except CRAN's (12 s) and not under gctorture, whose
+  glue the oracle already covers.
+- The runner applies design 10's rule itself: an expected `RangeError` is
+  met by a `zutempo_type_error` that names an option argument. The 355
+  cases that still differ are listed one by one in
+  `tests/testthat/test262/differences.csv`, each with its reason: R's
+  partial argument matching, no ToNumber coercion, numbers read as fields,
+  unknown names rejected, constructors that default every field, named
+  options, calendars as strings, design 4.1's reference day and year, and
+  R's own missing-argument error.
+- test262 found five defects, fixed here: the constructors now read a
+  zoned value as `ToTemporalDate`, `ToTemporalTime`,
+  `ToTemporalDateTime` and `ToTemporalInstant` do; a `relative_to` string
+  is a date, valid down to -271821-04-19; a year-month difference checks
+  that the first of both months is a date; a time zone string's offset may
+  not have seconds, even zero ones; and a duration field computed from a
+  128-bit total is the nearest double, where adding two 64-bit halves
+  rounded twice.
+- The agreement test runs in two sizes: on every check except CRAN's,
+  every zone at every transition and every 97th hour (18 s); and every
+  zone at every hour (about 11 minutes) only with `ZUTEMPO_EXTENDED_TESTS`,
+  which the `agreement` job of `R-CMD-check.yaml` sets on one Ubuntu leg of
+  the full run before submission (the CI policy of stage 13). On macOS the
+  exhaustive run found no difference, so `agreement/differences.csv`
+  starts empty; the first full run adds what Linux finds.
+- Every §12 target is missed, by 1.2 to 5 times, and three operations are
+  slower than `clock`: issues #35 to #42, labelled `performance`
+  (`tools/bench/RESULTS.md`).
 
 ## Stage 12 — Documentation
 
