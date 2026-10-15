@@ -19,6 +19,7 @@ BugReports: https://github.com/pedrobtz/zutempo/issues
 Depends: 
     R (>= 4.1)
 Suggests: 
+    jsonlite,
     pillar,
     testthat (>= 3.0.0),
     vctrs,
