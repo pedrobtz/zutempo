@@ -21,6 +21,14 @@ zuf_i128 ztp_ns_max_instant(void);
 
 /* The stored form: floor(ns / 10^9) seconds and the remainder. */
 void ztp_epoch_ns_split(zuf_i128 ns, double *seconds, double *nanoseconds);
+
+/* POSIXct to Instant (design 6.10): the exact value of a double number of
+   seconds, in nanoseconds rounded half to even. False when x is not
+   finite or too large for the arithmetic; the caller checks the range. */
+bool ztp_epoch_ns_from_seconds(double x, zuf_i128 *out);
+
+/* Instant to POSIXct: the double nearest ns / 10^9, ties to even. */
+double ztp_seconds_from_epoch_ns(zuf_i128 ns);
 zuf_i128 ztp_epoch_ns_join(double seconds, double nanoseconds);
 
 /* --- zones -------------------------------------------------------------- */

@@ -355,3 +355,83 @@ SEXP ztp_r_zone_normalise(SEXP x)
     UNPROTECT(1);
     return out;
 }
+
+/* POSIXct seconds to instants (design 6.10): the double's exact value,
+   rounded half to even to the nanosecond. NA stays NA; an infinite or
+   out-of-range value is a range error. */
+SEXP ztp_r_instant_from_seconds(SEXP x)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const double *px = REAL(x);
+    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    Rcomplex *po = COMPLEX(out);
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        zuf_i128 ns;
+        if (ISNAN(px[i])) {
+            ztp_r_instant_put_na(po, i);
+            continue;
+        }
+        if (!ztp_epoch_ns_from_seconds(px[i], &ns)) {
+            ztp_fail(&ctx, ZTP_ERR_RANGE, (size_t)i + 1,
+                     "the time is outside the representable range");
+            ztp_r_raise(&ctx);
+        }
+        ztp_r_instant_check(&ctx, (size_t)i + 1, ns);
+        ztp_r_instant_put(po, i, ns);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* Instants to POSIXct seconds: the nearest double, ties to even. */
+SEXP ztp_r_instant_to_seconds(SEXP x)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const Rcomplex *p = COMPLEX(x);
+    SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
+    double *po = REAL(out);
+
+    for (R_xlen_t i = 0; i < n; i++) {
+        zuf_i128 ns;
+        po[i] = ztp_r_instant_get(p, i, &ns) ? ztp_seconds_from_epoch_ns(ns) : NA_REAL;
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* A double number of seconds, as difftime holds it, split exactly into
+   whole seconds and nanoseconds of the same sign (truncation), the
+   nanoseconds rounded half to even. NA stays NA in both; an infinite or
+   huge value is a range error. */
+SEXP ztp_r_seconds_split(SEXP x)
+{
+    R_xlen_t n = Rf_xlength(x);
+    const double *px = REAL(x);
+    const char *names[] = {"seconds", "nanoseconds", ""};
+    SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));
+    double *ps = REAL(SET_VECTOR_ELT(out, 0, Rf_allocVector(REALSXP, n)));
+    double *pn = REAL(SET_VECTOR_ELT(out, 1, Rf_allocVector(REALSXP, n)));
+    ztp_ctx ctx;
+
+    ztp_ctx_init(&ctx);
+    for (R_xlen_t i = 0; i < n; i++) {
+        zuf_i128 ns, q;
+        int64_t r, whole;
+        if (ISNAN(px[i])) {
+            ps[i] = pn[i] = NA_REAL;
+            continue;
+        }
+        if (!ztp_epoch_ns_from_seconds(px[i], &ns) ||
+            !zuf_i128_divmod_trunc_i64(ns, 1000000000, &q, &r) || !zuf_i128_to_i64(q, &whole)) {
+            ztp_fail(&ctx, ZTP_ERR_RANGE, (size_t)i + 1, "the number of seconds is too large");
+            ztp_r_raise(&ctx);
+        }
+        ps[i] = (double)whole;
+        pn[i] = (double)r;
+    }
+    UNPROTECT(1);
+    return out;
+}

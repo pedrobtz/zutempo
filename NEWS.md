@@ -1,5 +1,13 @@
 # zutempo 0.0.0.9000
 
+* Conversions with base R's dates and times: `as.Date()`, `as.POSIXct()`
+  and `as.POSIXlt()` on the zutempo types, `temporal_to_difftime()` for a
+  `plain_time()` or `duration()`, and the other way through the
+  constructors: `plain_date(<Date>)`, `instant(<POSIXct>)`,
+  `zoned_date_time(<POSIXct>)`, `plain_date_time(<POSIXlt>)`,
+  `plain_time(<difftime>)` and `duration(<difftime>)`. A `POSIXct` is read
+  at its double's exact value, rounded half to even to the nanosecond, and
+  written as the nearest double second.
 * Strings are read with every RFC 9557 annotation: any number of
   key-value annotations after the time zone, `[u-ca=iso8601]` in any case,
   and the `!` critical flag, which makes an unknown annotation or a second

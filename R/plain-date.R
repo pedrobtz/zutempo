@@ -55,6 +55,14 @@ plain_date <- function(
     ztp_check_no_fields(month, day, month_code)
     return(new_plain_date(.Call(C_ztp_r_plain_date_parse, year)))
   }
+  if (inherits(year, "Date")) {
+    ztp_check_no_fields(month, day, month_code)
+    return(ztp_plain_date_from_date(year))
+  }
+  if (inherits(year, "POSIXt")) {
+    ztp_check_no_fields(month, day, month_code)
+    return(temporal_to_plain_date(zoned_date_time(year)))
+  }
   if (!ztp_is_field_like(year)) {
     stop_zutempo(
       sprintf(

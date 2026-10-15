@@ -28,6 +28,12 @@ instant <- function(x) {
   if (inherits(x, "zutempo_instant")) {
     return(x)
   }
+  if (inherits(x, "POSIXt")) {
+    return(new_instant(.Call(
+      C_ztp_r_instant_from_seconds,
+      as.double(as.POSIXct(x))
+    )))
+  }
   if (!is.character(x)) {
     stop_zutempo(
       sprintf(

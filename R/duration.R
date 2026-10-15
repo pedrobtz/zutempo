@@ -45,6 +45,13 @@ duration <- function(
   if (is.character(years)) {
     return(new_duration(.Call(C_ztp_r_duration_parse, years)))
   }
+  if (inherits(years, "difftime")) {
+    parts <- ztp_difftime_parts(years)
+    return(duration(
+      seconds = parts[["seconds"]],
+      nanoseconds = parts[["nanoseconds"]]
+    ))
+  }
   if (!ztp_is_field_like(years)) {
     stop_zutempo(
       sprintf(
