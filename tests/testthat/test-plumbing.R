@@ -1,11 +1,3 @@
-plain_values <- function() {
-  list(
-    plain_date(c("2026-01-31", "2026-02-01", NA)),
-    plain_time(c("12:30", "00:00:00.000000001", NA)),
-    plain_date_time(c("2026-01-31T12:30", "2026-02-01", NA))
-  )
-}
-
 test_that("subsetting, combining and repeating keep the class", {
   for (x in plain_values()) {
     cls <- class(x)
@@ -33,6 +25,7 @@ test_that("subsetting, combining and repeating keep the class", {
     expect_true(is.na(y[5]))
     expect_error(y[1] <- 5, class = "zutempo_type_error")
     expect_error(c(x, 1), class = "zutempo_type_error")
+    expect_identical(c(x[1], NA), x[c(1, 3)])
   }
   expect_error(
     c(plain_date("2026-01-31"), plain_time("12:00")),
@@ -68,14 +61,22 @@ test_that("data frames hold each class and survive rbind and saveRDS", {
   d <- plain_date(c("2026-01-31", NA))
   t <- plain_time(c("12:30", "00:00"))
   dt <- plain_date_time(c("2026-01-31T12:30", NA))
-  df <- data.frame(d = d, t = t, dt = dt)
+  ym <- plain_year_month(c("2026-01", NA))
+  md <- plain_month_day(c("01-31", NA))
+  df <- data.frame(d = d, t = t, dt = dt, ym = ym, md = md)
   expect_identical(df$d, d)
   expect_identical(df$dt, dt)
+  expect_identical(df$ym, ym)
+  expect_identical(df$md, md)
   both <- rbind(df, df)
   expect_identical(both$d, c(d, d))
   expect_identical(both$dt, c(dt, dt))
   out <- capture.output(print(df))
-  expect_match(out[2], "2026-01-31 12:30:00 2026-01-31T12:30:00", fixed = TRUE)
+  expect_match(
+    out[2],
+    "2026-01-31 12:30:00 2026-01-31T12:30:00 2026-01 01-31",
+    fixed = TRUE
+  )
   path <- withr::local_tempfile(fileext = ".rds")
   saveRDS(df, path)
   expect_identical(readRDS(path), df)

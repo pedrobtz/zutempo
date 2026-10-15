@@ -1,9 +1,3 @@
-# The zufast fast path and the package's own parser must agree on every
-# string the fast path accepts (design 9).
-parse_describe <- function(x, goal = 0L, path) {
-  .Call(zutempo:::C_ztp_r_parse_describe, x, goal, path)
-}
-
 test_that("the fast and slow parser paths agree", {
   strings <- c(
     "2026-01-31",
