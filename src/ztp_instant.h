@@ -27,21 +27,26 @@ zuf_i128 ztp_epoch_ns_join(double seconds, double nanoseconds);
 
 typedef enum {
     ZTP_ZONE_UTC = 0,       /* the identifier "UTC" */
-    ZTP_ZONE_OFFSET = 1     /* "+HH:MM": a fixed offset in whole minutes */
+    ZTP_ZONE_OFFSET = 1,    /* "+HH:MM": a fixed offset in whole minutes */
+    ZTP_ZONE_IANA = 2       /* a named zone from the database (ztp_tz.h) */
 } ztp_zone_kind;
 
 #define ZTP_ZONE_ID_CAP 48
+
+struct ztp_tz_entry;
 
 typedef struct {
     ztp_zone_kind kind;
     int64_t offset_ns;             /* the offset for ZTP_ZONE_OFFSET */
     char id[ZTP_ZONE_ID_CAP];      /* the normalised identifier */
+    const struct ztp_tz_entry *iana;   /* the cached zone for ZTP_ZONE_IANA */
 } ztp_zone;
 
-/* ToTemporalTimeZoneIdentifier for the kinds above: "UTC" in any case,
-   or an offset "+HH", "+HHMM" or "+HH:MM". A sub-minute offset or an
-   unknown form is ZTP_ERR_RANGE; an IANA name is ZTP_ERR_TZ until the
-   database arrives (stage 6). */
+/* ToTemporalTimeZoneIdentifier: "UTC" in any case, an offset "+HH",
+   "+HHMM" or "+HH:MM", or a named zone the session cache holds (the R side
+   loads it first, design 8). A sub-minute offset or an ill-formed
+   identifier is ZTP_ERR_RANGE; a well-formed name that is not loaded is
+   ZTP_ERR_TZ. */
 ztp_status ztp_zone_parse(ztp_ctx *ctx, size_t index, const char *s, size_t n,
                           ztp_zone *out);
 

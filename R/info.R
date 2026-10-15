@@ -6,9 +6,18 @@
 #' the package follows, with the tzdata release its fixtures come from. The
 #' pins live in `inst/spec/PINS` and move only on purpose.
 #'
+#' The time zone fields describe the database zutempo reads (design 8):
+#' `tzdir`, the directory found by base R's lookup order (`NA` when none
+#' exists), `tz_version`, the tzdata release it declares, `tz_form`,
+#' whether its files carry explicit transitions far into the future
+#' (`"fat"`) or stop at the last rule change (`"slim"`), and
+#' `tz_links_version`, the tzdata release the built-in link table comes
+#' from.
+#'
 #' @return A list of class `zutempo_info` with elements `package`, `zufast`,
 #'   `int128`, `spec_repository`, `spec_commit`, `spec_date`,
-#'   `test262_repository`, `test262_commit`, `test262_date` and `tzdata`.
+#'   `test262_repository`, `test262_commit`, `test262_date`, `tzdata`,
+#'   `tzdir`, `tz_version`, `tz_form` and `tz_links_version`.
 #' @examples
 #' zutempo_info()
 #' @export
@@ -27,7 +36,11 @@ zutempo_info <- function() {
       test262_repository = pin("Test262"),
       test262_commit = pin("Test262Commit"),
       test262_date = pin("Test262Date"),
-      tzdata = pin("Tzdata")
+      tzdata = pin("Tzdata"),
+      tzdir = ztp_tz_current()$dir,
+      tz_version = ztp_tz_current()$version,
+      tz_form = ztp_tz_form(),
+      tz_links_version = .Call(C_ztp_r_tz_links_version)
     ),
     class = "zutempo_info"
   )
@@ -64,6 +77,23 @@ print.zutempo_info <- function(x, ...) {
     ")\n",
     sep = ""
   )
-  cat("  tzdata: ", x$tzdata, "\n", sep = "")
+  cat(
+    "  tzdata pin: ",
+    x$tzdata,
+    "; link table: ",
+    x$tz_links_version,
+    "\n",
+    sep = ""
+  )
+  cat(
+    "  tz database: ",
+    if (is.na(x$tzdir)) {
+      "none found"
+    } else {
+      paste0(x$tzdir, " (", x$tz_version, ", ", x$tz_form, ")")
+    },
+    "\n",
+    sep = ""
+  )
   invisible(x)
 }

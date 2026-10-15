@@ -76,6 +76,18 @@ SEXP ztp_r_instant_round(SEXP x, SEXP increment, SEXP unit, SEXP mode);
 SEXP ztp_r_instant_format(SEXP x, SEXP zone, SEXP precision);
 SEXP ztp_r_zone_normalise(SEXP x);
 
+/* ztp_r_tz.c */
+SEXP ztp_r_tz_load(SEXP id, SEXP bytes);
+SEXP ztp_r_tz_reset(void);
+SEXP ztp_r_tz_loaded(SEXP id);
+SEXP ztp_r_tz_utoff(SEXP id, SEXP seconds);
+SEXP ztp_r_tz_possible(SEXP id, SEXP days, SEXP ns);
+SEXP ztp_r_tz_transition(SEXP id, SEXP x, SEXP direction);
+SEXP ztp_r_tz_last_explicit(SEXP id);
+SEXP ztp_r_tz_links_version(void);
+SEXP ztp_r_tz_link_target(SEXP ids);
+SEXP ztp_r_tz_rule_utoff(SEXP rule, SEXP seconds);
+
 /* ztp_r_duration.c */
 SEXP ztp_r_duration_create(SEXP fields);
 SEXP ztp_r_duration_parse(SEXP x);

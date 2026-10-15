@@ -1,6 +1,7 @@
 /* ztp_instant.c -- see ztp_instant.h. Engine side: no R. */
 
 #include "ztp_instant.h"
+#include "ztp_tz.h"
 
 #include <string.h>
 
@@ -103,10 +104,20 @@ ztp_status ztp_zone_parse(ztp_ctx *ctx, size_t index, const char *s, size_t n,
                 name = false;
             }
         }
-        if (name)
-            return ztp_fail(ctx, ZTP_ERR_TZ, index,
-                            "named time zones such as \"%.*s\" arrive with the time zone database (stage 6)",
-                            (int)n, s);
+        if (name) {
+            char id[ZTP_ZONE_ID_CAP];
+            const ztp_tz_entry *entry;
+            memcpy(id, s, n);
+            id[n] = '\0';
+            entry = ztp_tz_cache_find(id);
+            if (entry == NULL)
+                return ztp_fail(ctx, ZTP_ERR_TZ, index,
+                                "time zone \"%s\" is not available", id);
+            out->kind = ZTP_ZONE_IANA;
+            out->iana = entry;
+            strcpy(out->id, entry->id);
+            return ZTP_OK;
+        }
     }
     return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a time zone identifier",
                     (int)(n < 40 ? n : 40), s);
@@ -114,15 +125,35 @@ ztp_status ztp_zone_parse(ztp_ctx *ctx, size_t index, const char *s, size_t n,
 
 int64_t ztp_zone_offset_at(const ztp_zone *zone, zuf_i128 epoch_ns)
 {
-    (void)epoch_ns;
+    if (zone->kind == ZTP_ZONE_IANA) {
+        zuf_i128 q;
+        int64_t r, seconds;
+        zuf_i128_divmod_floor_i64(epoch_ns, ZTP_NS_PER_SECOND, &q, &r);
+        zuf_i128_to_i64(q, &seconds);
+        return (int64_t)ztp_tz_utoff_at(&zone->iana->data, seconds, NULL, NULL) * ZTP_NS_PER_SECOND;
+    }
     return zone->kind == ZTP_ZONE_OFFSET ? zone->offset_ns : 0;
 }
 
+static int ztp_zone_casecmp(const char *a, const char *b)
+{
+    for (;; a++, b++) {
+        int ca = (unsigned char)*a, cb = (unsigned char)*b;
+        if (ca >= 'A' && ca <= 'Z') ca += 'a' - 'A';
+        if (cb >= 'A' && cb <= 'Z') cb += 'a' - 'A';
+        if (ca != cb) return ca - cb;
+        if (ca == 0) return 0;
+    }
+}
+
+/* TimeZoneEquals (design 6.7): offsets by value, named zones (UTC among
+   them) by their primary identifier, never across the two. */
 bool ztp_zone_equals(const ztp_zone *a, const ztp_zone *b)
 {
-    if (a->kind != b->kind) return false;
-    if (a->kind == ZTP_ZONE_OFFSET) return a->offset_ns == b->offset_ns;
-    return true;
+    bool a_offset = a->kind == ZTP_ZONE_OFFSET, b_offset = b->kind == ZTP_ZONE_OFFSET;
+
+    if (a_offset || b_offset) return a_offset && b_offset && a->offset_ns == b->offset_ns;
+    return ztp_zone_casecmp(ztp_tz_primary(a->id), ztp_tz_primary(b->id)) == 0;
 }
 
 size_t ztp_format_offset(char *dst, int64_t offset_ns)

@@ -273,6 +273,9 @@ temporal_to_string.zutempo_instant <- function(x, ..., time_zone = NULL) {
       stop_zutempo("`time_zone` must be a single string", kind = "type")
     }
   }
+  if (!is.null(time_zone)) {
+    time_zone <- ztp_tz_ensure(time_zone)
+  }
   .Call(C_ztp_r_instant_format, unclass(x), time_zone, -1L)
 }
 
