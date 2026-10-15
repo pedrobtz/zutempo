@@ -290,6 +290,72 @@ month_code(x, ...)
 # S3 method for class 'zutempo_plain_month_day'
 day(x, ...)
 
+# S3 method for class 'zutempo_zoned_date_time'
+calendar_id(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+era(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+era_year(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+year(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+month(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+month_code(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+day(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+day_of_week(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+day_of_year(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+week_of_year(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+year_of_week(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+days_in_week(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+days_in_month(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+days_in_year(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+months_in_year(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+in_leap_year(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+hour(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+minute(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+second(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+millisecond(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+microsecond(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+nanosecond(x, ...)
+
 years(x, ...)
 
 # Default S3 method
@@ -396,6 +462,44 @@ epoch_nanoseconds(x, ...)
 
 # S3 method for class 'zutempo_instant'
 epoch_nanoseconds(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+epoch_milliseconds(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+epoch_nanoseconds(x, ...)
+
+offset_nanoseconds(x, ...)
+
+# Default S3 method
+offset_nanoseconds(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+offset_nanoseconds(x, ...)
+
+offset(x, ...)
+
+# Default S3 method
+offset(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+offset(x, ...)
+
+time_zone_id(x, ...)
+
+# Default S3 method
+time_zone_id(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+time_zone_id(x, ...)
+
+hours_in_day(x, ...)
+
+# Default S3 method
+hours_in_day(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+hours_in_day(x, ...)
 ```
 
 ## Arguments

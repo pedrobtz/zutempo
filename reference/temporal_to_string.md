@@ -31,6 +31,9 @@ temporal_to_string(x, ...)
 
 # S3 method for class 'zutempo_plain_year_month'
 temporal_to_string(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_to_string(x, ...)
 ```
 
 ## Arguments
@@ -49,9 +52,9 @@ temporal_to_string(x, ...)
 
   For an
   [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md):
-  `"UTC"` or a fixed offset such as `"+05:30"` to show the time in;
-  `NULL` (the default) writes the time in UTC with `Z`. Named zones
-  arrive with the time zone database.
+  a time zone to show the time in, `"UTC"`, a fixed offset such as
+  `"+05:30"` or an IANA identifier such as `"Europe/Lisbon"`; `NULL`
+  (the default) writes the time in UTC with `Z`.
 
 ## Value
 

@@ -35,7 +35,7 @@ both resolve it with overflow = &quot;constrain&quot;, as Temporal does."></head
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Convert between the plain types</h1>
-      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/temporal.R" class="external-link"><code>R/temporal.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/plain-date-time.R" class="external-link"><code>R/plain-date-time.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/plain-date.R" class="external-link"><code>R/plain-date.R</code></a>, and 2 more</small>
+      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/temporal.R" class="external-link"><code>R/temporal.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/plain-date-time.R" class="external-link"><code>R/plain-date-time.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/plain-date.R" class="external-link"><code>R/plain-date.R</code></a>, and 3 more</small>
       <div class="d-none name"><code>temporal_to_plain_date.Rd</code></div>
     </div>
 
@@ -77,7 +77,16 @@ both resolve it with <code>overflow = "constrain"</code>, as Temporal does.</p>
 <span></span>
 <span><span class="fu">temporal_to_plain_year_month</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">temporal_to_plain_month_day</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">temporal_to_plain_month_day</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">temporal_to_plain_date_time</span><span class="op">(</span><span class="va">x</span>, time <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">temporal_to_plain_date</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">temporal_to_plain_time</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">

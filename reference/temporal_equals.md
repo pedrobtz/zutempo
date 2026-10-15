@@ -27,6 +27,9 @@ temporal_equals(x, other)
 
 # S3 method for class 'zutempo_plain_year_month'
 temporal_equals(x, other)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_equals(x, other)
 ```
 
 ## Arguments

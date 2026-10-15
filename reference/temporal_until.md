@@ -3,8 +3,10 @@
 Temporal's `until()` and `since()`: the duration from `x` to `other`
 (`until`), or from `other` to `x` (`since`), balanced up to
 `largest_unit` and rounded to `smallest_unit` (design 6.6). Defaults
-follow the type: days for dates and date-times, hours for times, years
-for year-months.
+follow the type: days for dates and date-times, hours for times, zoned
+values and instants, years for year-months. Two
+[`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+values in different zones can only be differenced in time units.
 
 ## Usage
 
@@ -129,6 +131,28 @@ temporal_until(
 )
 
 # S3 method for class 'zutempo_instant'
+temporal_since(
+  x,
+  other,
+  ...,
+  largest_unit = NULL,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "trunc"
+)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_until(
+  x,
+  other,
+  ...,
+  largest_unit = NULL,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "trunc"
+)
+
+# S3 method for class 'zutempo_zoned_date_time'
 temporal_since(
   x,
   other,

@@ -2,6 +2,67 @@
 
 ## zutempo 0.0.0.9000
 
+- Zone-aware arithmetic:
+  [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
+  [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
+  [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md),
+  [`temporal_until()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
+  and
+  [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md)
+  on a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md),
+  with date units through the calendar in the value’s zone and time
+  units on the exact time, so a day across a clock change is not 24
+  hours;
+  [`temporal_get_time_zone_transition()`](https://pedrobtz.github.io/zutempo/reference/temporal_get_time_zone_transition.md);
+  and
+  [`temporal_round()`](https://pedrobtz.github.io/zutempo/reference/temporal_round.md),
+  [`temporal_total()`](https://pedrobtz.github.io/zutempo/reference/temporal_total.md)
+  and
+  [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
+  with a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  as `relative_to`, where days follow the zone (`PT25H` rounded to days
+  relative to 2026-03-07 in New York is `P1DT2H`).
+- [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md):
+  Temporal’s `ZonedDateTime` as an R vector with a time zone per
+  element, from RFC 9557 strings with the zone in brackets
+  (`"2026-03-07T12:00[America/New_York]"`) or from fields with
+  `time_zone`, resolving clock gaps and folds with `disambiguation` and
+  a disagreeing UTC offset with `offset`. Every calendar and clock
+  field,
+  [`offset()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
+  [`offset_nanoseconds()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
+  [`time_zone_id()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
+  [`hours_in_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md),
+  [`temporal_start_of_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_start_of_day.md),
+  [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md),
+  [`temporal_with_plain_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md),
+  [`temporal_with_time_zone()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md),
+  [`temporal_to_instant()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md),
+  the conversions to the plain types,
+  [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md)
+  through `TimeZoneEquals`,
+  [`zoned_date_time_compare()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  and
+  [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md);
+  [`temporal_to_zoned_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md)
+  on an
+  [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  and
+  [`temporal_to_zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_instant.md)
+  on a
+  [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
+  or
+  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md);
+  [`now_time_zone_id()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md),
+  [`now_zoned_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md),
+  [`now_plain_date_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md),
+  [`now_plain_date_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
+  and
+  [`now_plain_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md).
+  Mixed zones combine, subset, sort and sit in data frames; `vctrs` sees
+  a record of instant and zone.
 - Named IANA time zones resolve from the time zone database base R
   reads, in base R’s lookup order (option `zutempo.tzdir`, `TZDIR`, then
   the platform’s copies), on fat and slim files alike, with

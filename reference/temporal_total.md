@@ -28,8 +28,10 @@ temporal_total(x, unit, relative_to = NULL)
 
   A
   [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md),
-  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
-  or a string either reads.
+  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  or a string one of them reads (a zone in brackets makes it zoned);
+  with a zoned value, days follow the zone (design 6.5).
 
 ## Value
 

@@ -56,6 +56,15 @@ temporal_round(
   rounding_mode = "halfExpand",
   ...
 )
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_round(
+  x,
+  smallest_unit = NULL,
+  rounding_increment = 1,
+  rounding_mode = "halfExpand",
+  ...
+)
 ```
 
 ## Arguments
@@ -69,8 +78,11 @@ temporal_round(
   The unit to round to: `"hour"`, `"minute"`, `"second"`,
   `"millisecond"`, `"microsecond"` or `"nanosecond"`, or their plurals;
   `"day"` for a
-  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md);
-  any unit for a
+  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
+  or a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md),
+  where a day is that calendar day in the zone, however long; any unit
+  for a
   [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md),
   which may instead give only `largest_unit`.
 
@@ -105,9 +117,10 @@ temporal_round(
   [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md):
   a
   [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md),
-  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
-  or a string either reads, required to round years, months or weeks
-  (design 6.5).
+  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  or a string one of them reads, required to round years, months or
+  weeks; with a zoned value, days follow the zone (design 6.5).
 
 ## Value
 

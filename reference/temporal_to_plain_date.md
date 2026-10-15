@@ -41,6 +41,15 @@ temporal_to_plain_date_time(x, time = NULL)
 temporal_to_plain_year_month(x)
 
 temporal_to_plain_month_day(x)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_to_plain_date_time(x, time = NULL)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_to_plain_date(x, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_to_plain_time(x)
 ```
 
 ## Arguments

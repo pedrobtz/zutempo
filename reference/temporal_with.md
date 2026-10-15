@@ -3,9 +3,10 @@
 `temporal_with()` is Temporal's
 [`with()`](https://rdrr.io/r/base/with.html): it returns a copy of `x`
 with the named fields replaced and the rest kept, resolving the result
-with `overflow`. `temporal_with_plain_time()` is `withPlainTime()`, and
-`temporal_with_calendar()` is `withCalendar()`, which accepts only
-`"iso8601"` in this version (design D7).
+with `overflow`. `temporal_with_plain_time()` is `withPlainTime()`,
+`temporal_with_time_zone()` is `withTimeZone()` (the same instant read
+in another zone), and `temporal_with_calendar()` is `withCalendar()`,
+which accepts only `"iso8601"` in this version (design D7).
 
 ## Usage
 
@@ -42,6 +43,26 @@ temporal_with(x, ..., overflow = "constrain")
 temporal_with_plain_time(x, time = NULL)
 
 temporal_with_calendar(x, calendar)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_with(
+  x,
+  ...,
+  disambiguation = "compatible",
+  offset = "prefer",
+  overflow = "constrain"
+)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_with_plain_time(x, time = NULL)
+
+temporal_with_time_zone(x, time_zone)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_with_time_zone(x, time_zone)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_with_calendar(x, calendar)
 ```
 
 ## Arguments
@@ -54,9 +75,10 @@ temporal_with_calendar(x, calendar)
 
   Fields to replace, named: `year`, `month`, `month_code`, `day`,
   `hour`, `minute`, `second`, `millisecond`, `microsecond`,
-  `nanosecond`, as the type allows. At least one is required. Giving
-  `month` or `month_code` discards the other from `x`; giving both
-  requires them to agree.
+  `nanosecond`, as the type allows, and `offset_string` for a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md).
+  At least one is required. Giving `month` or `month_code` discards the
+  other from `x`; giving both requires them to agree.
 
 - overflow:
 
@@ -74,6 +96,18 @@ temporal_with_calendar(x, calendar)
 - calendar:
 
   A calendar identifier; only `"iso8601"` is supported.
+
+- disambiguation, offset:
+
+  For a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md):
+  how to resolve the new local time, as for
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md);
+  `offset` defaults to `"prefer"` here.
+
+- time_zone:
+
+  For `temporal_with_time_zone()`: the new zone of each value, recycled.
 
 ## Value
 

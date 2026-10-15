@@ -25,32 +25,30 @@ roadmap says what each stage builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 to 6. The five plain types,
-[`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
-and
-[`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
-exist with every member that needs no `ZonedDateTime`: fields, `with`,
-`compare`, `equals`, `round`, `add`, `subtract`, `since`, `until`,
-`total`, the conversions among the plain types and default
-[`toString()`](https://rdrr.io/r/base/toString.html);
-[`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md)
-works; strings are read without annotations (stage 9 adds them). The
-engine has the ISO records (`src/ztp_iso.c`), rounding
+Verified 2026-10-15: stages 0 to 8. The eight types exist with every
+member of the pinned specification except the string options of
+[`toString()`](https://rdrr.io/r/base/toString.html) (stage 9): fields,
+`with*`, `compare`, `equals`, `round`, `add`, `subtract`, `since`,
+`until`, `total`, `startOfDay`, `getTimeZoneTransition`, the conversions
+among the types and default
+[`toString()`](https://rdrr.io/r/base/toString.html); every `Now`
+function works; strings are read with the time zone annotation and
+without the others (stage 9 adds them). The ledger’s `pending` list is
+empty. The engine has the ISO records (`src/ztp_iso.c`), rounding
 (`src/ztp_round.c`), formatting (`src/ztp_format.c`), the parser with
 its five goals and the zufast fast path (`src/ztp_parse.c`), durations
 on 128-bit time durations (`src/ztp_duration.c`), calendar arithmetic
-with relative rounding (`src/ztp_relative.c`), instants with the UTC,
-fixed-offset and IANA zone kinds (`src/ztp_instant.c`) and the time zone
-database: TZif reader and footer rules (`src/ztp_tz.c`), the session
-cache (`src/ztp_tz_cache.c`) and the generated link table
+with relative rounding with and without a zone and the zoned arithmetic
+(`src/ztp_relative.c`), instants with the UTC, fixed-offset and IANA
+zone kinds (`src/ztp_instant.c`) and the time zone database: TZif reader
+and footer rules (`src/ztp_tz.c`), the session cache
+(`src/ztp_tz_cache.c`) and the generated link table
 (`src/ztp_tz_links.c`); the glue is `src/ztp_r_plain.c`,
-`src/ztp_r_duration.c`, `src/ztp_r_instant.c` and `src/ztp_r_tz.c`.
-`R/tz.R` finds the database and reads the files; named zones work in
-[`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
-on an
-[`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md).
-No `ZonedDateTime` yet. The oracle covers the seven types. See the
-roadmap’s stage table.
+`src/ztp_r_duration.c`, `src/ztp_r_instant.c`, `src/ztp_r_tz.c` and
+`src/ztp_r_zoned.c` (`src/ztp_zoned.c` holds the candidate search,
+disambiguation, start of day and the zoned string form). `R/tz.R` finds
+the database and reads the files; `R/zoned-date-time.R` is the zoned
+type. The oracle covers the eight types. See the roadmap’s stage table.
 
 ## Stage tracking
 
@@ -150,6 +148,17 @@ Design §4 is the reference. The layers, top down:
 - `src/init.c`: the only exported symbol, `R_init_zutempo`. R reaches
   the registered routines as `C_<name>`
   (`useDynLib(..., .fixes = "C_")`).
+- A
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  is the instant’s complex vector with the attribute `zone` (an integer
+  code per element) and `zones` (the identifiers, in order of first
+  use); `new_zoned_date_time()` recodes and drops unused identifiers, so
+  build vectors through it or `ztp_zoned_build()`. Every engine call on
+  zoned values goes through `ztp_zdt_zones_ready()`, which reloads the
+  table’s zones: the C cache may have been cleared since the vector was
+  made (a
+  [`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md),
+  a change of database).
 - `R/plumbing.R` holds every base method that keeps the class through
   `[`, [`c()`](https://rdrr.io/r/base/c.html),
   [`rep()`](https://rdrr.io/r/base/rep.html),

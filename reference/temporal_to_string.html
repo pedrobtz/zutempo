@@ -35,7 +35,7 @@ significant digits."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Format a Temporal value as an ISO 8601 string</h1>
-      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/temporal.R" class="external-link"><code>R/temporal.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/duration.R" class="external-link"><code>R/duration.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/instant.R" class="external-link"><code>R/instant.R</code></a>, and 5 more</small>
+      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/temporal.R" class="external-link"><code>R/temporal.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/duration.R" class="external-link"><code>R/duration.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/instant.R" class="external-link"><code>R/instant.R</code></a>, and 6 more</small>
       <div class="d-none name"><code>temporal_to_string.Rd</code></div>
     </div>
 
@@ -69,6 +69,9 @@ significant digits.</p>
 <span><span class="fu">temporal_to_string</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'zutempo_plain_year_month'</span></span>
+<span><span class="fu">temporal_to_string</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
 <span><span class="fu">temporal_to_string</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -85,9 +88,10 @@ significant digits.</p>
 
 
 <dt id="arg-time-zone">time_zone<a class="anchor" aria-label="anchor" href="#arg-time-zone"></a></dt>
-<dd><p>For an <code><a href="instant.html">instant()</a></code>: <code>"UTC"</code> or a fixed offset such as
-<code>"+05:30"</code> to show the time in; <code>NULL</code> (the default) writes the time
-in UTC with <code>Z</code>. Named zones arrive with the time zone database.</p></dd>
+<dd><p>For an <code><a href="instant.html">instant()</a></code>: a time zone to show the time in,
+<code>"UTC"</code>, a fixed offset such as <code>"+05:30"</code> or an IANA identifier such
+as <code>"Europe/Lisbon"</code>; <code>NULL</code> (the default) writes the time in UTC
+with <code>Z</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

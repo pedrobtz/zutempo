@@ -37,7 +37,7 @@ working on their own objects after zutempo is attached."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Fields of a Temporal value</h1>
-      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/accessors.R" class="external-link"><code>R/accessors.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/duration.R" class="external-link"><code>R/duration.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/instant.R" class="external-link"><code>R/instant.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/pedrobtz/zutempo/blob/main/R/accessors.R" class="external-link"><code>R/accessors.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/duration.R" class="external-link"><code>R/duration.R</code></a>, <a href="https://github.com/pedrobtz/zutempo/blob/main/R/instant.R" class="external-link"><code>R/instant.R</code></a>, and 1 more</small>
       <div class="d-none name"><code>temporal_fields.Rd</code></div>
     </div>
 
@@ -332,6 +332,72 @@ working on their own objects after zutempo is attached.</p>
 <span><span class="co"># S3 method for class 'zutempo_plain_month_day'</span></span>
 <span><span class="fu">day</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">calendar_id</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">era</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">era_year</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">year</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">month</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">month_code</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">day</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">day_of_week</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">day_of_year</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">week_of_year</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">year_of_week</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">days_in_week</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">days_in_month</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">days_in_year</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">months_in_year</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">in_leap_year</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">hour</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">minute</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">second</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">millisecond</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">microsecond</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">nanosecond</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu">years</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Default S3 method</span></span>
@@ -437,7 +503,45 @@ working on their own objects after zutempo is attached.</p>
 <span><span class="fu">epoch_nanoseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'zutempo_instant'</span></span>
-<span><span class="fu">epoch_nanoseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">epoch_nanoseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">epoch_milliseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">epoch_nanoseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">offset_nanoseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Default S3 method</span></span>
+<span><span class="fu">offset_nanoseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">offset_nanoseconds</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">offset</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Default S3 method</span></span>
+<span><span class="fu">offset</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">offset</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">time_zone_id</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Default S3 method</span></span>
+<span><span class="fu">time_zone_id</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">time_zone_id</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">hours_in_day</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Default S3 method</span></span>
+<span><span class="fu">hours_in_day</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'zutempo_zoned_date_time'</span></span>
+<span><span class="fu">hours_in_day</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">

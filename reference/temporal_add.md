@@ -7,9 +7,12 @@ or
 the time part of the duration counts in 24-hour days; on a
 [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
 only the time part applies and the result wraps within the day. On a
+[`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+the date part moves through the calendar in the value's zone, resolved
+as `"compatible"`, and the time part moves the exact time, so a day
+across a clock change is not 24 hours (design 6.5). On a
 [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
-the result is a balanced duration, and calendar units are an error
-(design 6.5).
+the result is a balanced duration, and calendar units are an error.
 
 ## Usage
 
@@ -53,6 +56,12 @@ temporal_add(x, other, ...)
 
 # S3 method for class 'zutempo_instant'
 temporal_subtract(x, other, ...)
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_add(x, other, ..., overflow = "constrain")
+
+# S3 method for class 'zutempo_zoned_date_time'
+temporal_subtract(x, other, ..., overflow = "constrain")
 ```
 
 ## Arguments
