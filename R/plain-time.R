@@ -47,6 +47,9 @@ plain_time <- function(
   if (is.character(hour)) {
     return(new_plain_time(.Call(C_ztp_r_plain_time_parse, hour)))
   }
+  if (inherits(hour, "difftime")) {
+    return(ztp_plain_time_from_difftime(hour))
+  }
   if (!ztp_is_field_like(hour)) {
     stop_zutempo(
       sprintf(

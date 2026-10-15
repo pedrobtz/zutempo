@@ -87,6 +87,10 @@ zoned_date_time <- function(
     ztp_check_no_fields(month, day, month_code)
     return(year)
   }
+  if (inherits(year, "POSIXt")) {
+    ztp_check_no_fields(month, day, month_code)
+    return(ztp_zoned_from_posix(year, time_zone))
+  }
   if (is.character(year)) {
     ztp_check_no_fields(month, day, month_code)
     if (!is.null(time_zone)) {
