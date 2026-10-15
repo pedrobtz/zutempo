@@ -834,7 +834,8 @@ ztp_status ztp_parse_calendar_string(ztp_ctx *ctx, size_t index, const char *s,
             valid = ztp_is_alnum(ch);
     }
     if (!valid)
-        return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.40s\" is not a calendar identifier", s);
+        return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a calendar identifier",
+                        (int)(n < 40 ? n : 40), s);
     k = n < ZTP_CALENDAR_CAP - 1 ? n : ZTP_CALENDAR_CAP - 1;
     memcpy(dst, s, k);
     dst[k] = '\0';
