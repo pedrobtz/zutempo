@@ -1,1 +1,4 @@
-PKG_CFLAGS = $(C_VISIBILITY)
+# ZUTEMPO_CFLAGS comes from the environment: CI sets it to -DZUF_NO_INT128
+# for the leg that builds zufast's 128-bit arithmetic without __int128
+# (design 4.3). Empty otherwise.
+PKG_CFLAGS = $(C_VISIBILITY) $(ZUTEMPO_CFLAGS)
