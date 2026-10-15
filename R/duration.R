@@ -138,15 +138,22 @@ ztp_relative_length <- function(x, relative_to) {
 # GetTemporalRelativeToOption: relative_to as a list of the four arguments
 # the duration glue takes, recycled to n: plain epoch days (or NULL), and
 # the instants, codes and zone table of a zoned value (or NULLs). A string
-# with a zone in brackets is zoned, any other reads as a date-time.
+# that reads as a zoned date-time (it has a time zone annotation) is
+# zoned, any other reads as a date-time (ToRelativeTemporalObject).
 ztp_relative_to <- function(relative_to, n) {
   none <- list(days = NULL, zoned = NULL, codes = NULL, zones = NULL)
   if (is.null(relative_to)) {
     return(none)
   }
   if (is.character(relative_to)) {
-    zoned <- grepl("[", relative_to, fixed = TRUE)
-    zoned[is.na(zoned)] <- all(zoned, na.rm = TRUE)
+    check <- .Call(
+      C_ztp_r_parse_check,
+      relative_to,
+      ztp_parse_goals[["zoned_date_time"]]
+    )
+    missing <- is.na(relative_to)
+    zoned <- !missing & is.na(check[["message"]])
+    zoned[missing] <- any(!missing) && all(zoned[!missing])
     if (all(zoned) && length(zoned)) {
       relative_to <- zoned_date_time(relative_to)
     } else if (any(zoned)) {
