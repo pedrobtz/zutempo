@@ -9,7 +9,8 @@ zutempo_info()
 \value{
 A list of class \code{zutempo_info} with elements \code{package}, \code{zufast},
 \code{int128}, \code{spec_repository}, \code{spec_commit}, \code{spec_date},
-\code{test262_repository}, \code{test262_commit}, \code{test262_date} and \code{tzdata}.
+\code{test262_repository}, \code{test262_commit}, \code{test262_date}, \code{tzdata},
+\code{tzdir}, \code{tz_version}, \code{tz_form} and \code{tz_links_version}.
 }
 \description{
 The versions and pins that decide zutempo's behaviour: the package and
@@ -17,6 +18,15 @@ The versions and pins that decide zutempo's behaviour: the package and
 \verb{__int128}, and the commits of the Temporal specification and of test262
 the package follows, with the tzdata release its fixtures come from. The
 pins live in \code{inst/spec/PINS} and move only on purpose.
+}
+\details{
+The time zone fields describe the database zutempo reads (design 8):
+\code{tzdir}, the directory found by base R's lookup order (\code{NA} when none
+exists), \code{tz_version}, the tzdata release it declares, \code{tz_form},
+whether its files carry explicit transitions far into the future
+(\code{"fat"}) or stop at the last rule change (\code{"slim"}), and
+\code{tz_links_version}, the tzdata release the built-in link table comes
+from.
 }
 \examples{
 zutempo_info()

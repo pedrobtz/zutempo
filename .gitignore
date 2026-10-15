@@ -51,3 +51,6 @@ CRAN-SUBMISSION
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# testthat 3.3 failure snapshots
+tests/testthat/_problems/

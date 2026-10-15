@@ -147,7 +147,7 @@ test_that("instants format in UTC or in a fixed-offset zone", {
     class = "zutempo_range_error"
   )
   expect_error(
-    temporal_to_string(y, time_zone = "America/New_York"),
+    temporal_to_string(y, time_zone = "Mars/Olympus_Mons"),
     class = "zutempo_tz_error"
   )
   expect_error(
