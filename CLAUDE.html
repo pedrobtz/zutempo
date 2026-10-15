@@ -160,13 +160,13 @@
 <li>
 <strong><code>test-members.R</code> is the member ledger.</strong> When a stage exports a member, remove its name from <code>pending</code> there; the test fails otherwise.</li>
 <li>
-<strong>Keep the gctorture job inside its 120-minute budget.</strong> Its cost grows with the number of expectations, not test blocks: an oracle file runs all its cases in one <code>test_that()</code> and compares fields in one <code>expect_equal()</code>. Add cases freely; add expectations with care.</li>
+<strong>Keep the long gctorture run inside its 120-minute budget.</strong> Its cost grows with the R code the tests run, not test blocks: an oracle file runs all its cases in one <code>test_that()</code> and compares fields in one <code>expect_equal()</code>. Under <code>ZUTEMPO_GCTORTURE_SAMPLE=true</code> the oracle runs one case per shape (<code>oracle_gctorture_sample()</code>), since a PROTECT bug is in the glue a shape reaches, not in the values; that cut the run by about 40% (2026-10-15). Add cases freely; add expectations with care. A heavy loop over values in another test file samples the same way.</li>
 <li>
 <strong>Keep the suite inside the CRAN time budget.</strong> Not yet measured.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="definition-of-done">Definition of done<a class="anchor" aria-label="anchor" href="#definition-of-done"></a></h2>
-<p><code>devtools::document()</code> and <code>devtools::check()</code> clean, meaning 0 errors, 0 warnings and 0 notes. The one allowed note is “New submission” before the first release. <code>devtools::test(shuffle = TRUE)</code> green. <code>gctorture(TRUE)</code> clean when C changed. CI green on every leg. A user-facing change also needs a test, roxygen documentation and a <code>NEWS.md</code> entry.</p>
+<p><code>devtools::document()</code> and <code>devtools::check()</code> clean, meaning 0 errors, 0 warnings and 0 notes. The one allowed note is “New submission” before the first release. <code>devtools::test(shuffle = TRUE)</code> green. The quick gctorture run green on every pull request; the long one green once, on the release candidate (see Continuous integration). CI green on every leg. A user-facing change also needs a test, roxygen documentation and a <code>NEWS.md</code> entry.</p>
 </div>
 <div class="section level2">
 <h2 id="releasing-to-cran">Releasing to CRAN<a class="anchor" aria-label="anchor" href="#releasing-to-cran"></a></h2>
@@ -200,7 +200,9 @@
 <li>
 <code>R-CMD-check.yaml</code> also runs <code>R-CMD-check-no-int128</code>, the same check with <code>ZUTEMPO_CFLAGS=-DZUF_NO_INT128</code> in the environment, which <code>src/Makevars</code> adds to <code>PKG_CFLAGS</code>; <code>test-info.R</code> asserts that the flag reached the engine.</li>
 <li>
-<code>native-checks.yml</code>: <code>sanitizers.yml</code> (with ASan), <code>valgrind.yml</code>, <code>lto.yml</code>, <code>gctorture.yml</code>, <code>rchk.yml</code> (with <code>github-packages: pedrobtz/zufast</code>, since the rchk image ignores <code>Remotes:</code>), <code>analyzers.yml</code> and <code>cran-special.yml</code>, with the same profile expression.</li>
+<code>native-checks.yml</code>: <code>sanitizers.yml</code> (with ASan), <code>valgrind.yml</code>, <code>lto.yml</code>, <code>gctorture.yml</code>, <code>rchk.yml</code> (with <code>github-packages: pedrobtz/zufast</code>, since the rchk image ignores <code>Remotes:</code>), <code>analyzers.yml</code> and <code>cran-special.yml</code>, with the same profile expression, except gctorture: quick (step 500) everywhere, long (step 20, sampled oracle) only on a pull request labelled <code>gctorture</code>.</li>
+<li>
+<code>gctorture.yaml</code>: the long gctorture run on demand (<code>gh workflow run gctorture.yaml</code>). It runs once in stage 13 on the release candidate (roadmap); until then every run is the quick one, and a PROTECT bug the long run finds is fixed then. The <code>gctorture</code> label runs it on a pull request; use it only when asked.</li>
 <li>
 <code>coverage.yaml</code>: <code>coverage.yml</code> pinned to a commit. The badge is committed to <code>gh-pages</code> because <code>main</code> takes no direct pushes.</li>
 <li>
