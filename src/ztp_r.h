@@ -34,4 +34,27 @@ SEXP ztp_r_probe_civil(SEXP days);
 SEXP ztp_r_probe_mul(SEXP a, SEXP b);
 SEXP ztp_r_probe_fail(SEXP kind, SEXP index);
 
+/* ztp_r_plain.c */
+SEXP ztp_r_plain_date_from_fields(SEXP year, SEXP month, SEXP day, SEXP overflow);
+SEXP ztp_r_plain_date_parse(SEXP x);
+SEXP ztp_r_plain_date_field(SEXP days, SEXP field);
+SEXP ztp_r_plain_date_format(SEXP days, SEXP show_calendar);
+SEXP ztp_r_plain_time_from_fields(SEXP hour, SEXP minute, SEXP second,
+                                  SEXP millisecond, SEXP microsecond,
+                                  SEXP nanosecond, SEXP overflow);
+SEXP ztp_r_plain_time_parse(SEXP x);
+SEXP ztp_r_plain_time_field(SEXP ns, SEXP field);
+SEXP ztp_r_plain_time_round(SEXP ns, SEXP increment, SEXP unit, SEXP mode);
+SEXP ztp_r_plain_time_format(SEXP ns, SEXP precision);
+SEXP ztp_r_plain_date_time_from_fields(SEXP year, SEXP month, SEXP day,
+                                       SEXP hour, SEXP minute, SEXP second,
+                                       SEXP millisecond, SEXP microsecond,
+                                       SEXP nanosecond, SEXP overflow);
+SEXP ztp_r_plain_date_time_parse(SEXP x);
+SEXP ztp_r_plain_date_time_combine(SEXP days, SEXP ns);
+SEXP ztp_r_plain_date_time_field(SEXP x, SEXP field);
+SEXP ztp_r_plain_date_time_round(SEXP x, SEXP increment, SEXP unit, SEXP mode);
+SEXP ztp_r_plain_date_time_format(SEXP x, SEXP precision, SEXP show_calendar);
+SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path);
+
 #endif /* ZTP_R_H */

@@ -23,7 +23,7 @@ excludes `.agents`, and `pkgdown` deploys. `DESCRIPTION` is template text,
 | --- | --- | --- | --- | --- |
 | 0 | [Package identity](#stage-0--package-identity) | [#3](https://github.com/pedrobtz/zutempo/issues/3) | [#19](https://github.com/pedrobtz/zutempo/pull/19) | 2026-10-15 |
 | 1 | [Engine scaffold, pinned specification and oracle](#stage-1--engine-scaffold-pinned-specification-and-oracle) | [#4](https://github.com/pedrobtz/zutempo/issues/4) | [#20](https://github.com/pedrobtz/zutempo/pull/20) | 2026-10-15 |
-| 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | | |
+| 2 | [PlainDate, PlainTime and PlainDateTime](#stage-2--plaindate-plaintime-and-plaindatetime) | [#5](https://github.com/pedrobtz/zutempo/issues/5) | [#21](https://github.com/pedrobtz/zutempo/pull/21) | 2026-10-15 |
 | 3 | [PlainYearMonth and PlainMonthDay](#stage-3--plainyearmonth-and-plainmonthday) | [#6](https://github.com/pedrobtz/zutempo/issues/6) | | |
 | 4 | [Duration and plain arithmetic](#stage-4--duration-and-plain-arithmetic) | [#7](https://github.com/pedrobtz/zutempo/issues/7) | | |
 | 5 | [Instant and fixed-offset zones](#stage-5--instant-and-fixed-offset-zones) | [#8](https://github.com/pedrobtz/zutempo/issues/8) | | |
@@ -246,6 +246,26 @@ plumbing every later type reuses is in place.
   survives `vctrs::vec_slice()`, `rbind()` and `saveRDS()` round trips.
 - Parsing `"+275760-09-13"` and `"-271821-04-19"` succeeds and
   `"-000000-01-01"` is a `zutempo_parse_error`.
+
+**Deviations (2026-10-15).**
+- Constructor signatures: the first argument doubles as the value to
+  convert, so `plain_date(2026, 1, 31)`, `plain_date("2026-01-31")` and
+  `plain_date(<plain_date_time>)` all work; it is named `year` (`hour` for
+  `plain_time()`) so that `plain_date(year = 2026, month = 1, day = 1)`
+  reads like Temporal's field bag. `month_code` is a named argument after
+  `...`.
+- `temporal_to_plain_date()` and `temporal_to_plain_time()` have methods
+  only for the types Temporal gives them to (`PlainDateTime`); the
+  constructors convert the rest (`plain_date(<plain_date_time>)`).
+- `temporal_to_zoned_date_time()`, `temporal_to_plain_year_month()` and
+  `temporal_to_plain_month_day()` stay pending: their target types arrive
+  in stages 3 and 7.
+- `Duration`-free arithmetic on dates exists only through `temporal_with()`;
+  `add`, `subtract`, `since` and `until` stay pending for stage 4 as
+  planned.
+- The engine's string formatter already takes the precision and calendar
+  options of stage 9, since `toString()` is defined through them; the R
+  side exposes the defaults only.
 
 **Design.** §4.1, §5, §6.1, §6.2, §6.4, §6.8, §9 (core grammar), §14 row 1.
 

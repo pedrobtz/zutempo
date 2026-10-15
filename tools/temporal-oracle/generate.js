@@ -32,8 +32,14 @@ function describe(Temporal, type, value) {
     return value;
   }
   const out = { string: value.toString() };
-  const names = fields[type];
-  if (names && value instanceof Temporal[type]) {
+  let resultType = null;
+  for (const t of Object.keys(fields)) {
+    if (value instanceof Temporal[t]) resultType = t;
+  }
+  if (resultType === null) return out;
+  out.type = resultType;
+  const names = fields[resultType];
+  {
     out.fields = {};
     for (const name of names) {
       const v = value[name];
@@ -43,12 +49,22 @@ function describe(Temporal, type, value) {
   return out;
 }
 
+function materialise(Temporal, arg) {
+  if (arg !== null && typeof arg === "object" && "$type" in arg) {
+    return Temporal[arg.$type].from(arg.value);
+  }
+  return arg;
+}
+
 function run(Temporal, type, c) {
-  const record = { id: c.id, op: c.op, args: c.args };
+  const record = { id: c.id, op: c.op };
+  if (c.on !== undefined) record.on = c.on;
+  record.args = c.args ?? [];
   if (c.options !== undefined) record.options = c.options;
-  const target = Temporal[type];
   try {
-    const args = c.options === undefined ? c.args : [...c.args, c.options];
+    const target = c.on === undefined ? Temporal[type] : Temporal[type].from(c.on);
+    const args = record.args.map((a) => materialise(Temporal, a));
+    if (c.options !== undefined) args.push(c.options);
     const value = target[c.op](...args);
     record.result = describe(Temporal, type, value);
   } catch (e) {
