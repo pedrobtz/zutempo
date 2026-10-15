@@ -96,7 +96,23 @@ function generate(Temporal, engine) {
   return files;
 }
 
-const { Temporal: Polyfill } = await import("temporal-polyfill");
+// "temporal-polyfill/implementation", not "temporal-polyfill": the main
+// entry point hands back the native Temporal when the Node has one, which
+// would make the oracle native and check-native compare native with itself.
+const { Temporal: Polyfill } = await import("temporal-polyfill/implementation");
+
+// Cases where this Node's native Temporal is known to disagree with the
+// specification, and the polyfill does not. check-native reports them but
+// does not fail on them, and fails if one of them stops differing, so the
+// list stays current.
+const knownNative = {
+  "Duration.json round-month-relative":
+    "P1Y rounded to months relative to a date gives P1Y1M; test262's " +
+    "Duration/prototype/round/exact-multiple-of-larger-unit-plaindate.js wants P1Y",
+  "PlainTime.json from-string-basic":
+    '"123045" is rejected as ambiguous with a month-day; it is not, since ' +
+    "a DateSpecMonthDay has four digits (AnnotatedTime early errors)",
+};
 const polyfill = generate(Polyfill, `temporal-polyfill ${polyfillVersion()}`);
 
 if (process.argv.includes("--check-native")) {
@@ -106,19 +122,31 @@ if (process.argv.includes("--check-native")) {
   }
   const native = generate(globalThis.Temporal, `node ${process.versions.node}`);
   let differences = 0;
+  const seen = new Set();
   for (const name of Object.keys(polyfill)) {
     const a = JSON.parse(polyfill[name]).cases;
     const b = JSON.parse(native[name]).cases;
     for (let i = 0; i < a.length; i++) {
       const x = JSON.stringify(a[i]);
       const y = JSON.stringify(b[i]);
-      if (x !== y) {
-        differences++;
-        console.log(`${name} ${a[i].id}\n  polyfill: ${x}\n  native:   ${y}`);
+      if (x === y) continue;
+      const key = `${name} ${a[i].id}`;
+      if (key in knownNative) {
+        seen.add(key);
+        console.log(`${key} (known native bug: ${knownNative[key]})`);
+        continue;
       }
+      differences++;
+      console.log(`${key}\n  polyfill: ${x}\n  native:   ${y}`);
     }
   }
-  console.log(`${differences} difference(s)`);
+  for (const key of Object.keys(knownNative)) {
+    if (!seen.has(key)) {
+      differences++;
+      console.log(`${key} no longer differs; remove it from knownNative`);
+    }
+  }
+  console.log(`${differences} unexpected difference(s), ${seen.size} known`);
   process.exit(differences === 0 ? 0 : 1);
 }
 

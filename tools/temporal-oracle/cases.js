@@ -435,7 +435,8 @@ export const cases = {
     // Rounding a negative epoch value with trunc, halfExpand or halfTrunc is
     // not here: temporal-polyfill 1.0.6 rounds it away from zero where the
     // specification rounds "as if positive" (RoundTemporalInstant), so the
-    // package tests those against the specification in test-instant.R.
+    // package tests those against the specification in test-instant.R
+    // (fullcalendar/temporal-polyfill#110).
     { id: "round-second-floor", on: "1969-12-31T23:59:59.5Z", op: "round", args: [{ smallestUnit: "second", roundingMode: "floor" }] },
     { id: "round-second-ceil", on: "1969-12-31T23:59:59.5Z", op: "round", args: [{ smallestUnit: "second", roundingMode: "ceil" }] },
     { id: "round-second-half-even", on: "1969-12-31T23:59:58.5Z", op: "round", args: [{ smallestUnit: "second", roundingMode: "halfEven" }] },
@@ -658,7 +659,8 @@ export const cases = {
     // Equal instants in different zones with a date largest unit are not
     // here: temporal-polyfill 1.0.6 returns PT0S where the specification
     // checks the zones first and throws (DifferenceTemporalZonedDateTime),
-    // so the package tests that in test-zoned-date-time.R.
+    // so the package tests that in test-zoned-date-time.R
+    // (fullcalendar/temporal-polyfill#112).
     { id: "until-minutes-increment", on: "2026-03-07T12:00[America/New_York]", op: "until", args: ["2026-03-07T12:50[America/New_York]"], options: { smallestUnit: "minute", roundingIncrement: 15 } },
     { id: "until-bad-increment", on: "2026-03-07T12:00[America/New_York]", op: "until", args: ["2026-03-07T12:50[America/New_York]"], options: { smallestUnit: "minute", roundingIncrement: 7 } },
     { id: "since-days", on: "2026-03-08T14:00[America/New_York]", op: "since", args: ["2026-03-07T12:00[America/New_York]"], options: { largestUnit: "day" } },
