@@ -557,9 +557,28 @@ temporal_total.zutempo_duration <- function(x, unit, relative_to = NULL) {
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_duration <- function(x, ...) {
+temporal_to_string.zutempo_duration <- function(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc"
+) {
   ztp_check_dots_empty(...)
-  .Call(C_ztp_r_duration_format, unclass(x), -1L)
+  p <- ztp_precision_record(
+    fractional_second_digits,
+    smallest_unit,
+    rounding_mode,
+    minute = FALSE
+  )
+  .Call(
+    C_ztp_r_duration_format,
+    unclass(x),
+    p$precision,
+    p$increment,
+    p$unit,
+    p$mode
+  )
 }
 
 # --- plumbing for the record class ---------------------------------------
@@ -657,7 +676,7 @@ as.data.frame.zutempo_duration <- function(
   structure(value, row.names = .set_row_names(length(x)), class = "data.frame")
 }
 #' @export
-format.zutempo_duration <- function(x, ...) temporal_to_string(x)
+format.zutempo_duration <- function(x, ...) ztp_format(x, ...)
 #' @export
 as.character.zutempo_duration <- function(x, ...) temporal_to_string(x)
 #' @export

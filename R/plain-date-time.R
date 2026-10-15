@@ -211,7 +211,24 @@ temporal_round.zutempo_plain_date_time <- function(
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_plain_date_time <- function(x, ...) {
+temporal_to_string.zutempo_plain_date_time <- function(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc",
+  calendar_name = "auto"
+) {
   ztp_check_dots_empty(...)
-  .Call(C_ztp_r_plain_date_time_format, unclass(x), -1L, 0L)
+  show <- ztp_show_calendar_code(calendar_name)
+  p <- ztp_precision_record(
+    fractional_second_digits,
+    smallest_unit,
+    rounding_mode
+  )
+  v <- unclass(x)
+  if (p$unit != 9L || p$increment != 1) {
+    v <- .Call(C_ztp_r_plain_date_time_round, v, p$increment, p$unit, p$mode)
+  }
+  .Call(C_ztp_r_plain_date_time_format, v, p$precision, show)
 }

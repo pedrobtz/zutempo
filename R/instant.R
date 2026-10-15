@@ -264,8 +264,20 @@ temporal_round.zutempo_instant <- function(
 
 #' @rdname temporal_to_string
 #' @export
-temporal_to_string.zutempo_instant <- function(x, ..., time_zone = NULL) {
+temporal_to_string.zutempo_instant <- function(
+  x,
+  ...,
+  fractional_second_digits = "auto",
+  smallest_unit = NULL,
+  rounding_mode = "trunc",
+  time_zone = NULL
+) {
   ztp_check_dots_empty(...)
+  p <- ztp_precision_record(
+    fractional_second_digits,
+    smallest_unit,
+    rounding_mode
+  )
   if (!is.null(time_zone)) {
     if (
       !is.character(time_zone) || length(time_zone) != 1L || is.na(time_zone)
@@ -276,7 +288,11 @@ temporal_to_string.zutempo_instant <- function(x, ..., time_zone = NULL) {
   if (!is.null(time_zone)) {
     time_zone <- ztp_tz_ensure(time_zone)
   }
-  .Call(C_ztp_r_instant_format, unclass(x), time_zone, -1L)
+  v <- unclass(x)
+  if (p$unit != 9L || p$increment != 1) {
+    v <- .Call(C_ztp_r_instant_round, v, p$increment, p$unit, p$mode)
+  }
+  .Call(C_ztp_r_instant_format, v, time_zone, p$precision)
 }
 
 #' The current time
@@ -326,7 +342,7 @@ as.data.frame.zutempo_instant <- function(x, ...) as.data.frame.vector(x, ...)
 #' @export
 xtfrm.zutempo_instant <- function(x) ztp_order_key_complex(x)
 #' @export
-format.zutempo_instant <- function(x, ...) temporal_to_string(x)
+format.zutempo_instant <- function(x, ...) ztp_format(x, ...)
 #' @export
 as.character.zutempo_instant <- function(x, ...) temporal_to_string(x)
 #' @export

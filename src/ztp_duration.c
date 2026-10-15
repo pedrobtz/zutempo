@@ -600,9 +600,11 @@ done:
         memcpy(shown, s, k);
         if (n > 40) memcpy(shown + 37, "...", 3), k = 40;
         shown[k] = '\0';
-        return ztp_fail(ctx, ZTP_ERR_PARSE, index,
-                        "cannot parse \"%s\" as a duration: %s at byte %lu", shown,
-                        c.reason ? c.reason : "invalid", (unsigned long)(c.fail_pos + 1));
+        ztp_fail(ctx, ZTP_ERR_PARSE, index,
+                 "cannot parse \"%s\" as a duration: %s at byte %lu", shown,
+                 c.reason ? c.reason : "invalid", (unsigned long)(c.fail_pos + 1));
+        ctx->position = c.fail_pos + 1;
+        return ZTP_ERR_PARSE;
     }
     if (position) *position = 0;
     /* The fraction of an hour or minute becomes the smaller units, as the

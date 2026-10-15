@@ -71,9 +71,11 @@ typedef enum { ZTP_SHOW_ZONE_AUTO = 0, ZTP_SHOW_ZONE_NEVER = 1, ZTP_SHOW_ZONE_CR
 
 #define ZTP_FORMAT_ZONED_CAP (ZTP_FORMAT_DATE_TIME_CAP + 8 + ZTP_ZONE_ID_CAP + 16)
 
-/* TemporalZonedDateTimeToString without rounding (stage 9 adds it). dst
-   has ZTP_FORMAT_ZONED_CAP bytes. */
+/* TemporalZonedDateTimeToString after the rounding of the instant, which
+   the caller does (RoundTemporalInstant). dst has ZTP_FORMAT_ZONED_CAP
+   bytes. */
 size_t ztp_format_zoned(char *dst, zuf_i128 epoch_ns, const ztp_zone *zone,
-                        int precision, bool show_offset, ztp_show_zone show_zone);
+                        int precision, bool show_offset, ztp_show_zone show_zone,
+                        ztp_show_calendar show_calendar);
 
 #endif /* ZTP_ZONED_H */

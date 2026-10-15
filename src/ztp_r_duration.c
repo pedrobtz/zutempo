@@ -121,18 +121,37 @@ SEXP ztp_r_duration_parse(SEXP x)
     return out;
 }
 
-SEXP ztp_r_duration_format(SEXP dur, SEXP precision)
+/* Temporal.Duration.prototype.toString: with a precision coarser than the
+   nanosecond, the time part is rounded (RoundTimeDuration) and balanced up
+   to the larger of the default largest unit and seconds; the date part
+   stays as it is. */
+SEXP ztp_r_duration_format(SEXP dur, SEXP precision, SEXP increment, SEXP unit,
+                           SEXP mode)
 {
     R_xlen_t n = ztp_r_duration_length(dur);
     int prec = ztp_r_int(precision);
+    int64_t inc = (int64_t)Rf_asReal(increment);
+    ztp_unit u = (ztp_unit)ztp_r_int(unit);
+    ztp_rounding_mode m = (ztp_rounding_mode)ztp_r_int(mode);
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    ztp_ctx ctx;
 
+    ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d;
         char buf[ZTP_DURATION_FORMAT_CAP];
         if (!ztp_r_duration_get(dur, i, &d)) {
             SET_STRING_ELT(out, i, NA_STRING);
             continue;
+        }
+        if (u != ZTP_UNIT_NANOSECOND || inc != 1) {
+            ztp_unit largest = ztp_duration_default_largest_unit(&d);
+            ztp_internal_duration in = ztp_duration_to_internal(&d);
+            if (ztp_time_duration_round(&ctx, (size_t)i + 1, in.time, inc, u, m, &in.time) != ZTP_OK ||
+                ztp_duration_from_internal(&ctx, (size_t)i + 1, &in,
+                                           largest < ZTP_UNIT_SECOND ? largest : ZTP_UNIT_SECOND,
+                                           &d) != ZTP_OK)
+                ztp_r_raise(&ctx);
         }
         ztp_duration_format(buf, &d, prec);
         SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
