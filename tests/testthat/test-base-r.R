@@ -39,10 +39,13 @@ test_that("PlainDate <-> Date is exact over the whole int32_t range", {
   x <- plain_date(d)
   expect_identical(as.double(unclass(x)), days[inside])
   expect_identical(as.Date(x), d)
-  # Through fields: the same day as base R writes it, for the years 0 to
-  # 9999 that both write the same way.
-  near <- d[unclass(d) >= -719528 & unclass(d) < 2932897]
-  expect_identical(format(plain_date(near)), format(near))
+  # Through fields: the same year, month and day as base R's calendar,
+  # compared as numbers since base R writes years below 1000 differently
+  # on different platforms.
+  lt <- unclass(as.POSIXlt(d))
+  expect_identical(as.double(year(x)), as.double(lt[["year"]] + 1900))
+  expect_identical(as.double(month(x)), as.double(lt[["mon"]] + 1))
+  expect_identical(as.double(day(x)), as.double(lt[["mday"]]))
   # Outside a PlainDate's range: a range error naming the element.
   for (day in c(lo - 1, hi + 1, -.Machine$integer.max, .Machine$integer.max)) {
     expect_error(
