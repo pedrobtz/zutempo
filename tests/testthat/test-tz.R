@@ -205,8 +205,8 @@ test_that("zutempo_info() describes this machine's database", {
   info <- zutempo_info()
   skip_if(is.na(info$tzdir), "no time zone database on this machine")
   expect_true(dir.exists(info$tzdir))
-  expect_match(info$tz_version, "^[0-9]{4}[a-z]$")
-  expect_true(info$tz_form %in% c("fat", "slim"))
+  expect_match(info$tz_version, "^[0-9]{4}[a-z]$", info = paste("database at", info$tzdir, "TZDIR", Sys.getenv("TZDIR")))
+  expect_true(info$tz_form %in% c("fat", "slim"), info = info$tzdir)
   out <- capture.output(print(info))
   expect_match(out, paste0("tz database: ", info$tzdir), all = FALSE, fixed = TRUE)
   # The same clock reading agrees with base R's conversion in a named zone.
@@ -220,9 +220,13 @@ test_that("the cache refreshes when the directory option changes", {
   with_tzdir(tz_fixture_dir("slim"), {
     zutempo:::ztp_tz_ensure("Europe/Dublin")
     expect_true(.Call(zutempo:::C_ztp_r_tz_loaded, "Europe/Dublin"))
-    withr::local_options(list(zutempo.tzdir = tz_fixture_dir("fat")))
-    expect_identical(zutempo_info()$tz_form, "fat")
-    expect_false(.Call(zutempo:::C_ztp_r_tz_loaded, "Europe/Dublin"))
+    # with_options(), not local_options(): a local_options() evaluated
+    # inside with_tzdir()'s code would restore the fixture directory after
+    # with_tzdir() has restored the original, and leak it to later tests.
+    withr::with_options(list(zutempo.tzdir = tz_fixture_dir("fat")), {
+      expect_identical(zutempo_info()$tz_form, "fat")
+      expect_false(.Call(zutempo:::C_ztp_r_tz_loaded, "Europe/Dublin"))
+    })
   })
 })
 
