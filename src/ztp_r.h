@@ -63,6 +63,19 @@ SEXP ztp_r_plain_month_day_parse(SEXP x);
 SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar);
 SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path);
 
+/* ztp_r_instant.c */
+SEXP ztp_r_instant_parse(SEXP x);
+SEXP ztp_r_instant_from_epoch_ms(SEXP ms);
+SEXP ztp_r_instant_from_epoch_ns(SEXP x);
+SEXP ztp_r_instant_epoch_ms(SEXP x);
+SEXP ztp_r_instant_epoch_ns_string(SEXP x);
+SEXP ztp_r_instant_add(SEXP x, SEXP dur);
+SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
+                         SEXP increment, SEXP mode);
+SEXP ztp_r_instant_round(SEXP x, SEXP increment, SEXP unit, SEXP mode);
+SEXP ztp_r_instant_format(SEXP x, SEXP zone, SEXP precision);
+SEXP ztp_r_zone_normalise(SEXP x);
+
 /* ztp_r_duration.c */
 SEXP ztp_r_duration_create(SEXP fields);
 SEXP ztp_r_duration_parse(SEXP x);
