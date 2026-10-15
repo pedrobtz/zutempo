@@ -1,0 +1,107 @@
+---
+title: "Base R and data frames"
+---
+
+```{r, include = FALSE}
+library(zutempo)
+has_tzdb <- !is.na(zutempo_info()[["tzdir"]])
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = has_tzdb)
+```
+
+```{r, message = FALSE}
+library(zutempo)
+```
+
+zutempo's values are R vectors: they subset, combine, repeat, sort and
+sit in data frames like base R's dates. And they convert to and from
+`Date`, `POSIXct`, `POSIXlt` and `difftime`.
+
+## Vectors
+
+```{r}
+d <- plain_date(c("2026-03-07", "2026-01-31", NA, "2026-12-25"))
+length(d)
+d[2:3]
+c(d[1], plain_date("2027-01-01"))
+rev(d)
+sort(d)
+unique(rep(d[1], 3))
+is.na(d)
+```
+
+## Data frames
+
+```{r}
+meetings <- data.frame(
+  who = c("Ana", "Ben", "Chen"),
+  start = zoned_date_time(c(
+    "2026-03-07T09:00[America/New_York]",
+    "2026-03-07T10:00[Europe/Lisbon]",
+    "2026-03-07T18:00[Asia/Tokyo]"
+  )),
+  length = duration(c("PT30M", "PT1H", "PT45M"))
+)
+meetings$end <- temporal_add(meetings$start, meetings$length)
+meetings
+```
+
+Ordered by their wall-clock times they are Ana, Ben, Chen; by the moments
+they happen, Chen is first (09:00 UTC) and Ana last (14:00 UTC):
+
+```{r}
+meetings[order(temporal_to_instant(meetings$start)), c("who", "start")]
+```
+
+## From base R
+
+```{r}
+plain_date(as.Date("2026-03-07"))
+instant(as.POSIXct("2026-03-07 09:30:00", tz = "UTC"))
+zoned_date_time(as.POSIXct("2026-03-07 09:30:00", tz = "America/New_York"))
+plain_date_time(as.POSIXlt("2026-03-07 09:30:00", tz = "Asia/Tokyo"))
+duration(as.difftime(90, units = "mins"))
+plain_time(as.difftime(34200, units = "secs"))
+```
+
+## To base R
+
+```{r}
+as.Date(plain_date("2026-03-07"))
+as.POSIXct(zoned_date_time("2026-03-07T09:30[Europe/Lisbon]"))
+as.POSIXlt(zoned_date_time("2026-03-07T09:30[Europe/Lisbon]"))
+as.POSIXct(plain_date_time("2026-03-07T09:30"), tz = "America/New_York")
+temporal_to_difftime(plain_time("09:30"))
+temporal_to_difftime(duration("P1M"), relative_to = "2026-02-01")
+```
+
+A `Date` and a `plain_date()` convert exactly. A `POSIXct` is a double, so
+an instant goes to the nearest double second, which at today's dates is
+within a quarter of a microsecond, and a `POSIXct` comes back at its exact
+binary value:
+
+```{r}
+x <- instant("2026-03-07T09:30:00.123456789Z")
+instant(as.POSIXct(x))
+```
+
+## Formatting through base R
+
+zutempo writes ISO 8601 and RFC 9557. For other layouts, convert to
+`POSIXct` and use base R's `format()`:
+
+```{r}
+z <- zoned_date_time("2026-03-07T09:30[Europe/Lisbon]")
+format(as.POSIXct(z), "%A %d %B %Y, %H:%M %Z")
+```
+
+## Masked functions
+
+The accessors `months()` and `offset()` share their names with base R's
+and stats'. They are generics: for any object that is not zutempo's they
+call the function they mask.
+
+```{r}
+months(as.Date("2026-03-07"))
+# a duration's months field
+months(temporal_until(plain_date("2026-03-07"), "2026-09-07", largest_unit = "month"))
+```

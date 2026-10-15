@@ -1,0 +1,128 @@
+---
+title: "Instants and time zones"
+---
+
+```{r, include = FALSE}
+library(zutempo)
+# Named zones need a time zone database, which a machine may lack.
+has_tzdb <- !is.na(zutempo_info()[["tzdir"]])
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = has_tzdb)
+```
+
+```{r, message = FALSE}
+library(zutempo)
+```
+
+Two of Temporal's types name an exact moment. An `instant()` is the moment
+alone, a count of nanoseconds since 1970 in UTC. A `zoned_date_time()` is
+the moment with a time zone, so it also knows the local date and time
+there.
+
+## Instants
+
+```{r}
+i <- instant("2026-03-07T14:30:00Z")
+i
+format(epoch_milliseconds(i), scientific = FALSE)
+epoch_nanoseconds(i) # a decimal string: R has no 64-bit integer
+instant_from_epoch_milliseconds(1772893800000)
+temporal_add(i, "PT90M")
+temporal_until(i, "2026-03-08T14:30:00Z", largest_unit = "hour")
+```
+
+An instant shows its moment in any zone, without becoming zoned:
+
+```{r}
+temporal_to_string(i, time_zone = "Asia/Kolkata")
+```
+
+## Zoned values
+
+```{r}
+meeting <- temporal_to_zoned_date_time_iso(i, "America/New_York")
+meeting
+time_zone_id(meeting)
+offset(meeting)
+hour(meeting)
+temporal_to_instant(meeting)
+```
+
+The zone travels with the value, per element, so one vector can mix
+zones:
+
+```{r}
+offices <- c("America/New_York", "Europe/Lisbon", "Asia/Tokyo")
+z <- zoned_date_time(paste0("2026-03-07T09:00[", offices, "]"))
+z
+temporal_to_instant(z)
+```
+
+`temporal_with_time_zone()` keeps the moment and changes the zone:
+
+```{r}
+temporal_with_time_zone(meeting, "Europe/Lisbon")
+```
+
+## Days are not always 24 hours
+
+New York moves its clocks forward at 02:00 on 8 March 2026. A day added to
+a zoned value follows the calendar and the wall clock; 24 hours are 24
+hours of exact time:
+
+```{r}
+temporal_add(meeting, "P1D")
+temporal_add(meeting, "PT24H")
+hours_in_day(zoned_date_time("2026-03-08T12:00[America/New_York]"))
+temporal_start_of_day(meeting)
+```
+
+## Gaps, folds and offsets
+
+When clocks go forward, some wall-clock times do not happen; when they go
+back, some happen twice. Turning such a time into a moment needs
+`disambiguation`:
+
+```{r}
+gap <- plain_date_time("2026-03-08T02:30")
+temporal_to_zoned_date_time(gap, "America/New_York")
+temporal_to_zoned_date_time(gap, "America/New_York", disambiguation = "earlier")
+
+fold <- plain_date_time("2026-11-01T01:30")
+temporal_to_zoned_date_time(fold, "America/New_York", disambiguation = "earlier")
+temporal_to_zoned_date_time(fold, "America/New_York", disambiguation = "later")
+```
+
+A string with both an offset and a zone says the moment twice. By default
+they must agree; `offset` says what to do when a zone's rules changed after
+the string was written:
+
+```{r}
+s <- "2026-03-07T09:00-04:00[America/New_York]"
+try(zoned_date_time(s))
+zoned_date_time(s, offset = "use")
+zoned_date_time(s, offset = "ignore")
+```
+
+## Transitions
+
+```{r}
+temporal_get_time_zone_transition(meeting, "next")
+temporal_get_time_zone_transition(meeting, "previous")
+```
+
+## The database
+
+Named zones come from the same IANA database base R reads, and the lookup
+is case-insensitive:
+
+```{r}
+zutempo_info()
+time_zone_id(zoned_date_time("2026-03-07T09:00[europe/lisbon]"))
+```
+
+Fixed offsets and `UTC` need no database:
+
+```{r, eval = TRUE}
+zoned_date_time("2026-03-07T09:00[+05:30]")
+now_time_zone_id()
+```

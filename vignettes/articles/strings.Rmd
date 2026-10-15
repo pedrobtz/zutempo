@@ -1,0 +1,98 @@
+---
+title: "Strings and formatting"
+---
+
+```{r, include = FALSE}
+library(zutempo)
+has_tzdb <- !is.na(zutempo_info()[["tzdir"]])
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r, message = FALSE}
+library(zutempo)
+```
+
+zutempo reads and writes the strings Temporal does: ISO 8601 with the
+RFC 9557 extensions for a time zone and other annotations in brackets.
+
+## Reading
+
+Each constructor reads the strings for its type:
+
+```{r}
+plain_date("2026-03-07")
+plain_date("20260307") # the basic format
+plain_time("09:30:15.123456789")
+plain_date_time("2026-03-07 09:30") # a space for the T
+instant("2026-03-07T09:30:00+01:00")
+plain_date("+275760-09-13") # years beyond 9999 have a sign
+duration("P1Y2M3DT4H5M6.5S")
+```
+
+```{r, eval = has_tzdb}
+zoned_date_time("2026-03-07T09:30[Europe/Lisbon]")
+zoned_date_time("2026-03-07T09:30+00:00[Europe/Lisbon][u-ca=iso8601]")
+```
+
+A string that does not read is an error naming the byte where it failed:
+
+```{r}
+try(plain_date("2026-02-30"))
+err <- tryCatch(plain_date("2026-13-01"), error = identity)
+err$position
+```
+
+## Reading in bulk
+
+`zutempo_parse()` reads a whole vector, gives `NA` for what it cannot
+read, and keeps the reasons:
+
+```{r}
+x <- c("2026-03-07", "2026-13-01", NA, "07/03/2026")
+d <- zutempo_parse(x, "plain_date")
+d
+zutempo_parse_errors(d)
+```
+
+## Writing
+
+`format()`, `as.character()` and `temporal_to_string()` write the same
+strings. `temporal_to_string()` and `format()` take Temporal's formatting
+options: how many fraction digits, the smallest unit, how to round:
+
+```{r}
+t <- plain_time("09:30:15.987654321")
+format(t)
+temporal_to_string(t, fractional_second_digits = 3)
+temporal_to_string(t, smallest_unit = "second")
+temporal_to_string(t, smallest_unit = "minute", rounding_mode = "halfExpand")
+```
+
+Zoned values choose what to show besides the time:
+
+```{r, eval = has_tzdb}
+z <- zoned_date_time("2026-03-07T09:30[Europe/Lisbon]")
+format(z)
+temporal_to_string(z, offset = "never")
+temporal_to_string(z, time_zone_name = "never")
+temporal_to_string(z, calendar_name = "always")
+```
+
+Sort the values, not their strings: a year beyond 9999 starts with a sign,
+which sorts before the digits:
+
+```{r}
+x <- c("2026-12-25", "+010000-01-01", "2026-03-07")
+sort(x)
+sort(plain_date(x))
+```
+
+## Time zone and calendar arguments
+
+A time zone or calendar argument also takes an ISO string that names one,
+as in Temporal:
+
+```{r, eval = has_tzdb}
+temporal_to_string(instant("2026-03-07T09:30Z"), time_zone = "2026-01-01T00:00+05:30")
+temporal_with_calendar(plain_date("2026-03-07"), "2026-01-01[u-ca=iso8601]")
+```
