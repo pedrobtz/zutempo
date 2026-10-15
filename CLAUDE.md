@@ -23,16 +23,16 @@ builds and when it is done.
 
 ## Current state
 
-Verified 2026-10-15: stages 0 and 1. The layering of design §4 exists end
-to end for one probe (`src/ztp_probe.c`, reached through the internal
-`ztp_probe_*()` functions): engine context and status codes (`src/ztp.h`),
-R glue that raises classed conditions with the failing element's index
-(`src/ztp_r_common.c`, `R/conditions.R`), and `zutempo_info()` with the
-pins of `inst/spec/PINS`. The member list of the pinned specification is
-in `inst/spec/members.csv`, and `tests/testthat/test-members.R` lists every
-member as pending. The oracle loop runs for `PlainDate` and skips until
-stage 2. No Temporal type is implemented yet; the engine's real operations
-and the time zone reader are not built. See the roadmap's stage table.
+Verified 2026-10-15: stages 0 to 2. `plain_date()`, `plain_time()` and
+`plain_date_time()` exist with their fields, `with`, `compare`, `equals`,
+`round`, conversions among them and default `toString()`; strings are read
+without annotations (stage 9 adds them). The engine has the ISO date and
+time records (`src/ztp_iso.c`), rounding (`src/ztp_round.c`), formatting
+(`src/ztp_format.c`) and the parser with its zufast fast path
+(`src/ztp_parse.c`); the glue for the plain types is `src/ztp_r_plain.c`.
+No `Duration`, `Instant`, zone or `ZonedDateTime` yet; arithmetic
+(`add`, `subtract`, `since`, `until`) arrives in stage 4. The oracle has
+cases for the three plain types. See the roadmap's stage table.
 
 ## Stage tracking
 
@@ -117,6 +117,17 @@ Design §4 is the reference. The layers, top down:
   table, identifier index.
 - `src/init.c`: the only exported symbol, `R_init_zutempo`. R reaches the
   registered routines as `C_<name>` (`useDynLib(..., .fixes = "C_")`).
+- `R/plumbing.R` holds every base method that keeps the class through
+  `[`, `c()`, `rep()`, `unique()`, printing and data frames: base R's
+  defaults drop the class attribute of a classed atomic vector. A new
+  class needs each of them. `R/zzz.R` registers the `vctrs` and `pillar`
+  methods lazily.
+- `R/accessors.R` is generated code in spirit: one generic, one default
+  and one method per class for every Temporal property. The default finds
+  the function the generic masks on the search path (`lubridate::year()`).
+- `R/options.R` turns option strings into the integer codes the glue
+  reads; the enumerations in `src/ztp_round.h` and `src/ztp_format.h` fix
+  the codes, so both sides change together.
 - `src/ztp.h`: `ztp_status` and `ztp_ctx`. An engine function takes a
   context and returns a status; on failure `ztp_fail()` records the status,
   the 1-based element index and a message. `src/ztp_r.h`: `ztp_r_raise()`
@@ -152,6 +163,14 @@ Design §4 is the reference. The layers, top down:
   needs its own `NEWS.md` entry.
 - **The suite must build and pass with `ZUF_NO_INT128`** as well as with
   `__int128`. CI runs both.
+- **Index lists with `[[`, never `$`.** `$` partial-matches names, so
+  `fields$month` finds `month_code` when `month` is absent. This bit once
+  in `temporal_with()`.
+- **An invalid option value is a `zutempo_type_error`** (design 10), where
+  JavaScript throws a RangeError; a value of the right kind that fails a
+  range check (an increment that does not divide, a calendar other than
+  ISO) is a `zutempo_range_error`. The oracle holds no invalid-option
+  cases for that reason.
 
 ## Testing conventions
 
