@@ -163,13 +163,9 @@ test_that("the ends of the instant range hold in any zone", {
 })
 
 test_that("Now follows the system zone as base R reads it", {
-  skip_if(is.na(zutempo_info()$tzdir), "no time zone database on this machine")
+  skip_without_tzdb()
   id <- now_time_zone_id()
   expect_true(is.character(id) && length(id) == 1L && nzchar(id))
-  tz <- Sys.timezone()
-  if (!is.na(tz) && nzchar(tz)) {
-    expect_identical(tolower(id), tolower(tz))
-  }
   before <- Sys.time()
   z <- now_zoned_date_time_iso()
   expect_identical(time_zone_id(z), id)
@@ -189,6 +185,13 @@ test_that("Now follows the system zone as base R reads it", {
     now_zoned_date_time_iso("Mars/Olympus_Mons"),
     class = "zutempo_tz_error"
   )
+})
+
+test_that("Now's zone is the one Sys.timezone() names", {
+  skip_without_tzdb()
+  tz <- Sys.timezone()
+  skip_if(is.na(tz) || !nzchar(tz), "Sys.timezone() names no zone")
+  expect_identical(tolower(now_time_zone_id()), tolower(tz))
 })
 
 test_that("the system zone falls back to UTC when base R has none", {
