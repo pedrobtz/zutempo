@@ -2,6 +2,25 @@
 
 ## zutempo 0.0.0.9000
 
+- A value that no constructor made is now a `zutempo_type_error` instead
+  of a crash or a wrong result: a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  whose zone codes were dropped, kept at the wrong length or point past
+  its zone table (as `data.table::rbindlist()` or
+  [`diff()`](https://rdrr.io/r/base/diff.html) can leave them), an
+  instant with a fractional part, a plain value outside its type’s
+  range, and a duration whose fields are not ten doubles of one length
+  or not a valid duration. `d$hours <- 5` on a duration is a type error,
+  as `d[["hours"]] <- 5` was. The native routines also check the type
+  and length of every argument.
+- Condition messages are marked as UTF-8, and an excerpt of the input
+  that they quote is never cut inside a character.
+- The time zone file reader refuses an abbreviation index past the
+  abbreviations, a UTC offset of a day or more, and a TZ rule
+  abbreviation with characters other than letters, digits, `+` and `-`.
+- The zone cache is freed when the package’s DLL unloads, and loading
+  the package again no longer adds a second copy of its `vctrs` and
+  `pillar` hooks.
 - An error about an option argument has a field `option` with the
   argument’s name, so code can tell which option was wrong without
   reading the message:

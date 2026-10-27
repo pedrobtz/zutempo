@@ -177,7 +177,7 @@ zutempo_info()
 #>   specification: tc39/proposal-temporal@e8cc03fc970a (2026-07-27)
 #>   test262: tc39/test262@d53ebc8b1931 (2026-10-13)
 #>   tzdata pin: 2026d; link table: 2026d
-#>   tz database: /usr/share/zoneinfo (2026e, fat)
+#>   tz database: /usr/share/zoneinfo (2026c, fat)
 time_zone_id(zoned_date_time("2026-03-07T09:00[europe/lisbon]"))
 #> [1] "Europe/Lisbon"
 ```
