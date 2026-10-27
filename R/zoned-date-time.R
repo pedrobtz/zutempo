@@ -703,10 +703,18 @@ temporal_to_string.zutempo_zoned_date_time <- function(
 
 #' The current time in a time zone
 #'
-#' Temporal's `Temporal.Now` functions: the system time zone as base R
-#' reads it (`Sys.timezone()`, falling back to `"UTC"`), and the current
-#' time as a `zoned_date_time()`, `plain_date_time()`, `plain_date()` or
-#' `plain_time()` in that zone or in `time_zone`.
+#' Temporal's `Temporal.Now` functions: the system time zone, and the
+#' current time as a `zoned_date_time()`, `plain_date_time()`,
+#' `plain_date()` or `plain_time()` in that zone or in `time_zone`.
+#'
+#' The system time zone is read as the C library that base R formats with
+#' reads it. The `TZ` environment variable comes first, without a leading
+#' `:`; a path under a zone directory, such as
+#' `/usr/share/zoneinfo/Europe/Berlin`, names the zone at that path.
+#' Without `TZ` it is `Sys.timezone()`, and without either it is `"UTC"`.
+#' A zone that is set but cannot be read, such as a POSIX TZ string or a
+#' zone the database lacks, gives `"UTC"` with a warning of class
+#' `zutempo_tz_warning`.
 #'
 #' @param time_zone A time zone identifier, or `NULL` for the system zone.
 #' @return `now_time_zone_id()` returns a string; the others the value named.
@@ -722,17 +730,66 @@ now_time_zone_id <- function() {
   # TZ first, as the C library base R formats with does; Sys.timezone()
   # caches its first answer for the session and ignores a later TZ.
   id <- Sys.getenv("TZ")
+  from <- "TZ"
   if (!nzchar(id)) {
     id <- tryCatch(
       Sys.timezone(),
       error = function(e) NA_character_,
       warning = function(w) NA_character_
     )
+    from <- "Sys.timezone()"
   }
   if (is.na(id) || !nzchar(id)) {
     return("UTC")
   }
-  tryCatch(ztp_tz_ensure(id), error = function(e) "UTC")
+  out <- tryCatch(
+    ztp_tz_ensure(ztp_tz_system_name(id)),
+    zutempo_error = function(e) NULL
+  )
+  if (is.null(out)) {
+    warn_zutempo(sprintf(
+      "the system time zone \"%s\" (from %s) cannot be read; using \"UTC\"",
+      id,
+      from
+    ))
+    return("UTC")
+  }
+  out
+}
+
+# The identifier in a system zone setting: TZ's leading ":" dropped, and
+# a path under a zone directory (one zutempo would read, or any directory
+# named zoneinfo) cut to the part below it.
+ztp_tz_system_name <- function(id) {
+  id <- sub("^:", "", id)
+  if (!grepl("^([A-Za-z]:)?[/\\\\]", id)) {
+    return(id)
+  }
+  paths <- unique(c(
+    gsub("\\", "/", id, fixed = TRUE),
+    normalizePath(id, winslash = "/", mustWork = FALSE)
+  ))
+  dirs <- ztp_tz_candidates()[["tried"]]
+  dirs <- unique(c(dirs, normalizePath(dirs, winslash = "/", mustWork = FALSE)))
+  for (path in paths) {
+    for (dir in dirs) {
+      prefix <- paste0(sub("/+$", "", dir), "/")
+      if (startsWith(path, prefix)) {
+        return(ztp_tz_strip_posix(substring(path, nchar(prefix) + 1L)))
+      }
+    }
+  }
+  for (path in paths) {
+    if (grepl("/zoneinfo/", path, fixed = TRUE)) {
+      return(ztp_tz_strip_posix(sub(".*/zoneinfo/", "", path)))
+    }
+  }
+  id
+}
+
+# tzdata's posix/ tree holds the same zones as its top level.
+ztp_tz_strip_posix <- function(rel) {
+  sub("^posix/", "", rel)
 }
 
 ztp_now_zone <- function(time_zone) {

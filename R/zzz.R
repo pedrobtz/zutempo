@@ -7,6 +7,16 @@
   }
   ztp_register_vctrs_duration()
   ztp_register_vctrs_zoned()
+  if (exists("chooseOpsMethod", envir = baseenv(), inherits = FALSE)) {
+    for (cls in ztp_ops_classes) {
+      registerS3method(
+        "chooseOpsMethod",
+        cls,
+        ztp_choose_ops_method,
+        envir = baseenv()
+      )
+    }
+  }
   invisible()
 }
 

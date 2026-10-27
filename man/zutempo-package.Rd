@@ -20,9 +20,16 @@ from ECMA-402, with CLDR data);
 base R's \code{format()};
 \item custom time zones, or POSIX TZ strings as zone identifiers;
 \item arithmetic and comparison operators on dates and times (\code{x + d},
-\code{x < y}): use the functions, such as \code{\link[=temporal_add]{temporal_add()}} and
+\code{x < y}, \code{x == y}): they raise a \code{zutempo_type_error}. Use the
+functions, such as \code{\link[=temporal_add]{temporal_add()}}, \code{\link[=temporal_equals]{temporal_equals()}} and
 \code{\link[=plain_date_compare]{plain_date_compare()}}. Durations do compare with \code{==} and \code{<}.
 }
+
+\code{sort()}, \code{order()}, \code{min()}, \code{max()} and \code{range()} use each type's
+\code{compare()} order; a zoned value sorts by its instant. A
+\code{plain_month_day()} has no \code{compare()} in Temporal: it sorts by month and
+day, but has no \code{min()}, \code{max()} or \code{range()}.
+\code{rank()} compares with operators, so use \code{rank(xtfrm(x))}.
 }
 
 \seealso{

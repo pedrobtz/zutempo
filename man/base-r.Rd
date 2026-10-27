@@ -80,12 +80,20 @@ What each conversion loses:
 way takes the double's exact value, rounded half to even to the
 nanosecond, so 0.1 s is 100 ms.
 \item \code{zoned_date_time()} to \code{POSIXct}: as \code{instant()}, with the zone as
-\code{tzone}. A vector mixing zones gets \code{"UTC"}, and so does a fixed
-offset that is not a whole number of hours, which base R cannot
-name; a whole-hour offset becomes its \code{Etc/GMT} zone.
+\code{tzone}. Zones that are equal under Temporal's \code{TimeZoneEquals}, such
+as \code{Asia/Calcutta} and \code{Asia/Kolkata}, count as one, and the first
+one names the \code{tzone}. A vector mixing other zones gets \code{"UTC"}. A
+whole-hour offset becomes its \code{Etc/GMT} zone, from \code{+14:00}
+(\code{Etc/GMT-14}) to \code{-12:00} (\code{Etc/GMT+12}); any other offset gets
+\code{"UTC"}, since base R cannot name it. The instant is kept either way.
 \item \code{zoned_date_time()} to \code{POSIXlt}: the fields in each element's own
 zone, with its offset in \code{gmtoff}; the seconds lose precision as
-above.
+above. The \code{tzone} is chosen as for \code{POSIXct}, so a vector mixing
+zones gets \code{"UTC"} with fields that are not in UTC. Such a \code{POSIXlt}
+does not round-trip: base R reads the fields in its \code{tzone}, so
+\code{as.POSIXct()} of it can move each element by its offset. Convert with
+\code{as.POSIXct()} instead, or give \code{tz} to put every element in one
+zone.
 \item \code{plain_date_time()} to \code{POSIXct} or \code{POSIXlt}: needs \code{tz}, and resolves
 a wall-clock time a zone skips or repeats with \code{disambiguation}, as
 \code{\link[=temporal_to_zoned_date_time]{temporal_to_zoned_date_time()}} does.

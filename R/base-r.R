@@ -20,12 +20,20 @@
 #'   way takes the double's exact value, rounded half to even to the
 #'   nanosecond, so 0.1 s is 100 ms.
 #' * `zoned_date_time()` to `POSIXct`: as `instant()`, with the zone as
-#'   `tzone`. A vector mixing zones gets `"UTC"`, and so does a fixed
-#'   offset that is not a whole number of hours, which base R cannot
-#'   name; a whole-hour offset becomes its `Etc/GMT` zone.
+#'   `tzone`. Zones that are equal under Temporal's `TimeZoneEquals`, such
+#'   as `Asia/Calcutta` and `Asia/Kolkata`, count as one, and the first
+#'   one names the `tzone`. A vector mixing other zones gets `"UTC"`. A
+#'   whole-hour offset becomes its `Etc/GMT` zone, from `+14:00`
+#'   (`Etc/GMT-14`) to `-12:00` (`Etc/GMT+12`); any other offset gets
+#'   `"UTC"`, since base R cannot name it. The instant is kept either way.
 #' * `zoned_date_time()` to `POSIXlt`: the fields in each element's own
 #'   zone, with its offset in `gmtoff`; the seconds lose precision as
-#'   above.
+#'   above. The `tzone` is chosen as for `POSIXct`, so a vector mixing
+#'   zones gets `"UTC"` with fields that are not in UTC. Such a `POSIXlt`
+#'   does not round-trip: base R reads the fields in its `tzone`, so
+#'   `as.POSIXct()` of it can move each element by its offset. Convert with
+#'   `as.POSIXct()` instead, or give `tz` to put every element in one
+#'   zone.
 #' * `plain_date_time()` to `POSIXct` or `POSIXlt`: needs `tz`, and resolves
 #'   a wall-clock time a zone skips or repeats with `disambiguation`, as
 #'   [temporal_to_zoned_date_time()] does.
@@ -189,27 +197,38 @@ temporal_to_difftime.default <- function(x, ...) {
 
 # --- helpers ------------------------------------------------------------------
 
-# A POSIXct tzone for a zone table: the zone itself when there is one,
-# "UTC" for a mix. Base R reads IANA names and "UTC", not offsets: a
-# whole-hour offset becomes its Etc/GMT zone (the sign reversed, as
-# tzdata writes it), any other becomes "UTC".
+# A POSIXct tzone for a zone table: the first zone when every zone in it
+# is equal to it under TimeZoneEquals (design 4.2), "UTC" for a mix. Base
+# R reads IANA names and "UTC", not offsets: a whole-hour offset becomes
+# its Etc/GMT zone (the sign reversed, as tzdata writes it) where tzdata
+# has one, from Etc/GMT-14 (+14:00) to Etc/GMT+12 (-12:00); any other
+# offset becomes "UTC".
 ztp_posix_tzone <- function(zones) {
-  if (length(zones) != 1L) {
+  if (!length(zones)) {
     return("UTC")
+  }
+  if (length(zones) > 1L) {
+    ztp_tz_ensure_all(zones)
+    same <- .Call(
+      C_ztp_r_zone_equals,
+      rep(zones[[1L]], length(zones)),
+      zones
+    )
+    if (!all(same)) {
+      return("UTC")
+    }
   }
   id <- zones[[1L]]
   if (!grepl("^[+-]", id)) {
     return(id)
   }
+  east <- substr(id, 1L, 1L) == "+"
   hours <- as.integer(substr(id, 2L, 3L))
   minutes <- as.integer(substr(id, 5L, 6L))
-  if (minutes != 0L || hours > 14L) {
+  if (minutes != 0L || hours == 0L || hours > (if (east) 14L else 12L)) {
     return("UTC")
   }
-  if (hours == 0L) {
-    return("UTC")
-  }
-  sprintf("Etc/GMT%s%d", if (substr(id, 1L, 1L) == "+") "-" else "+", hours)
+  sprintf("Etc/GMT%s%d", if (east) "-" else "+", hours)
 }
 
 # A plain date-time placed in `tz` (design 6.10: no default; "" is the
@@ -263,8 +282,7 @@ ztp_posixlt <- function(x) {
     zone = abbrev,
     gmtoff = as.integer(round(offset_nanoseconds(x) / 1e9))
   )
-  zones <- ztp_zdt_zones(x)
-  tzone <- if (length(zones) == 1L) ztp_posix_tzone(zones) else "UTC"
+  tzone <- ztp_posix_tzone(ztp_zdt_zones(x))
   structure(lt, class = c("POSIXlt", "POSIXt"), tzone = tzone)
 }
 
