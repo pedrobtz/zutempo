@@ -169,6 +169,11 @@ test_that("a parse error carries the position of the first bad byte", {
   expect_identical(err[["position"]], 4)
   err <- tryCatch(plain_date("2026-01-31[!foo=bar]"), error = identity)
   expect_identical(err[["position"]], 11)
+  err <- tryCatch(plain_date("2026-01-3x"), error = identity)
+  expect_identical(err[["position"]], 10)
+  # A UTC designator where PlainDate's goal forbids one.
+  err <- tryCatch(plain_date("2026-01-31T12:30Z"), error = identity)
+  expect_identical(err[["position"]], 17)
   # A range error has no position.
   err <- tryCatch(plain_date("2026-01-31[u-ca=hebrew]"), error = identity)
   expect_null(err[["position"]])

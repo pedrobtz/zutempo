@@ -47,11 +47,3 @@ test_that("the fast path never accepts what the slow path rejects", {
   expect_true(all(slow == "error"))
   expect_true(all(fast %in% c("n/a", "error")))
 })
-
-test_that("parse errors report the position of the first bad byte", {
-  cond <- tryCatch(plain_date("2026-01-3x"), error = identity)
-  expect_s3_class(cond, "zutempo_parse_error")
-  expect_match(conditionMessage(cond), "byte 10")
-  cond <- tryCatch(plain_date("2026-01-31T12:30Z"), error = identity)
-  expect_match(conditionMessage(cond), "byte 17")
-})

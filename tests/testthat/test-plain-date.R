@@ -66,9 +66,8 @@ test_that("-000000 is a parse error and the error names the element", {
   )
   expect_s3_class(cond, "zutempo_parse_error")
   expect_s3_class(cond, "zutempo_range_error")
-  expect_identical(cond$index, 2)
-  expect_match(conditionMessage(cond), "element 2")
-  expect_match(conditionMessage(cond), "byte")
+  expect_identical(cond[["index"]], 2)
+  expect_identical(cond[["position"]], 1)
 })
 
 test_that("annotations are read, and a calendar other than ISO 8601 rejected", {
