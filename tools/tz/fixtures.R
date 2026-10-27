@@ -32,7 +32,16 @@ zones <- c(
   "America/Anchorage", # -10 to -9, date line history
   "Etc/UTC", # the trivial file
   "UTC", # its link
-  "Etc/GMT-14" # a fixed offset by name
+  "Etc/GMT-14", # a fixed offset by name
+  # The other zones test262's cases name (tests/testthat/test262/), so they
+  # run on these fixtures rather than the machine's database.
+  "Europe/Vienna",
+  "America/Vancouver",
+  "Africa/Abidjan",
+  "Europe/London",
+  "Asia/Seoul",
+  "Africa/Lagos",
+  "Asia/Katmandu" # a link to Asia/Kathmandu
 )
 
 pins <- read.dcf("inst/spec/PINS")
@@ -87,6 +96,9 @@ for (form in c("fat", "slim")) {
   }
 }
 
+# zdump reads each zone by its absolute path: macOS's zdump ignores TZDIR
+# and would report the system's database instead of the files just built.
+#
 # The state at the start of the range comes from zdump -i, whose first data
 # line has the offset and abbreviation in force; zdump -v then prints two
 # lines per transition, the last second of the old offset and the first of
@@ -106,8 +118,7 @@ parse_offset <- function(x) {
 initial_state <- function(zone, dir) {
   lines <- system2(
     "zdump",
-    c("-i", "-c", "1850,2100", zone),
-    env = paste0("TZDIR=", dir),
+    c("-i", "-c", "1850,2100", file.path(dir, zone)),
     stdout = TRUE
   )
   first <- lines[grepl("^-\t", lines)][1L]
@@ -125,8 +136,7 @@ initial_state <- function(zone, dir) {
 parse_zdump <- function(zone, dir) {
   lines <- system2(
     "zdump",
-    c("-v", "-c", "1850,2100", zone),
-    env = paste0("TZDIR=", dir),
+    c("-v", "-c", "1850,2100", file.path(dir, zone)),
     stdout = TRUE
   )
   re <- "^(\\S+)\\s+(\\S+ \\S+\\s+\\d+ \\d\\d:\\d\\d:\\d\\d \\d+) UT = .* (\\S+) isdst=(\\d) gmtoff=(-?\\d+)$"
