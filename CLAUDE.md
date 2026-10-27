@@ -265,7 +265,9 @@ Design §4 is the reference. The layers, top down:
   in the glue a shape reaches, not in the values; that cut the run by
   about 40% (2026-10-15). Add cases freely; add expectations with care.
   A heavy loop over values in another test file samples the same way.
-- **Keep the suite inside the CRAN time budget.** Not yet measured.
+- **Keep the suite inside the CRAN time budget.** Measured 2026-10-27 on
+  Apple silicon: about 25 s of CPU on the CRAN path (`NOT_CRAN=false`,
+  test262 and agreement skipped), about 65 s with `NOT_CRAN=true`.
 
 ## Definition of done
 
