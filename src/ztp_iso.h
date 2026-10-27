@@ -85,10 +85,4 @@ uint32_t ztp_iso_day_of_year(int32_t epoch_day);
 void ztp_iso_week_of_year(int32_t epoch_day, int32_t *week_year,
                           uint32_t *week);
 
-/* BalanceTime: carries any integers into a valid time and a day count. */
-void ztp_balance_time(int64_t hour, int64_t minute, int64_t second,
-                      int64_t millisecond, int64_t microsecond,
-                      int64_t nanosecond, ztp_iso_time *out,
-                      int64_t *delta_days);
-
 #endif /* ZTP_ISO_H */

@@ -5,7 +5,7 @@
 
 SEXP ztp_r_probe_civil(SEXP days)
 {
-    R_xlen_t n = Rf_xlength(days);
+    R_xlen_t n = ztp_r_arg(days, REALSXP, -1, "days");
     const double *x = REAL(days);
     const char *names[] = {"year", "month", "day", ""};
     SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));
@@ -36,11 +36,15 @@ SEXP ztp_r_probe_civil(SEXP days)
 
 SEXP ztp_r_probe_mul(SEXP a, SEXP b)
 {
-    R_xlen_t n = Rf_xlength(a);
-    const double *pa = REAL(a), *pb = REAL(b);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    R_xlen_t n = ztp_r_arg(a, REALSXP, -1, "a");
+    const double *pa, *pb;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_arg(b, REALSXP, n, "b");
+    pa = REAL(a);
+    pb = REAL(b);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         char buf[ZTP_PROBE_DECIMAL_CAP];
@@ -61,6 +65,8 @@ SEXP ztp_r_probe_fail(SEXP kind, SEXP index)
 {
     ztp_ctx ctx;
 
+    ztp_r_arg(kind, STRSXP, 1, "kind");
+    ztp_r_arg(index, REALSXP, 1, "index");
     ztp_ctx_init(&ctx);
     ztp_probe_fail(&ctx, CHAR(STRING_ELT(kind, 0)),
                    (size_t)REAL(index)[0]);

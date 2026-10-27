@@ -197,7 +197,8 @@ void ztp_difference_iso_date_time(int32_t day1, int64_t ns1, int32_t day2,
     out->time = zuf_i128_from_i64(time);
     if (largest_unit != date_largest) {
         zuf_i128 days;
-        ztp_i128_from_double(out->date.days, &days);
+        /* CalendarDateUntil's days between two valid dates are exact. */
+        if (!ztp_i128_from_double(out->date.days, &days)) days = zuf_i128_from_i64(0);
         out->time = zuf_i128_add_wrap(out->time,
                                       zuf_i128_mul_wrap(days, zuf_i128_from_i64(ZTP_NS_PER_DAY)));
         out->date.days = 0;
@@ -424,6 +425,10 @@ static ztp_status ztp_nudge_to_zoned_time(ztp_ctx *ctx, size_t index, int sign,
         return ctx->status;
     day_span = zuf_i128_sub_wrap(end_ns, start_ns);
     rounded = ztp_round_i128_to_increment(dur->time, step, mode, false);
+    /* Unreachable from R, here and below: the time part is within a day
+       of the origin's day and the increment is at most 10^9 hours, so the
+       rounded value stays far inside maxTimeDuration (2^53 s). Kept as
+       the specification's checks. */
     if (!ztp_time_duration_in_range(rounded))
         return ztp_fail(ctx, ZTP_ERR_RANGE, index, "the rounded duration exceeds the representable range");
     beyond = zuf_i128_sub_wrap(rounded, day_span);
@@ -461,6 +466,10 @@ static ztp_status ztp_nudge_to_day_or_time(ztp_ctx *ctx, size_t index,
     if (ztp_time_duration_add_days(ctx, index, dur->time, dur->date.days, &time) != ZTP_OK)
         return ctx->status;
     rounded = ztp_round_i128_to_increment(time, step, mode, false);
+    /* Unreachable from R: the duration is the difference of two valid
+       date-times, at most 2 * 10^8 days, and the increment at most 10^9
+       days, which together stay far below maxTimeDuration (about 1.04 *
+       10^11 days). Kept as the specification's check. */
     if (!ztp_time_duration_in_range(rounded))
         return ztp_fail(ctx, ZTP_ERR_RANGE, index,
                         "the rounded duration exceeds the representable range");
@@ -708,6 +717,9 @@ ztp_status ztp_difference_zoned_date_time(ztp_ctx *ctx, size_t index, zuf_i128 n
         if (ztp_time_duration_sign(time_duration) != sign) success = true;
         day_correction++;
     }
+    /* Unreachable from R: the specification asserts success, which holds
+       because every offset is below a day (the TZif reader and the rule
+       parser refuse larger ones). Kept as a guard. */
     if (!success)
         return ztp_fail(ctx, ZTP_ERR_RANGE, index, "cannot take the difference in this time zone");
     date_largest = largest_unit < ZTP_UNIT_DAY ? largest_unit : ZTP_UNIT_DAY;

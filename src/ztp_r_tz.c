@@ -12,6 +12,8 @@ SEXP ztp_r_tz_load(SEXP id, SEXP bytes)
 {
     ztp_ctx ctx;
 
+    ztp_r_arg(id, STRSXP, 1, "id");
+    ztp_r_arg(bytes, RAWSXP, -1, "bytes");
     ztp_ctx_init(&ctx);
     if (ztp_tz_cache_put(&ctx, 0, Rf_translateCharUTF8(STRING_ELT(id, 0)), RAW(bytes),
                          (size_t)Rf_xlength(bytes)) != ZTP_OK)
@@ -27,21 +29,29 @@ SEXP ztp_r_tz_reset(void)
 
 SEXP ztp_r_tz_loaded(SEXP id)
 {
+    ztp_r_arg(id, STRSXP, 1, "id");
     return Rf_ScalarLogical(ztp_tz_cache_find(Rf_translateCharUTF8(STRING_ELT(id, 0))) != NULL);
 }
 
 static const ztp_tz_entry *ztp_r_tz_entry(SEXP id)
 {
-    const ztp_tz_entry *e = ztp_tz_cache_find(Rf_translateCharUTF8(STRING_ELT(id, 0)));
-    if (e == NULL) Rf_error("zutempo: time zone is not loaded");
+    const ztp_tz_entry *e;
+    ztp_r_arg(id, STRSXP, 1, "id");
+    e = ztp_tz_cache_find(Rf_translateCharUTF8(STRING_ELT(id, 0)));
+    if (e == NULL) {
+        ztp_ctx ctx;
+        ztp_ctx_init(&ctx);
+        ztp_fail(&ctx, ZTP_ERR_TZ, 0, "the time zone is not loaded");
+        ztp_r_raise(&ctx);
+    }
     return e;
 }
 
 /* The offset, DST flag and abbreviation at epoch seconds. */
 SEXP ztp_r_tz_utoff(SEXP id, SEXP seconds)
 {
+    R_xlen_t n = ztp_r_arg(seconds, REALSXP, -1, "seconds");
     const ztp_tz_entry *e = ztp_r_tz_entry(id);
-    R_xlen_t n = Rf_xlength(seconds);
     const double *p = REAL(seconds);
     const char *names[] = {"utoff", "isdst", "abbr", ""};
     SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));
@@ -69,9 +79,13 @@ SEXP ztp_r_tz_utoff(SEXP id, SEXP seconds)
 /* The candidates for local date-times: a list of instant vectors. */
 SEXP ztp_r_tz_possible(SEXP id, SEXP days, SEXP ns)
 {
-    const ztp_tz_entry *e = ztp_r_tz_entry(id);
-    R_xlen_t n = Rf_xlength(days);
-    SEXP out = PROTECT(Rf_allocVector(VECSXP, n));
+    R_xlen_t n = ztp_r_arg(days, INTSXP, -1, "days");
+    const ztp_tz_entry *e;
+    SEXP out;
+
+    ztp_r_arg(ns, REALSXP, n, "ns");
+    e = ztp_r_tz_entry(id);
+    out = PROTECT(Rf_allocVector(VECSXP, n));
 
     for (R_xlen_t i = 0; i < n; i++) {
         zuf_i128 cands[2];
@@ -88,10 +102,10 @@ SEXP ztp_r_tz_possible(SEXP id, SEXP days, SEXP ns)
 /* The next (direction 1) or previous (-1) transition after each instant. */
 SEXP ztp_r_tz_transition(SEXP id, SEXP x, SEXP direction)
 {
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const ztp_tz_entry *e = ztp_r_tz_entry(id);
-    R_xlen_t n = Rf_xlength(x);
     const Rcomplex *p = COMPLEX(x);
-    int dir = Rf_asInteger(direction);
+    int dir = ztp_r_option_int(direction, "direction");
     SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
     const int64_t limit = (int64_t)ZTP_MAX_EPOCH_DAY * 86400;
 
@@ -134,7 +148,7 @@ SEXP ztp_r_tz_links_version(void)
 
 SEXP ztp_r_tz_link_target(SEXP ids)
 {
-    R_xlen_t n = Rf_xlength(ids);
+    R_xlen_t n = ztp_r_arg(ids, STRSXP, -1, "ids");
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
 
     for (R_xlen_t i = 0; i < n; i++) {
@@ -152,9 +166,13 @@ SEXP ztp_r_tz_rule_utoff(SEXP rule, SEXP seconds)
 {
     ztp_ctx ctx;
     ztp_tz_data data;
-    const char *s = Rf_translateCharUTF8(STRING_ELT(rule, 0));
-    R_xlen_t n = Rf_xlength(seconds);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
+    const char *s;
+    R_xlen_t n = ztp_r_arg(seconds, REALSXP, -1, "seconds");
+    SEXP out;
+
+    ztp_r_arg(rule, STRSXP, 1, "rule");
+    s = Rf_translateCharUTF8(STRING_ELT(rule, 0));
+    out = PROTECT(Rf_allocVector(INTSXP, n));
 
     ztp_ctx_init(&ctx);
     memset(&data, 0, sizeof data);

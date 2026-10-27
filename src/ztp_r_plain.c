@@ -91,13 +91,22 @@ static int ztp_r_date_from_fields(ztp_ctx *ctx, size_t index, int64_t year,
 SEXP ztp_r_plain_date_from_fields(SEXP year, SEXP month, SEXP day,
                                   SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(year);
-    const double *py = REAL(year), *pm = REAL(month), *pd = REAL(day);
-    ztp_overflow ov = (ztp_overflow)ztp_r_scalar_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
-    int *po = INTEGER(out);
+    R_xlen_t n = ztp_r_arg(year, REALSXP, -1, "year");
+    const double *py, *pm, *pd;
+    ztp_overflow ov;
+    SEXP out;
+    int *po;
     ztp_ctx ctx;
 
+    ztp_r_arg(month, REALSXP, n, "month");
+    ztp_r_arg(day, REALSXP, n, "day");
+    ztp_r_scalar(overflow, "overflow");
+    py = REAL(year);
+    pm = REAL(month);
+    pd = REAL(day);
+    ov = (ztp_overflow)ztp_r_scalar_int(overflow);
+    out = PROTECT(Rf_allocVector(INTSXP, n));
+    po = INTEGER(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         int64_t y, m, d;
@@ -144,7 +153,7 @@ static int ztp_r_date_from_parsed(ztp_ctx *ctx, size_t index,
 
 SEXP ztp_r_plain_date_parse(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
     int *po = INTEGER(out);
     ztp_ctx ctx;
@@ -186,7 +195,7 @@ static int ztp_r_date_field_value(int32_t epoch_day, int field)
     case ZTP_FIELD_DAYS_IN_YEAR:  return (int)ztp_iso_days_in_year(d.year);
     case ZTP_FIELD_IN_LEAP_YEAR:  return ztp_iso_in_leap_year(d.year) ? 1 : 0;
     default:
-        Rf_error("zutempo: unknown date field %d", field);
+        ztp_r_type_error(0, "internal: unknown date field code %d", field);
     }
 }
 
@@ -203,7 +212,7 @@ static int ztp_r_time_field_value(int64_t ns, int field)
     case ZTP_FIELD_MICROSECOND: return (int)t.microsecond;
     case ZTP_FIELD_NANOSECOND:  return (int)t.nanosecond;
     default:
-        Rf_error("zutempo: unknown time field %d", field);
+        ztp_r_type_error(0, "internal: unknown time field code %d", field);
     }
 }
 
@@ -214,32 +223,42 @@ static SEXP ztp_r_field_vector(int field, R_xlen_t n)
 
 SEXP ztp_r_plain_date_field(SEXP days, SEXP field)
 {
-    R_xlen_t n = Rf_xlength(days);
-    int f = ztp_r_scalar_int(field);
+    R_xlen_t n = ztp_r_arg(days, INTSXP, -1, "x");
+    int f;
     const int *pd = INTEGER(days);
-    SEXP out = PROTECT(ztp_r_field_vector(f, n));
-    int *po = INTEGER(out);
+    SEXP out;
+    int *po;
 
-    for (R_xlen_t i = 0; i < n; i++)
-        po[i] = pd[i] == NA_INTEGER ? NA_INTEGER : ztp_r_date_field_value(pd[i], f);
+    ztp_r_scalar(field, "field");
+    f = ztp_r_scalar_int(field);
+    out = PROTECT(ztp_r_field_vector(f, n));
+    po = INTEGER(out);
+    for (R_xlen_t i = 0; i < n; i++) {
+        int32_t day;
+        po[i] = ztp_r_date_get(pd, i, &day) ? ztp_r_date_field_value(day, f) : NA_INTEGER;
+    }
     UNPROTECT(1);
     return out;
 }
 
 SEXP ztp_r_plain_date_format(SEXP days, SEXP show_calendar)
 {
-    R_xlen_t n = Rf_xlength(days);
+    R_xlen_t n = ztp_r_arg(days, INTSXP, -1, "x");
     const int *pd = INTEGER(days);
-    ztp_show_calendar show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    ztp_show_calendar show;
+    SEXP out;
 
+    ztp_r_scalar(show_calendar, "show_calendar");
+    show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     for (R_xlen_t i = 0; i < n; i++) {
         char buf[ZTP_FORMAT_DATE_CAP];
-        if (pd[i] == NA_INTEGER) {
+        int32_t day;
+        if (!ztp_r_date_get(pd, i, &day)) {
             SET_STRING_ELT(out, i, NA_STRING);
             continue;
         }
-        ztp_format_iso_date(buf, pd[i], show);
+        ztp_format_iso_date(buf, day, show);
         SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
     }
     UNPROTECT(1);
@@ -252,15 +271,28 @@ SEXP ztp_r_plain_time_from_fields(SEXP hour, SEXP minute, SEXP second,
                                   SEXP millisecond, SEXP microsecond,
                                   SEXP nanosecond, SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(hour);
-    const double *ph = REAL(hour), *pmi = REAL(minute), *ps = REAL(second),
-                 *pms = REAL(millisecond), *pus = REAL(microsecond),
-                 *pns = REAL(nanosecond);
-    ztp_overflow ov = (ztp_overflow)ztp_r_scalar_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
-    double *po = REAL(out);
+    R_xlen_t n = ztp_r_arg(hour, REALSXP, -1, "hour");
+    const double *ph, *pmi, *ps, *pms, *pus, *pns;
+    ztp_overflow ov;
+    SEXP out;
+    double *po;
     ztp_ctx ctx;
 
+    ztp_r_arg(minute, REALSXP, n, "minute");
+    ztp_r_arg(second, REALSXP, n, "second");
+    ztp_r_arg(millisecond, REALSXP, n, "millisecond");
+    ztp_r_arg(microsecond, REALSXP, n, "microsecond");
+    ztp_r_arg(nanosecond, REALSXP, n, "nanosecond");
+    ztp_r_scalar(overflow, "overflow");
+    ph = REAL(hour);
+    pmi = REAL(minute);
+    ps = REAL(second);
+    pms = REAL(millisecond);
+    pus = REAL(microsecond);
+    pns = REAL(nanosecond);
+    ov = (ztp_overflow)ztp_r_scalar_int(overflow);
+    out = PROTECT(Rf_allocVector(REALSXP, n));
+    po = REAL(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         int64_t h, mi, s, ms, us, ns;
@@ -286,7 +318,7 @@ SEXP ztp_r_plain_time_from_fields(SEXP hour, SEXP minute, SEXP second,
 
 SEXP ztp_r_plain_time_parse(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
     double *po = REAL(out);
     ztp_ctx ctx;
@@ -306,35 +338,49 @@ SEXP ztp_r_plain_time_parse(SEXP x)
 
 SEXP ztp_r_plain_time_field(SEXP ns, SEXP field)
 {
-    R_xlen_t n = Rf_xlength(ns);
-    int f = ztp_r_scalar_int(field);
+    R_xlen_t n = ztp_r_arg(ns, REALSXP, -1, "x");
+    int f;
     const double *p = REAL(ns);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
-    int *po = INTEGER(out);
+    SEXP out;
+    int *po;
 
-    for (R_xlen_t i = 0; i < n; i++)
-        po[i] = ISNAN(p[i]) ? NA_INTEGER : ztp_r_time_field_value((int64_t)p[i], f);
+    ztp_r_scalar(field, "field");
+    f = ztp_r_scalar_int(field);
+    out = PROTECT(Rf_allocVector(INTSXP, n));
+    po = INTEGER(out);
+    for (R_xlen_t i = 0; i < n; i++) {
+        int64_t t;
+        po[i] = ztp_r_time_get(p, i, &t) ? ztp_r_time_field_value(t, f) : NA_INTEGER;
+    }
     UNPROTECT(1);
     return out;
 }
 
 SEXP ztp_r_plain_time_round(SEXP ns, SEXP increment, SEXP unit, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(ns);
+    R_xlen_t n = ztp_r_arg(ns, REALSXP, -1, "x");
     const double *p = REAL(ns);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_unit u = (ztp_unit)ztp_r_scalar_int(unit);
-    ztp_rounding_mode m = (ztp_rounding_mode)ztp_r_scalar_int(mode);
-    SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
-    double *po = REAL(out);
+    int64_t inc;
+    ztp_unit u;
+    ztp_rounding_mode m;
+    SEXP out;
+    double *po;
 
+    ztp_r_scalar(increment, "increment");
+    ztp_r_scalar(unit, "unit");
+    ztp_r_scalar(mode, "mode");
+    inc = (int64_t)Rf_asReal(increment);
+    u = (ztp_unit)ztp_r_scalar_int(unit);
+    m = (ztp_rounding_mode)ztp_r_scalar_int(mode);
+    out = PROTECT(Rf_allocVector(REALSXP, n));
+    po = REAL(out);
     for (R_xlen_t i = 0; i < n; i++) {
-        int64_t rounded, days;
-        if (ISNAN(p[i])) {
+        int64_t t, rounded, days;
+        if (!ztp_r_time_get(p, i, &t)) {
             po[i] = NA_REAL;
             continue;
         }
-        ztp_round_time((int64_t)p[i], inc, u, m, &rounded, &days);
+        ztp_round_time(t, inc, u, m, &rounded, &days);
         po[i] = (double)rounded;   /* PlainTime drops the day carry */
     }
     UNPROTECT(1);
@@ -343,18 +389,22 @@ SEXP ztp_r_plain_time_round(SEXP ns, SEXP increment, SEXP unit, SEXP mode)
 
 SEXP ztp_r_plain_time_format(SEXP ns, SEXP precision)
 {
-    R_xlen_t n = Rf_xlength(ns);
+    R_xlen_t n = ztp_r_arg(ns, REALSXP, -1, "x");
     const double *p = REAL(ns);
-    int prec = ztp_r_scalar_int(precision);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    int prec;
+    SEXP out;
 
+    ztp_r_scalar(precision, "precision");
+    prec = ztp_r_scalar_int(precision);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     for (R_xlen_t i = 0; i < n; i++) {
         char buf[ZTP_FORMAT_TIME_CAP];
-        if (ISNAN(p[i])) {
+        int64_t t;
+        if (!ztp_r_time_get(p, i, &t)) {
             SET_STRING_ELT(out, i, NA_STRING);
             continue;
         }
-        ztp_format_time(buf, (int64_t)p[i], prec);
+        ztp_format_time(buf, t, prec);
         SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
     }
     UNPROTECT(1);
@@ -391,16 +441,34 @@ SEXP ztp_r_plain_date_time_from_fields(SEXP year, SEXP month, SEXP day,
                                        SEXP millisecond, SEXP microsecond,
                                        SEXP nanosecond, SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(year);
-    const double *py = REAL(year), *pm = REAL(month), *pd = REAL(day),
-                 *ph = REAL(hour), *pmi = REAL(minute), *ps = REAL(second),
-                 *pms = REAL(millisecond), *pus = REAL(microsecond),
-                 *pns = REAL(nanosecond);
-    ztp_overflow ov = (ztp_overflow)ztp_r_scalar_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
-    Rcomplex *po = COMPLEX(out);
+    R_xlen_t n = ztp_r_arg(year, REALSXP, -1, "year");
+    const double *py, *pm, *pd, *ph, *pmi, *ps, *pms, *pus, *pns;
+    ztp_overflow ov;
+    SEXP out;
+    Rcomplex *po;
     ztp_ctx ctx;
 
+    ztp_r_arg(month, REALSXP, n, "month");
+    ztp_r_arg(day, REALSXP, n, "day");
+    ztp_r_arg(hour, REALSXP, n, "hour");
+    ztp_r_arg(minute, REALSXP, n, "minute");
+    ztp_r_arg(second, REALSXP, n, "second");
+    ztp_r_arg(millisecond, REALSXP, n, "millisecond");
+    ztp_r_arg(microsecond, REALSXP, n, "microsecond");
+    ztp_r_arg(nanosecond, REALSXP, n, "nanosecond");
+    ztp_r_scalar(overflow, "overflow");
+    py = REAL(year);
+    pm = REAL(month);
+    pd = REAL(day);
+    ph = REAL(hour);
+    pmi = REAL(minute);
+    ps = REAL(second);
+    pms = REAL(millisecond);
+    pus = REAL(microsecond);
+    pns = REAL(nanosecond);
+    ov = (ztp_overflow)ztp_r_scalar_int(overflow);
+    out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    po = COMPLEX(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         int64_t y, m, d, h, mi, s, ms, us, ns;
@@ -434,7 +502,7 @@ SEXP ztp_r_plain_date_time_from_fields(SEXP year, SEXP month, SEXP day,
 
 SEXP ztp_r_plain_date_time_parse(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
     Rcomplex *po = COMPLEX(out);
     ztp_ctx ctx;
@@ -461,20 +529,29 @@ SEXP ztp_r_plain_date_time_parse(SEXP x)
 /* CombineISODateAndTimeRecord followed by CreateTemporalDateTime. */
 SEXP ztp_r_plain_date_time_combine(SEXP days, SEXP ns)
 {
-    R_xlen_t n = Rf_xlength(days);
-    const int *pd = INTEGER(days);
-    const double *pt = REAL(ns);
-    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
-    Rcomplex *po = COMPLEX(out);
+    R_xlen_t n = ztp_r_arg(days, INTSXP, -1, "date");
+    const int *pd;
+    const double *pt;
+    SEXP out;
+    Rcomplex *po;
     ztp_ctx ctx;
 
+    ztp_r_arg(ns, REALSXP, n, "time");
+    pd = INTEGER(days);
+    pt = REAL(ns);
+    out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    po = COMPLEX(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
-        if (pd[i] == NA_INTEGER || ISNAN(pt[i])) {
+        int32_t day;
+        int64_t t;
+        /* Both getters run, so that a corrupt value is caught beside NA. */
+        bool has_day = ztp_r_date_get(pd, i, &day), has_time = ztp_r_time_get(pt, i, &t);
+        if (!has_day || !has_time) {
             po[i] = ztp_r_na_complex();
             continue;
         }
-        po[i] = ztp_r_make_date_time(&ctx, (size_t)i + 1, pd[i], (int64_t)pt[i]);
+        po[i] = ztp_r_make_date_time(&ctx, (size_t)i + 1, day, t);
     }
     UNPROTECT(1);
     return out;
@@ -482,20 +559,25 @@ SEXP ztp_r_plain_date_time_combine(SEXP days, SEXP ns)
 
 SEXP ztp_r_plain_date_time_field(SEXP x, SEXP field)
 {
-    R_xlen_t n = Rf_xlength(x);
-    int f = ztp_r_scalar_int(field);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
+    int f;
     const Rcomplex *p = COMPLEX(x);
-    SEXP out = PROTECT(ztp_r_field_vector(f, n));
-    int *po = INTEGER(out);
+    SEXP out;
+    int *po;
 
+    ztp_r_scalar(field, "field");
+    f = ztp_r_scalar_int(field);
+    out = PROTECT(ztp_r_field_vector(f, n));
+    po = INTEGER(out);
     for (R_xlen_t i = 0; i < n; i++) {
-        if (ISNAN(p[i].r)) {
+        int32_t day;
+        int64_t t;
+        if (!ztp_r_date_time_get(p, i, &day, &t)) {
             po[i] = NA_INTEGER;
             continue;
         }
-        po[i] = f >= ZTP_FIELD_HOUR
-                    ? ztp_r_time_field_value((int64_t)p[i].i, f)
-                    : ztp_r_date_field_value((int32_t)p[i].r, f);
+        po[i] = f >= ZTP_FIELD_HOUR ? ztp_r_time_field_value(t, f)
+                                    : ztp_r_date_field_value(day, f);
     }
     UNPROTECT(1);
     return out;
@@ -503,26 +585,34 @@ SEXP ztp_r_plain_date_time_field(SEXP x, SEXP field)
 
 SEXP ztp_r_plain_date_time_round(SEXP x, SEXP increment, SEXP unit, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_unit u = (ztp_unit)ztp_r_scalar_int(unit);
-    ztp_rounding_mode m = (ztp_rounding_mode)ztp_r_scalar_int(mode);
-    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
-    Rcomplex *po = COMPLEX(out);
+    int64_t inc;
+    ztp_unit u;
+    ztp_rounding_mode m;
+    SEXP out;
+    Rcomplex *po;
     ztp_ctx ctx;
 
+    ztp_r_scalar(increment, "increment");
+    ztp_r_scalar(unit, "unit");
+    ztp_r_scalar(mode, "mode");
+    inc = (int64_t)Rf_asReal(increment);
+    u = (ztp_unit)ztp_r_scalar_int(unit);
+    m = (ztp_rounding_mode)ztp_r_scalar_int(mode);
+    out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    po = COMPLEX(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
-        int64_t rounded, days;
-        if (ISNAN(p[i].r)) {
+        int32_t day;
+        int64_t t, rounded, days;
+        if (!ztp_r_date_time_get(p, i, &day, &t)) {
             po[i] = ztp_r_na_complex();
             continue;
         }
         /* RoundISODateTime: round the time, carry the days into the date. */
-        ztp_round_time((int64_t)p[i].i, inc, u, m, &rounded, &days);
-        po[i] = ztp_r_make_date_time(&ctx, (size_t)i + 1,
-                                     (int64_t)p[i].r + days, rounded);
+        ztp_round_time(t, inc, u, m, &rounded, &days);
+        po[i] = ztp_r_make_date_time(&ctx, (size_t)i + 1, (int64_t)day + days, rounded);
     }
     UNPROTECT(1);
     return out;
@@ -530,19 +620,26 @@ SEXP ztp_r_plain_date_time_round(SEXP x, SEXP increment, SEXP unit, SEXP mode)
 
 SEXP ztp_r_plain_date_time_format(SEXP x, SEXP precision, SEXP show_calendar)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
-    int prec = ztp_r_scalar_int(precision);
-    ztp_show_calendar show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    int prec;
+    ztp_show_calendar show;
+    SEXP out;
 
+    ztp_r_scalar(precision, "precision");
+    ztp_r_scalar(show_calendar, "show_calendar");
+    prec = ztp_r_scalar_int(precision);
+    show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     for (R_xlen_t i = 0; i < n; i++) {
         char buf[ZTP_FORMAT_DATE_TIME_CAP];
-        if (ISNAN(p[i].r)) {
+        int32_t day;
+        int64_t t;
+        if (!ztp_r_date_time_get(p, i, &day, &t)) {
             SET_STRING_ELT(out, i, NA_STRING);
             continue;
         }
-        ztp_format_iso_date_time(buf, (int32_t)p[i].r, (int64_t)p[i].i, prec, show);
+        ztp_format_iso_date_time(buf, day, t, prec, show);
         SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
     }
     UNPROTECT(1);
@@ -568,13 +665,20 @@ static int ztp_r_year_month_code(ztp_ctx *ctx, size_t index, int64_t year,
 /* CalendarYearMonthFromFields for the ISO calendar: the day is 1. */
 SEXP ztp_r_plain_year_month_from_fields(SEXP year, SEXP month, SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(year);
-    const double *py = REAL(year), *pm = REAL(month);
-    ztp_overflow ov = (ztp_overflow)ztp_r_scalar_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
-    int *po = INTEGER(out);
+    R_xlen_t n = ztp_r_arg(year, REALSXP, -1, "year");
+    const double *py, *pm;
+    ztp_overflow ov;
+    SEXP out;
+    int *po;
     ztp_ctx ctx;
 
+    ztp_r_arg(month, REALSXP, n, "month");
+    ztp_r_scalar(overflow, "overflow");
+    py = REAL(year);
+    pm = REAL(month);
+    ov = (ztp_overflow)ztp_r_scalar_int(overflow);
+    out = PROTECT(Rf_allocVector(INTSXP, n));
+    po = INTEGER(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         int64_t y, m;
@@ -596,7 +700,7 @@ SEXP ztp_r_plain_year_month_from_fields(SEXP year, SEXP month, SEXP overflow)
 
 SEXP ztp_r_plain_year_month_parse(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
     int *po = INTEGER(out);
     ztp_ctx ctx;
@@ -616,22 +720,23 @@ SEXP ztp_r_plain_year_month_parse(SEXP x)
 
 SEXP ztp_r_plain_year_month_format(SEXP x, SEXP show_calendar)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, INTSXP, -1, "x");
     const int *px = INTEGER(x);
-    ztp_show_calendar show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    ztp_show_calendar show;
+    SEXP out;
 
+    ztp_r_scalar(show_calendar, "show_calendar");
+    show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     for (R_xlen_t i = 0; i < n; i++) {
         char buf[ZTP_FORMAT_DATE_CAP];
-        int code, q;
-        if (px[i] == NA_INTEGER) {
+        int32_t year;
+        uint32_t month;
+        if (!ztp_r_year_month_get(px, i, &year, &month)) {
             SET_STRING_ELT(out, i, NA_STRING);
             continue;
         }
-        code = px[i];
-        q = code >= 0 ? code / 12 : -((-code + 11) / 12);   /* floor */
-        ztp_format_iso_year_month(buf, (int32_t)(1970 + q),
-                                  (uint32_t)(code - q * 12 + 1), show);
+        ztp_format_iso_year_month(buf, year, month, show);
         SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
     }
     UNPROTECT(1);
@@ -646,13 +751,22 @@ SEXP ztp_r_plain_year_month_format(SEXP x, SEXP show_calendar)
 SEXP ztp_r_plain_month_day_from_fields(SEXP year, SEXP month, SEXP day,
                                        SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(month);
-    const double *py = REAL(year), *pm = REAL(month), *pd = REAL(day);
-    ztp_overflow ov = (ztp_overflow)ztp_r_scalar_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
-    int *po = INTEGER(out);
+    R_xlen_t n = ztp_r_arg(month, REALSXP, -1, "month");
+    const double *py, *pm, *pd;
+    ztp_overflow ov;
+    SEXP out;
+    int *po;
     ztp_ctx ctx;
 
+    ztp_r_arg(year, REALSXP, n, "year");
+    ztp_r_arg(day, REALSXP, n, "day");
+    ztp_r_scalar(overflow, "overflow");
+    py = REAL(year);
+    pm = REAL(month);
+    pd = REAL(day);
+    ov = (ztp_overflow)ztp_r_scalar_int(overflow);
+    out = PROTECT(Rf_allocVector(INTSXP, n));
+    po = INTEGER(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         int64_t y, m, d;
@@ -675,7 +789,7 @@ SEXP ztp_r_plain_month_day_from_fields(SEXP year, SEXP month, SEXP day,
 
 SEXP ztp_r_plain_month_day_parse(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
     int *po = INTEGER(out);
     ztp_ctx ctx;
@@ -695,18 +809,22 @@ SEXP ztp_r_plain_month_day_parse(SEXP x)
 
 SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, INTSXP, -1, "x");
     const int *px = INTEGER(x);
-    ztp_show_calendar show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    ztp_show_calendar show;
+    SEXP out;
 
+    ztp_r_scalar(show_calendar, "show_calendar");
+    show = (ztp_show_calendar)ztp_r_scalar_int(show_calendar);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     for (R_xlen_t i = 0; i < n; i++) {
         char buf[ZTP_FORMAT_DATE_CAP];
-        if (px[i] == NA_INTEGER) {
+        uint32_t month, day;
+        if (!ztp_r_month_day_get(px, i, &month, &day)) {
             SET_STRING_ELT(out, i, NA_STRING);
             continue;
         }
-        ztp_format_iso_month_day(buf, (uint32_t)(px[i] / 32), (uint32_t)(px[i] % 32), show);
+        ztp_format_iso_month_day(buf, month, day, show);
         SET_STRING_ELT(out, i, Rf_mkCharCE(buf, CE_UTF8));
     }
     UNPROTECT(1);
@@ -719,11 +837,16 @@ SEXP ztp_r_plain_month_day_format(SEXP x, SEXP show_calendar)
    as text, so that the fast and slow paths can be compared. */
 SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path)
 {
-    R_xlen_t n = Rf_xlength(x);
-    ztp_parse_goal g = (ztp_parse_goal)ztp_r_scalar_int(goal);
-    int pth = ztp_r_scalar_int(path);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
+    ztp_parse_goal g;
+    int pth;
+    SEXP out;
 
+    ztp_r_scalar(goal, "goal");
+    ztp_r_scalar(path, "path");
+    g = (ztp_parse_goal)ztp_r_scalar_int(goal);
+    pth = ztp_r_scalar_int(path);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_ctx ctx;
         ztp_parsed p;
@@ -759,12 +882,16 @@ SEXP ztp_r_parse_describe(SEXP x, SEXP goal, SEXP path)
    the message of the failure. A negative goal is a duration string. */
 SEXP ztp_r_parse_check(SEXP x, SEXP goal)
 {
-    R_xlen_t n = Rf_xlength(x);
-    int g = ztp_r_scalar_int(goal);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
+    int g;
     const char *names[] = {"position", "message", ""};
-    SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));
-    SEXP position = SET_VECTOR_ELT(out, 0, Rf_allocVector(REALSXP, n));
-    SEXP message = SET_VECTOR_ELT(out, 1, Rf_allocVector(STRSXP, n));
+    SEXP out, position, message;
+
+    ztp_r_scalar(goal, "goal");
+    g = ztp_r_scalar_int(goal);
+    out = PROTECT(Rf_mkNamed(VECSXP, names));
+    position = SET_VECTOR_ELT(out, 0, Rf_allocVector(REALSXP, n));
+    message = SET_VECTOR_ELT(out, 1, Rf_allocVector(STRSXP, n));
 
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_ctx ctx;
@@ -800,23 +927,27 @@ static size_t ztp_r_index_arg(SEXP index)
 SEXP ztp_r_time_zone_string(SEXP x, SEXP index)
 {
     char buf[ZTP_TZ_ANNOTATION_CAP];
-    const char *s = Rf_translateCharUTF8(STRING_ELT(x, 0));
+    const char *s;
     ztp_ctx ctx;
 
+    ztp_r_arg(x, STRSXP, 1, "x");
+    s = Rf_translateCharUTF8(STRING_ELT(x, 0));
     ztp_ctx_init(&ctx);
     if (ztp_parse_time_zone_string(&ctx, ztp_r_index_arg(index), s, strlen(s), buf) != ZTP_OK)
         ztp_r_raise(&ctx);
-    return Rf_mkString(buf);
+    return Rf_ScalarString(Rf_mkCharCE(buf, CE_UTF8));
 }
 
 SEXP ztp_r_calendar_string(SEXP x)
 {
     char buf[ZTP_CALENDAR_CAP];
-    const char *s = Rf_translateCharUTF8(STRING_ELT(x, 0));
+    const char *s;
     ztp_ctx ctx;
 
+    ztp_r_arg(x, STRSXP, 1, "x");
+    s = Rf_translateCharUTF8(STRING_ELT(x, 0));
     ztp_ctx_init(&ctx);
     if (ztp_parse_calendar_string(&ctx, 0, s, strlen(s), buf) != ZTP_OK)
         ztp_r_raise(&ctx);
-    return Rf_mkString(buf);
+    return Rf_ScalarString(Rf_mkCharCE(buf, CE_UTF8));
 }

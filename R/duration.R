@@ -639,6 +639,11 @@ names.zutempo_duration <- function(x) NULL
 }
 #' @export
 `[[<-.zutempo_duration` <- function(x, i, value) `[<-`(x, i, value)
+# The fields are not settable one by one: `$<-` goes through the same
+# check as `[[<-`, so `d$hours <- 5` is a type error rather than a
+# duration whose fields have different lengths.
+#' @export
+`$<-.zutempo_duration` <- function(x, name, value) `[[<-`(x, name, value)
 #' @export
 c.zutempo_duration <- function(...) {
   dots <- list(...)

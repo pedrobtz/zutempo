@@ -50,9 +50,16 @@ static inline void ztp_ctx_init(ztp_ctx *ctx)
    "ok", "range", "parse", "type" or "tz". */
 const char *ztp_status_kind(ztp_status status);
 
+/* The longest prefix of the n bytes at s that is at most max bytes and
+   does not end inside a UTF-8 sequence: where a message quotes an excerpt
+   of the input, it cuts there. */
+size_t ztp_utf8_prefix(const char *s, size_t n, size_t max);
+
 /* Record a failure and return its status, so a caller can write
    `return ztp_fail(ctx, ZTP_ERR_RANGE, i, "...", ...);`. The message is
-   formatted with vsnprintf into ctx->msg and truncated to ZTP_MSG_CAP. */
+   formatted with vsnprintf into ctx->msg and truncated to ZTP_MSG_CAP;
+   any byte that is not part of a valid UTF-8 sequence is then dropped,
+   so a cut never leaves half a character. */
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((format(printf, 4, 5)))
 #endif

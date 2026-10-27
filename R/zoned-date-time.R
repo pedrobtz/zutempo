@@ -170,7 +170,25 @@ ztp_zdt_instant <- function(x) {
   attributes(z) <- NULL
   z
 }
-ztp_zdt_codes <- function(x) attr(x, "zone", exact = TRUE)
+ztp_zdt_codes <- function(x) {
+  codes <- attr(x, "zone", exact = TRUE)
+  zones <- attr(x, "zones", exact = TRUE)
+  # A value no constructor made (an attribute dropped or kept at the wrong
+  # length by another package's code) is refused rather than misread.
+  ok <- is.integer(codes) &&
+    length(codes) == length(x) &&
+    is.character(zones) &&
+    !anyNA(zones) &&
+    min(codes, 1L, na.rm = TRUE) >= 1L &&
+    max(codes, 0L, na.rm = TRUE) <= length(zones)
+  if (!ok) {
+    stop_zutempo(
+      "the value is not a valid zoned_date_time(): its zone codes are corrupt",
+      kind = "type"
+    )
+  }
+  codes
+}
 ztp_zdt_zones <- function(x) attr(x, "zones", exact = TRUE)
 ztp_zdt_ids <- function(x) ztp_zdt_zones(x)[ztp_zdt_codes(x)]
 

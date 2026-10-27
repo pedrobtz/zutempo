@@ -26,13 +26,25 @@ void ztp_epoch_ns_split(zuf_i128 ns, double *seconds, double *nanoseconds)
     *nanoseconds = (double)r;
 }
 
-zuf_i128 ztp_epoch_ns_join(double seconds, double nanoseconds)
+bool ztp_epoch_ns_join(double seconds, double nanoseconds, zuf_i128 *out)
 {
-    zuf_i128 s, n;
+    const double max_seconds = (double)ZTP_MAX_EPOCH_DAY * 86400.0;
+    int64_t s, n;
 
-    ztp_i128_from_double(seconds, &s);
-    ztp_i128_from_double(nanoseconds, &n);
-    return zuf_i128_add_wrap(zuf_i128_mul_wrap(s, zuf_i128_from_i64(ZTP_NS_PER_SECOND)), n);
+    /* The checks are on the doubles, so that nothing converts a value out
+       of range (zuf_i128_from_f64() would leave its output unset): both
+       parts integral, the nanoseconds in [0, 10^9), and the total within
+       nsMaxInstant, which in seconds is |s| <= 8.64e12 with no nanoseconds
+       past the upper end. */
+    if (!(nanoseconds >= 0 && nanoseconds < (double)ZTP_NS_PER_SECOND) ||
+        !(seconds >= -max_seconds && seconds <= max_seconds) ||
+        (seconds == max_seconds && nanoseconds != 0))
+        return false;
+    s = (int64_t)seconds;
+    n = (int64_t)nanoseconds;
+    if ((double)s != seconds || (double)n != nanoseconds) return false;
+    *out = zuf_i128_add_wrap(zuf_i128_mul_i64_i64(s, ZTP_NS_PER_SECOND), zuf_i128_from_i64(n));
+    return true;
 }
 
 /* --- zones -------------------------------------------------------------- */
@@ -62,14 +74,14 @@ ztp_status ztp_zone_parse(ztp_ctx *ctx, size_t index, const char *s, size_t n,
 
         if (!ztp_two_digits(s, n, at, &hours) || hours > 23)
             return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a valid UTC offset",
-                            (int)(n < 40 ? n : 40), s);
+                            (int)ztp_utf8_prefix(s, n, 40), s);
         at += 2;
         extended = at < n && s[at] == ':';
         if (extended) at++;
         if (at < n) {
             if (!ztp_two_digits(s, n, at, &minutes) || minutes > 59)
                 return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a valid UTC offset",
-                                (int)(n < 40 ? n : 40), s);
+                                (int)ztp_utf8_prefix(s, n, 40), s);
             at += 2;
             if (at < n) {
                 /* Seconds, with or without ':', are a well-formed offset
@@ -80,11 +92,11 @@ ztp_status ztp_zone_parse(ztp_ctx *ctx, size_t index, const char *s, size_t n,
                     return ztp_fail(ctx, ZTP_ERR_RANGE, index,
                                     "a time zone offset must be a whole number of minutes");
                 return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a valid UTC offset",
-                                (int)(n < 40 ? n : 40), s);
+                                (int)ztp_utf8_prefix(s, n, 40), s);
             }
         } else if (extended) {
             return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a valid UTC offset",
-                            (int)(n < 40 ? n : 40), s);
+                            (int)ztp_utf8_prefix(s, n, 40), s);
         }
         out->kind = ZTP_ZONE_OFFSET;
         out->offset_ns = ((int64_t)hours * 60 + minutes) * ZTP_NS_PER_MINUTE;
@@ -121,7 +133,7 @@ ztp_status ztp_zone_parse(ztp_ctx *ctx, size_t index, const char *s, size_t n,
         }
     }
     return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a time zone identifier",
-                    (int)(n < 40 ? n : 40), s);
+                    (int)ztp_utf8_prefix(s, n, 40), s);
 }
 
 int64_t ztp_zone_offset_at(const ztp_zone *zone, zuf_i128 epoch_ns)
