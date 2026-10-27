@@ -6,6 +6,7 @@
  */
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "../../src/ztp_tz.h"
 
@@ -15,13 +16,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     ztp_tz_data zone;
     zuf_i128 cands[2];
     int64_t t;
+    volatile size_t sink = 0;
     const int64_t limit = (int64_t)ZTP_MAX_EPOCH_DAY * 86400;
 
     ztp_ctx_init(&ctx);
     if (ztp_tzif_parse(&ctx, 0, data, size, &zone) != ZTP_OK) return 0;
-    /* Exercise every reader path on the parsed zone. */
-    for (int64_t s = -4000000000LL; s < 5000000000LL; s += 97000000LL)
-        ztp_tz_utoff_at(&zone, s, NULL, NULL);
+    /* Exercise every reader path on the parsed zone, reading the
+       abbreviation so that an index past the abbreviations is caught. */
+    for (int64_t s = -4000000000LL; s < 5000000000LL; s += 97000000LL) {
+        bool dst;
+        const char *abbr = NULL;
+        ztp_tz_utoff_at(&zone, s, &dst, &abbr);
+        sink += strlen(abbr) + dst;
+    }
+    (void)sink;
     ztp_tz_next_transition(&zone, 0, limit, &t);
     ztp_tz_previous_transition(&zone, 0, limit, &t);
     ztp_tz_next_transition(&zone, limit - 1, limit, &t);

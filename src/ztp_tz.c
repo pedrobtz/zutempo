@@ -42,7 +42,10 @@ typedef struct {
     size_t n, pos;
 } ztp_tz_cur;
 
-static int ztp_tz_peek(const ztp_tz_cur *c) { return c->pos < c->n ? c->s[c->pos] : -1; }
+static int ztp_tz_peek(const ztp_tz_cur *c)
+{
+    return c->pos < c->n ? (unsigned char)c->s[c->pos] : -1;
+}
 
 static bool ztp_tz_parse_abbr(ztp_tz_cur *c, char *out)
 {
@@ -50,9 +53,17 @@ static bool ztp_tz_parse_abbr(ztp_tz_cur *c, char *out)
 
     if (ztp_tz_peek(c) == '<') {
         c->pos++;
-        while (ztp_tz_peek(c) != '>' && ztp_tz_peek(c) >= 0) {
+        int ch;
+        /* POSIX allows letters, digits, '+' and '-' between the brackets;
+           holding to that keeps the abbreviation ASCII, which the glue
+           marks as UTF-8. */
+        while ((ch = ztp_tz_peek(c)) != '>' && ch >= 0) {
+            if (!((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') ||
+                  (ch >= '0' && ch <= '9') || ch == '+' || ch == '-'))
+                return false;
             if (k + 1 >= ZTP_TZ_ABBR_CAP) return false;
-            out[k++] = c->s[c->pos++];
+            out[k++] = (char)ch;
+            c->pos++;
         }
         if (ztp_tz_peek(c) != '>') return false;
         c->pos++;
@@ -135,24 +146,23 @@ static bool ztp_tz_parse_rule_date(ztp_tz_cur *c, ztp_tz_rule_date *out)
     return true;
 }
 
-ztp_status ztp_tz_posix_parse(ztp_ctx *ctx, size_t index, const char *s,
-                              size_t n, ztp_tz_posix *out)
+static bool ztp_tz_posix_read(const char *s, size_t n, ztp_tz_posix *out)
 {
     ztp_tz_cur c = {s, n, 0};
     int64_t off;
 
     memset(out, 0, sizeof *out);
-    if (!ztp_tz_parse_abbr(&c, out->std_abbr)) goto bad;
+    if (!ztp_tz_parse_abbr(&c, out->std_abbr)) return false;
     /* POSIX offsets are west-positive; store east-positive. */
-    if (!ztp_tz_parse_hms(&c, 24, &off)) goto bad;
+    if (!ztp_tz_parse_hms(&c, 24, &off)) return false;
     out->std_off = (int32_t)-off;
-    if (c.pos == n) return ZTP_OK;
-    if (!ztp_tz_parse_abbr(&c, out->dst_abbr)) goto bad;
+    if (c.pos == n) return true;
+    if (!ztp_tz_parse_abbr(&c, out->dst_abbr)) return false;
     out->has_dst = true;
     if (ztp_tz_peek(&c) == ',' || c.pos == n) {
         out->dst_off = out->std_off + 3600;
     } else {
-        if (!ztp_tz_parse_hms(&c, 24, &off)) goto bad;
+        if (!ztp_tz_parse_hms(&c, 24, &off)) return false;
         out->dst_off = (int32_t)-off;
     }
     if (c.pos == n) {
@@ -161,19 +171,29 @@ ztp_status ztp_tz_posix_parse(ztp_ctx *ctx, size_t index, const char *s,
         ztp_tz_parse_rule_date(&r, &out->start);
         r.pos++;
         ztp_tz_parse_rule_date(&r, &out->end);
-        return ZTP_OK;
+        return true;
     }
-    if (ztp_tz_peek(&c) != ',') goto bad;
+    if (ztp_tz_peek(&c) != ',') return false;
     c.pos++;
-    if (!ztp_tz_parse_rule_date(&c, &out->start)) goto bad;
-    if (ztp_tz_peek(&c) != ',') goto bad;
+    if (!ztp_tz_parse_rule_date(&c, &out->start)) return false;
+    if (ztp_tz_peek(&c) != ',') return false;
     c.pos++;
-    if (!ztp_tz_parse_rule_date(&c, &out->end)) goto bad;
-    if (c.pos != n) goto bad;
-    return ZTP_OK;
-bad:
+    if (!ztp_tz_parse_rule_date(&c, &out->end)) return false;
+    if (c.pos != n) return false;
+    return true;
+}
+
+ztp_status ztp_tz_posix_parse(ztp_ctx *ctx, size_t index, const char *s,
+                              size_t n, ztp_tz_posix *out)
+{
+    /* Temporal's offsets are below a day in magnitude, and the zoned
+       arithmetic relies on it (DifferenceZonedDateTime); POSIX allows up
+       to 24:59:59. */
+    if (ztp_tz_posix_read(s, n, out) && out->std_off > -86400 && out->std_off < 86400 &&
+        (!out->has_dst || (out->dst_off > -86400 && out->dst_off < 86400)))
+        return ZTP_OK;
     return ztp_fail(ctx, ZTP_ERR_TZ, index, "cannot parse the TZ rule \"%.*s\"",
-                    (int)(n < 60 ? n : 60), s);
+                    (int)ztp_utf8_prefix(s, n, 60), s);
 }
 
 /* The epoch second at which the rule date falls in `year`, given the
@@ -320,6 +340,8 @@ ztp_status ztp_tzif_parse(ztp_ctx *ctx, size_t index, const unsigned char *buf,
     out->idx = calloc(h.timecnt ? h.timecnt : 1, 1);
     out->types = calloc(h.typecnt, sizeof *out->types);
     out->abbrs = calloc(h.charcnt + 1, 1);
+    /* Unreachable in the tests: an allocation failure. The reader is a
+       fuzz target, so it checks rather than dereference NULL. */
     if (!out->times || !out->idx || !out->types || !out->abbrs) {
         ztp_tz_data_free(out);
         return ztp_fail(ctx, ZTP_ERR_TZ, index, "out of memory reading a TZif file");
@@ -342,9 +364,17 @@ ztp_status ztp_tzif_parse(ztp_ctx *ctx, size_t index, const unsigned char *buf,
     p += h.timecnt;
     for (uint32_t i = 0; i < h.typecnt; i++) {
         out->types[i].utoff = (int32_t)ztp_tz_be32(p + 6 * i);
+        /* Temporal's offsets are below a day in magnitude, and the zoned
+           arithmetic relies on it (DifferenceZonedDateTime). */
+        if (out->types[i].utoff <= -86400 || out->types[i].utoff >= 86400) {
+            ztp_tz_data_free(out);
+            return ztp_fail(ctx, ZTP_ERR_TZ, index, "TZif UTC offset out of range");
+        }
         out->types[i].isdst = p[6 * i + 4] != 0;
         out->types[i].abbr = p[6 * i + 5];
-        if (out->types[i].abbr >= h.charcnt && h.charcnt > 0) {
+        /* Unconditionally: with charcnt 0, abbrs is one NUL byte and any
+           index would read past it. */
+        if (out->types[i].abbr >= h.charcnt) {
             ztp_tz_data_free(out);
             return ztp_fail(ctx, ZTP_ERR_TZ, index, "TZif abbreviation index out of range");
         }
