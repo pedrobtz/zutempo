@@ -39,13 +39,6 @@ ztp_month_code <- function(month) {
   ifelse(is.na(month), NA_character_, sprintf("M%02d", month))
 }
 
-# NA codes give NA from integer arithmetic already; this keeps the intent
-# explicit where a code is decoded.
-ztp_restore_na <- function(values, x) {
-  values[is.na(unclass(x))] <- NA
-  values
-}
-
 # MathematicalInLeapYear, MathematicalDaysInYear and ISODaysInMonth over
 # integer vectors, for a month that has no representable first day.
 ztp_in_leap_year <- function(year) {
@@ -514,12 +507,12 @@ era_year.zutempo_plain_year_month <- function(x, ...) {
 #' @rdname temporal_fields
 #' @export
 year.zutempo_plain_year_month <- function(x, ...) {
-  ztp_restore_na(as.integer(1970L + unclass(x) %/% 12L), x)
+  as.integer(1970L + unclass(x) %/% 12L)
 }
 #' @rdname temporal_fields
 #' @export
 month.zutempo_plain_year_month <- function(x, ...) {
-  ztp_restore_na(as.integer(unclass(x) %% 12L + 1L), x)
+  as.integer(unclass(x) %% 12L + 1L)
 }
 #' @rdname temporal_fields
 #' @export
@@ -557,7 +550,7 @@ month_code.zutempo_plain_month_day <- function(x, ...) {
 #' @rdname temporal_fields
 #' @export
 day.zutempo_plain_month_day <- function(x, ...) {
-  ztp_restore_na(as.integer(ztp_month_day_day(x)), x)
+  as.integer(ztp_month_day_day(x))
 }
 
 # --- ZonedDateTime: every calendar and clock field is the local date-time's ---

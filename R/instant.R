@@ -79,16 +79,7 @@ ztp_as_instant <- function(x) {
 #' @rdname instant
 #' @export
 instant_compare <- function(x, y) {
-  args <- ztp_recycle(list(
-    unclass(ztp_as_instant(x)),
-    unclass(ztp_as_instant(y))
-  ))
-  a <- args[[1L]]
-  b <- args[[2L]]
-  out <- as.integer(sign(Re(a) - Re(b)))
-  tie <- !is.na(out) & out == 0L
-  out[tie] <- as.integer(sign(Im(a)[tie] - Im(b)[tie]))
-  out
+  ztp_compare_complex(ztp_as_instant(x), ztp_as_instant(y))
 }
 
 #' @rdname temporal_fields
@@ -189,7 +180,7 @@ ztp_instant_difference <- function(
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -212,7 +203,7 @@ temporal_until.zutempo_instant <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -235,7 +226,7 @@ temporal_since.zutempo_instant <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -295,12 +286,10 @@ temporal_to_string.zutempo_instant <- function(
     ) {
       stop_zutempo("`time_zone` must be a single string", kind = "type")
     }
-  }
-  if (!is.null(time_zone)) {
     time_zone <- ztp_tz_ensure(time_zone)
   }
   v <- unclass(x)
-  if (p[["unit"]] != 9L || p[["increment"]] != 1) {
+  if (ztp_needs_rounding(p)) {
     v <- .Call(
       C_ztp_r_instant_round,
       v,

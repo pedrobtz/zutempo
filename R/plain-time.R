@@ -87,6 +87,9 @@ ztp_time_field_names <- c(
   "nanosecond"
 )
 
+# The nine fields of a date-time, in the order the glue takes them.
+ztp_date_time_field_names <- c("year", "month", "day", ztp_time_field_names)
+
 ztp_time_fields <- function(
   hour,
   minute,
@@ -179,7 +182,7 @@ temporal_to_string.zutempo_plain_time <- function(
     rounding_mode
   )
   ns <- unclass(x)
-  if (p[["unit"]] != 9L || p[["increment"]] != 1) {
+  if (ztp_needs_rounding(p)) {
     ns <- .Call(
       C_ztp_r_plain_time_round,
       ns,

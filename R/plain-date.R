@@ -146,7 +146,8 @@ ztp_date_time_ns <- function(x) {
   out
 }
 
-# Coerce `other` to the class of `x` for the comparisons.
+# The ztp_as_<type>() helpers take a value of the class as is and pass
+# anything else to the constructor, as compare() and equals() do.
 ztp_as_plain_date <- function(x) {
   if (inherits(x, "zutempo_plain_date")) x else plain_date(x)
 }
@@ -182,33 +183,6 @@ temporal_with.zutempo_plain_date <- function(x, ..., overflow = "constrain") {
     merged[["day"]],
     ov
   ))
-}
-
-# IsPartialTemporalObject and PrepareCalendarFields with ~partial~: the
-# replacement fields must be named, known and at least one.
-ztp_partial_fields <- function(fields, allowed) {
-  nms <- names(fields)
-  if (length(fields) == 0L) {
-    stop_zutempo("at least one field to replace is required", kind = "type")
-  }
-  if (is.null(nms) || any(!nzchar(nms))) {
-    stop_zutempo("fields to replace must be named", kind = "type")
-  }
-  unknown <- setdiff(nms, allowed)
-  if (length(unknown)) {
-    stop_zutempo(
-      sprintf(
-        "unknown field%s %s",
-        if (length(unknown) > 1L) "s" else "",
-        paste0("`", unknown, "`", collapse = ", ")
-      ),
-      kind = "type"
-    )
-  }
-  if (anyDuplicated(nms)) {
-    stop_zutempo("each field may be given once", kind = "type")
-  }
-  fields
 }
 
 # CalendarMergeFields then CalendarResolveFields for the ISO calendar.
@@ -267,7 +241,11 @@ ztp_time_or_midnight <- function(time) {
 #' @rdname temporal_to_plain_date
 #' @export
 temporal_to_plain_year_month.zutempo_plain_date <- function(x) {
-  ztp_year_month_from_fields(as.double(year(x)), as.double(month(x)), 0L)
+  ztp_year_month_from_fields(
+    as.double(year(x)),
+    as.double(month(x)),
+    ztp_overflow_constrain
+  )
 }
 
 #' @rdname temporal_to_plain_date
@@ -277,7 +255,7 @@ temporal_to_plain_month_day.zutempo_plain_date <- function(x) {
     as.double(year(x)),
     as.double(month(x)),
     as.double(day(x)),
-    0L
+    ztp_overflow_constrain
   )
 }
 

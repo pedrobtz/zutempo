@@ -97,10 +97,41 @@ plain_date_time <- function(
     nanosecond
   )
   fields <- ztp_recycle(c(date, time))
-  new_plain_date_time(do.call(
+  new_plain_date_time(ztp_date_time_from_fields(fields, ov))
+}
+
+# CreateTemporalDateTime from recycled fields, read by name.
+ztp_date_time_from_fields <- function(fields, ov) {
+  do.call(
     .Call,
-    c(list(C_ztp_r_plain_date_time_from_fields), unname(fields), list(ov))
-  ))
+    c(
+      list(C_ztp_r_plain_date_time_from_fields),
+      unname(fields[ztp_date_time_field_names]),
+      list(ov)
+    )
+  )
+}
+
+# The fields of `local`, a plain date-time, with the ones given in `fields`
+# replaced: CalendarMergeFields for the date, then the time fields.
+ztp_merge_date_time_fields <- function(local, fields) {
+  base <- list(
+    year = as.double(ztp_date_time_field(local, "year")),
+    month = as.double(ztp_date_time_field(local, "month")),
+    day = as.double(ztp_date_time_field(local, "day"))
+  )
+  date <- ztp_merge_date_fields(
+    base,
+    fields[intersect(names(fields), c("year", "month", "month_code", "day"))]
+  )
+  time <- lapply(ztp_time_field_names, function(f) {
+    as.double(ztp_date_time_field(local, f))
+  })
+  names(time) <- ztp_time_field_names
+  for (f in intersect(names(fields), ztp_time_field_names)) {
+    time[[f]] <- ztp_as_field(fields[[f]], f)
+  }
+  c(date, time)
 }
 
 ztp_as_plain_date_time <- function(x) {
@@ -110,16 +141,7 @@ ztp_as_plain_date_time <- function(x) {
 #' @rdname plain_date_time
 #' @export
 plain_date_time_compare <- function(x, y) {
-  args <- ztp_recycle(list(
-    unclass(ztp_as_plain_date_time(x)),
-    unclass(ztp_as_plain_date_time(y))
-  ))
-  a <- args[[1L]]
-  b <- args[[2L]]
-  out <- as.integer(sign(Re(a) - Re(b)))
-  tie <- !is.na(out) & out == 0L
-  out[tie] <- as.integer(sign(Im(a)[tie] - Im(b)[tie]))
-  out
+  ztp_compare_complex(ztp_as_plain_date_time(x), ztp_as_plain_date_time(y))
 }
 
 #' @rdname temporal_with
@@ -134,27 +156,8 @@ temporal_with.zutempo_plain_date_time <- function(
     c("year", "month", "month_code", "day", ztp_time_field_names)
   )
   ov <- ztp_overflow_code(overflow)
-  base <- list(
-    year = as.double(ztp_date_time_field(x, "year")),
-    month = as.double(ztp_date_time_field(x, "month")),
-    day = as.double(ztp_date_time_field(x, "day"))
-  )
-  date <- ztp_merge_date_fields(
-    base,
-    fields[intersect(names(fields), c("year", "month", "month_code", "day"))]
-  )
-  time <- lapply(ztp_time_field_names, function(f) {
-    as.double(ztp_date_time_field(x, f))
-  })
-  names(time) <- ztp_time_field_names
-  for (f in intersect(names(fields), ztp_time_field_names)) {
-    time[[f]] <- ztp_as_field(fields[[f]], f)
-  }
-  merged <- ztp_recycle(c(date, time))
-  new_plain_date_time(do.call(
-    .Call,
-    c(list(C_ztp_r_plain_date_time_from_fields), unname(merged), list(ov))
-  ))
+  merged <- ztp_recycle(ztp_merge_date_time_fields(x, fields))
+  new_plain_date_time(ztp_date_time_from_fields(merged, ov))
 }
 
 #' @rdname temporal_with
@@ -241,7 +244,7 @@ temporal_to_string.zutempo_plain_date_time <- function(
     rounding_mode
   )
   v <- unclass(x)
-  if (p[["unit"]] != 9L || p[["increment"]] != 1) {
+  if (ztp_needs_rounding(p)) {
     v <- .Call(
       C_ztp_r_plain_date_time_round,
       v,

@@ -2,7 +2,7 @@
 # packages are Suggests, so their methods are registered when they load.
 
 .onLoad <- function(libname, pkgname) {
-  for (cls in ztp_plain_classes) {
+  for (cls in ztp_atomic_classes) {
     ztp_register_vctrs(cls)
   }
   ztp_register_vctrs_duration()

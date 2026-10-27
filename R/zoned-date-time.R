@@ -128,17 +128,14 @@ zoned_date_time <- function(
     time,
     list(time_zone = ztp_zone_ids(time_zone))
   ))
-  local <- do.call(
-    .Call,
-    c(list(C_ztp_r_plain_date_time_from_fields), unname(fields[1:9]), list(ov))
-  )
+  local <- ztp_date_time_from_fields(fields, ov)
   ztp_zoned_resolve(
     local,
     fields[["time_zone"]],
     offset_string,
     dis,
     off,
-    behaviour_default = 2L
+    behaviour_default = ztp_offset_behaviour_wall
   )
 }
 
@@ -237,14 +234,14 @@ ztp_zoned_from_strings <- function(x, dis, off) {
 # InterpretISODateTimeOffset over a PlainDateTime vector (complex of day
 # and nanoseconds of day) with a zone identifier per element and an
 # optional offset string per element. `behaviour_default` is the
-# behaviour without an offset: 2 wall, 3 start of day.
+# behaviour without an offset: wall time or the start of the day.
 ztp_zoned_resolve <- function(
   local,
   ids,
   offset_string,
   dis,
   off,
-  behaviour_default = 2L
+  behaviour_default = ztp_offset_behaviour_wall
 ) {
   n <- length(local)
   zones <- unique(ids[!is.na(ids)])
@@ -258,7 +255,11 @@ ztp_zoned_resolve <- function(
     }
     offset_string <- ztp_recycle(list(offset_string, local))[[1L]]
     offset_ns <- .Call(C_ztp_r_parse_offset_string, offset_string)
-    behaviour <- ifelse(is.na(offset_ns), behaviour_default, 0L)
+    behaviour <- ifelse(
+      is.na(offset_ns),
+      behaviour_default,
+      ztp_offset_behaviour_option
+    )
   }
   z <- .Call(
     C_ztp_r_zoned_interpret,
@@ -273,22 +274,6 @@ ztp_zoned_resolve <- function(
     rep(FALSE, n)
   )
   new_zoned_date_time(z, codes, zones)
-}
-
-# GetTemporalDisambiguationOption and GetTemporalOffsetOption, as the codes
-# of src/ztp_zoned.h.
-ztp_disambiguation_code <- function(disambiguation) {
-  ztp_match_option(
-    disambiguation,
-    c("compatible", "earlier", "later", "reject"),
-    "disambiguation"
-  ) -
-    1L
-}
-
-ztp_offset_option_code <- function(offset) {
-  ztp_match_option(offset, c("prefer", "use", "ignore", "reject"), "offset") -
-    1L
 }
 
 ztp_as_zoned_date_time <- function(x) {
@@ -438,25 +423,21 @@ temporal_to_zoned_date_time.zutempo_plain_date <- function(
 ) {
   ztp_check_dots_empty(...)
   id <- ztp_single_zone(time_zone)
-  if (is.null(plain_time)) {
-    local <- unclass(temporal_to_plain_date_time(x))
-    return(ztp_zoned_resolve(
-      local,
-      rep(id, length(local)),
-      NULL,
-      0L,
-      3L,
-      behaviour_default = 3L
-    ))
+  # Without a time the day starts where the zone says, which is not
+  # midnight on a day that begins in a clock gap.
+  behaviour <- if (is.null(plain_time)) {
+    ztp_offset_behaviour_start_of_day
+  } else {
+    ztp_offset_behaviour_wall
   }
   local <- unclass(temporal_to_plain_date_time(x, plain_time))
   ztp_zoned_resolve(
     local,
     rep(id, length(local)),
     NULL,
-    0L,
-    3L,
-    behaviour_default = 2L
+    ztp_disambiguation_compatible,
+    ztp_offset_reject,
+    behaviour_default = behaviour
   )
 }
 
@@ -477,8 +458,8 @@ temporal_to_zoned_date_time.zutempo_plain_date_time <- function(
     rep(id, length(local)),
     NULL,
     dis,
-    3L,
-    behaviour_default = 2L
+    ztp_offset_reject,
+    behaviour_default = ztp_offset_behaviour_wall
   )
 }
 
@@ -578,22 +559,7 @@ temporal_with.zutempo_zoned_date_time <- function(
   off <- ztp_offset_option_code(offset)
   ov <- ztp_overflow_code(overflow)
   local <- temporal_to_plain_date_time(x)
-  base <- list(
-    year = as.double(ztp_date_time_field(local, "year")),
-    month = as.double(ztp_date_time_field(local, "month")),
-    day = as.double(ztp_date_time_field(local, "day"))
-  )
-  date <- ztp_merge_date_fields(
-    base,
-    fields[intersect(names(fields), c("year", "month", "month_code", "day"))]
-  )
-  time <- lapply(ztp_time_field_names, function(f) {
-    as.double(ztp_date_time_field(local, f))
-  })
-  names(time) <- ztp_time_field_names
-  for (f in intersect(names(fields), ztp_time_field_names)) {
-    time[[f]] <- ztp_as_field(fields[[f]], f)
-  }
+  date_time <- ztp_merge_date_time_fields(local, fields)
   offset_string <- if (is.null(fields[["offset_string"]])) {
     offset(x)
   } else {
@@ -601,14 +567,10 @@ temporal_with.zutempo_zoned_date_time <- function(
   }
   ztp_zdt_zones_ready(x)
   merged <- ztp_recycle(c(
-    date,
-    time,
+    date_time,
     list(ids = ztp_zdt_ids(x), offset_string = offset_string)
   ))
-  regulated <- do.call(
-    .Call,
-    c(list(C_ztp_r_plain_date_time_from_fields), unname(merged[1:9]), list(ov))
-  )
+  regulated <- ztp_date_time_from_fields(merged, ov)
   ztp_zoned_resolve(
     regulated,
     merged[["ids"]],
@@ -627,7 +589,13 @@ temporal_with_plain_time.zutempo_zoned_date_time <- function(x, time = NULL) {
   local <- temporal_with_plain_time(temporal_to_plain_date_time(x), time)
   ztp_zdt_zones_ready(x)
   ids <- ztp_recycle(list(ztp_zdt_ids(x), unclass(local)))[[1L]]
-  ztp_zoned_resolve(unclass(local), ids, NULL, 0L, 3L)
+  ztp_zoned_resolve(
+    unclass(local),
+    ids,
+    NULL,
+    ztp_disambiguation_compatible,
+    ztp_offset_reject
+  )
 }
 
 #' @rdname temporal_with
@@ -702,7 +670,7 @@ temporal_to_string.zutempo_zoned_date_time <- function(
   v <- ztp_zdt_instant(x)
   # TemporalZonedDateTimeToString rounds the exact time, not the wall
   # clock (RoundTemporalInstant).
-  if (p[["unit"]] != 9L || p[["increment"]] != 1) {
+  if (ztp_needs_rounding(p)) {
     v <- .Call(
       C_ztp_r_instant_round,
       v,
@@ -1079,7 +1047,7 @@ temporal_until.zutempo_zoned_date_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -1102,7 +1070,7 @@ temporal_since.zutempo_zoned_date_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 

@@ -134,7 +134,7 @@ temporal_to_plain_date.zutempo_plain_year_month <- function(x, day, ...) {
     args[[1L]],
     args[[2L]],
     args[[3L]],
-    0L
+    ztp_overflow_constrain
   ))
 }
 

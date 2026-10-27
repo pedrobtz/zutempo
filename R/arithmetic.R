@@ -139,7 +139,7 @@ ztp_difference_settings <- function(
   }
   maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
   increment <- if (is.na(maximum)) {
-    ztp_increment_unchecked(rounding_increment)
+    ztp_increment_value(rounding_increment)
   } else {
     ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
   }
@@ -170,26 +170,26 @@ ztp_negate_rounding_mode <- function(code) {
 }
 
 # The shared body of until() and since(): `since` negates the result.
-ztp_difference <- function(x, other, convert, call, settings, since) {
+ztp_difference <- function(x, other, convert, compute, settings, since) {
   other <- convert(other)
   n <- ztp_common_length(x, other)
   a <- rep_len(unclass(x), n)
   b <- rep_len(unclass(other), n)
-  out <- call(a, b, settings)
+  out <- compute(a, b, settings)
   if (since) {
     out <- ztp_negate_duration_data(out)
   }
   new_duration(out)
 }
 
-ztp_add_impl <- function(x, other, call, negate) {
+ztp_add_impl <- function(x, other, compute, negate) {
   other <- ztp_as_duration(other)
   n <- ztp_common_length(x, other)
   data <- ztp_duration_data(other, n)
   if (negate) {
     data <- ztp_negate_duration_data(data)
   }
-  call(rep_len(unclass(x), n), data)
+  compute(rep_len(unclass(x), n), data)
 }
 
 # --- PlainDate ----------------------------------------------------------------
@@ -270,7 +270,7 @@ ztp_plain_date_difference <- function(
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -293,7 +293,7 @@ temporal_until.zutempo_plain_date <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -316,7 +316,7 @@ temporal_since.zutempo_plain_date <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -386,7 +386,7 @@ ztp_plain_time_difference <- function(
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -409,7 +409,7 @@ temporal_until.zutempo_plain_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -432,7 +432,7 @@ temporal_since.zutempo_plain_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -514,7 +514,7 @@ ztp_plain_date_time_difference <- function(
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -537,7 +537,7 @@ temporal_until.zutempo_plain_date_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -560,7 +560,7 @@ temporal_since.zutempo_plain_date_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -642,7 +642,7 @@ ztp_plain_year_month_difference <- function(
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -665,7 +665,7 @@ temporal_until.zutempo_plain_year_month <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -688,6 +688,6 @@ temporal_since.zutempo_plain_year_month <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
