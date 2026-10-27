@@ -732,10 +732,10 @@ ztp_status ztp_parse_path(ztp_ctx *ctx, size_t index, const char *s, size_t n,
     if (position) *position = c.fail_pos;
     {
         char shown[41];
-        size_t k = n < 40 ? n : 37;
+        size_t k = n <= 40 ? n : ztp_utf8_prefix(s, n, 37);
         ztp_status st;
         memcpy(shown, s, k);
-        if (n > 40) memcpy(shown + 37, "...", 3), k = 40;
+        if (n > 40) memcpy(shown + k, "...", 3), k += 3;
         shown[k] = '\0';
         st = ztp_fail(ctx, ZTP_ERR_PARSE, index,
                         "cannot parse \"%s\" as a %s: %s at byte %lu", shown,
@@ -837,7 +837,7 @@ ztp_status ztp_parse_calendar_string(ztp_ctx *ctx, size_t index, const char *s,
     }
     if (!valid)
         return ztp_fail(ctx, ZTP_ERR_RANGE, index, "\"%.*s\" is not a calendar identifier",
-                        (int)(n < 40 ? n : 40), s);
+                        (int)ztp_utf8_prefix(s, n, 40), s);
     k = n < ZTP_CALENDAR_CAP - 1 ? n : ZTP_CALENDAR_CAP - 1;
     memcpy(dst, s, k);
     dst[k] = '\0';
