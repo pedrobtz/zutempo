@@ -2,7 +2,7 @@
 
 A `plain_date()` is a calendar date in the ISO 8601 calendar with no
 time of day and no time zone, stored as an integer count of days since
-1970-01-01 (design 4.1). The constructor is `Temporal.PlainDate` and
+1970-01-01. The constructor is `Temporal.PlainDate` and
 `Temporal.PlainDate.from()` in one: it reads fields, strings or another
 zutempo value.
 
@@ -27,9 +27,11 @@ plain_date_compare(x, y)
 
   The year, or a string in ISO 8601 form (`"2026-01-31"`, a date-time
   whose time is ignored, or a year with a sign and six digits such as
-  `"+275760-09-13"`), or a `plain_date()` or
-  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
-  to convert.
+  `"+275760-09-13"`), or a `plain_date()`,
+  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md),
+  `Date`, `POSIXct` or `POSIXlt` value to convert. A zoned or `POSIXt`
+  value gives its date in its own zone.
 
 - month, day:
 
@@ -47,8 +49,7 @@ plain_date_compare(x, y)
 - overflow:
 
   `"constrain"` (the default) clamps `month` and `day` to their valid
-  ranges, `"reject"` raises a `zutempo_range_error` for them (design
-  6.2).
+  ranges, `"reject"` raises a `zutempo_range_error` for them.
 
 - x, y:
 

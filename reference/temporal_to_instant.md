@@ -7,7 +7,7 @@ becomes a
 [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
 in any zone; a
 [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
-is resolved in the zone with `disambiguation` (design 6.3); a
+is resolved in the zone with `disambiguation`; a
 [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
 gives the start of that day in the zone, or the given `plain_time` on
 that day.
@@ -81,7 +81,10 @@ x <- zoned_date_time("2026-03-07T12:00[America/New_York]")
 temporal_to_instant(x)
 #> <zutempo_instant[1]>
 #> [1] 2026-03-07T17:00:00Z
-temporal_to_zoned_date_time_iso(instant("2026-03-07T17:00Z"), "Europe/Lisbon")
+temporal_to_zoned_date_time_iso(
+  instant("2026-03-07T17:00Z"),
+  "Europe/Lisbon"
+)
 #> <zutempo_zoned_date_time[1]>
 #> [1] 2026-03-07T17:00:00+00:00[Europe/Lisbon]
 temporal_to_zoned_date_time(plain_date("2026-03-08"), "America/New_York")

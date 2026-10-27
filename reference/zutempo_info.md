@@ -21,13 +21,12 @@ A list of class `zutempo_info` with elements `package`, `zufast`,
 
 ## Details
 
-The time zone fields describe the database zutempo reads (design 8):
-`tzdir`, the directory found by base R's lookup order (`NA` when none
-exists), `tz_version`, the tzdata release it declares, `tz_form`,
-whether its files carry explicit transitions far into the future
-(`"fat"`) or stop at the last rule change (`"slim"`), and
-`tz_links_version`, the tzdata release the built-in link table comes
-from.
+The time zone fields describe the database zutempo reads: `tzdir`, the
+directory found by base R's lookup order (`NA` when none exists),
+`tz_version`, the tzdata release it declares, `tz_form`, whether its
+files carry explicit transitions far into the future (`"fat"`) or stop
+at the last rule change (`"slim"`), and `tz_links_version`, the tzdata
+release the built-in link table comes from.
 
 ## Examples
 

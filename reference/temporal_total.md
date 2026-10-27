@@ -2,7 +2,7 @@
 
 Temporal's `total()`: the whole duration as a possibly fractional count
 of `unit`. Years, months and weeks need `relative_to`; without it a day
-counts 24 hours (design 6.5).
+counts 24 hours.
 
 ## Usage
 
@@ -31,7 +31,7 @@ temporal_total(x, unit, relative_to = NULL)
   [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
   [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
   or a string one of them reads (a zone in brackets makes it zoned);
-  with a zoned value, days follow the zone (design 6.5).
+  with a zoned value, days follow the zone.
 
 ## Value
 

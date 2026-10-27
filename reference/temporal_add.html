@@ -5,14 +5,14 @@ days; on a plain_time() only the time part applies and the result
 wraps within the day. On a zoned_date_time() the date part moves
 through the calendar in the value's zone, resolved as &quot;compatible&quot;,
 and the time part moves the exact time, so a day across a clock change
-is not 24 hours (design 6.5). On a duration() the result is a
+is not 24 hours. On a duration() the result is a
 balanced duration, and calendar units are an error."><meta property="og:description" content="Temporal's add() and subtract(). On a plain_date() or
 plain_year_month() the time part of the duration counts in 24-hour
 days; on a plain_time() only the time part applies and the result
 wraps within the day. On a zoned_date_time() the date part moves
 through the calendar in the value's zone, resolved as &quot;compatible&quot;,
 and the time part moves the exact time, so a day across a clock change
-is not 24 hours (design 6.5). On a duration() the result is a
+is not 24 hours. On a duration() the result is a
 balanced duration, and calendar units are an error."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -63,7 +63,7 @@ days; on a <code><a href="plain_time.html">plain_time()</a></code> only the time
 wraps within the day. On a <code><a href="zoned_date_time.html">zoned_date_time()</a></code> the date part moves
 through the calendar in the value's zone, resolved as <code>"compatible"</code>,
 and the time part moves the exact time, so a day across a clock change
-is not 24 hours (design 6.5). On a <code><a href="duration.html">duration()</a></code> the result is a
+is not 24 hours. On a <code><a href="duration.html">duration()</a></code> the result is a
 balanced duration, and calendar units are an error.</p>
     </div>
 
@@ -134,8 +134,8 @@ balanced duration, and calendar units are an error.</p>
 
 <dt id="arg-overflow">overflow<a class="anchor" aria-label="anchor" href="#arg-overflow"></a></dt>
 <dd><p><code>"constrain"</code> (the default) clamps a day that the
-target month lacks, <code>"reject"</code> raises a <code>zutempo_range_error</code>
-(design 6.2). Not for a <code><a href="plain_time.html">plain_time()</a></code> or a <code><a href="duration.html">duration()</a></code>.</p></dd>
+target month lacks, <code>"reject"</code> raises a <code>zutempo_range_error</code>.
+Not for a <code><a href="plain_time.html">plain_time()</a></code> or a <code><a href="duration.html">duration()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -3,8 +3,8 @@
 A `zoned_date_time()` is an exact time together with the time zone it is
 read in, so that it has both an
 [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
-and a wall-clock date and time. Every element carries its own zone
-(design 4.2): the vector is an
+and a wall-clock date and time. Every element carries its own zone: the
+vector is an
 [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
 with an integer zone code per element into the `zones` attribute, the
 identifiers in the database's case. The constructor is
@@ -43,8 +43,10 @@ zoned_date_time_compare(x, y)
   (`"2026-03-07T12:00[America/New_York]"`,
   `"2026-03-07T12:00-05:00[America/New_York]"`,
   `"2026-03-07T17:00Z[Europe/Lisbon]"` for the instant shown in that
-  zone, `"2026-03-07[+05:30]"` for the start of that day), or a
-  `zoned_date_time()` to return as is.
+  zone, `"2026-03-07[+05:30]"` for the start of that day), a
+  `zoned_date_time()` to return as is, or a `POSIXct` or `POSIXlt`
+  value, placed in `time_zone` or else in its own `tzone` (the system
+  zone when that is empty).
 
 - month, day:
 
@@ -61,10 +63,11 @@ zoned_date_time_compare(x, y)
 
 - time_zone:
 
-  The time zone of each value, when `year` is a number: an IANA
-  identifier such as `"Europe/Lisbon"`, `"UTC"`, or a fixed offset such
-  as `"+05:30"`; recycled with the fields. Identifiers match regardless
-  of case and are stored in the database's case.
+  The time zone of each value, when `year` is a number or a `POSIXt`
+  value: an IANA identifier such as `"Europe/Lisbon"`, `"UTC"`, or a
+  fixed offset such as `"+05:30"`; recycled with the fields, or a single
+  zone for a `POSIXt` value. Identifiers match regardless of case and
+  are stored in the database's case.
 
 - month_code:
 
@@ -89,7 +92,7 @@ zoned_date_time_compare(x, y)
 - overflow:
 
   `"constrain"` (the default) clamps each field to its range, `"reject"`
-  raises a `zutempo_range_error` (design 6.2).
+  raises a `zutempo_range_error`.
 
 - x, y:
 
@@ -104,13 +107,13 @@ integer vector of -1, 0 and 1.
 ## Details
 
 A local time that does not exist (a clock gap) or exists twice (a fold)
-is resolved by `disambiguation` (design 6.3): `"compatible"` (the
-default) moves a gap forward by its length and takes the earlier of a
-fold, `"earlier"` and `"later"` take that side, `"reject"` raises a
-`zutempo_range_error`. When the fields or the string carry a UTC offset
-as well as a zone, `offset` says what to do when the two disagree:
-`"reject"` (the default for the constructor) raises, `"use"` trusts the
-offset, `"ignore"` trusts the zone, `"prefer"` (the default for
+is resolved by `disambiguation`: `"compatible"` (the default) moves a
+gap forward by its length and takes the earlier of a fold, `"earlier"`
+and `"later"` take that side, `"reject"` raises a `zutempo_range_error`.
+When the fields or the string carry a UTC offset as well as a zone,
+`offset` says what to do when the two disagree: `"reject"` (the default
+for the constructor) raises, `"use"` trusts the offset, `"ignore"`
+trusts the zone, `"prefer"` (the default for
 [`temporal_with()`](https://pedrobtz.github.io/zutempo/reference/temporal_with.md))
 trusts the offset when it is one of the zone's candidates and the zone
 otherwise.

@@ -6,7 +6,7 @@ and [`as.character()`](https://rdrr.io/r/base/character.html) gives the
 default strings. Years outside 0 to 9999 are written with a sign and six
 digits. By default a time's fraction keeps only its significant digits,
 and a UTC offset is written as `+HH:MM` or `-HH:MM`, rounded to the
-minute (design 9).
+minute.
 
 ## Usage
 
@@ -162,6 +162,10 @@ temporal_to_string(
   calendar_name = "always"
 )
 #> [1] "2026-01-31T12:30:46[u-ca=iso8601]"
-format(duration("PT1M30.25S"), smallest_unit = "second", rounding_mode = "ceil")
+format(
+  duration("PT1M30.25S"),
+  smallest_unit = "second",
+  rounding_mode = "ceil"
+)
 #> [1] "PT1M31S"
 ```

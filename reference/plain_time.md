@@ -1,10 +1,9 @@
 # Clock times: Temporal's PlainTime
 
 A `plain_time()` is a time of day with nanosecond precision and no date
-or time zone, stored as a double count of nanoseconds since midnight
-(design 4.1). The constructor is `Temporal.PlainTime` and
-`Temporal.PlainTime.from()` in one: it reads fields, strings or another
-zutempo value.
+or time zone, stored as a double count of nanoseconds since midnight.
+The constructor is `Temporal.PlainTime` and `Temporal.PlainTime.from()`
+in one: it reads fields, strings or another zutempo value.
 
 ## Usage
 
@@ -30,9 +29,11 @@ plain_time_compare(x, y)
   The hour (0 to 23), or a string in ISO 8601 form (`"12:30"`,
   `"12:30:45.123456789"`, `"T12"`, or a date-time whose date is ignored;
   a bare time that could also read as a month-day or year-month must
-  carry the `T` prefix), or a `plain_time()` or
+  carry the `T` prefix), or a `plain_time()`,
   [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
-  to convert.
+  or
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  to convert, or a `difftime` from 0 up to 24 hours after midnight.
 
 - minute, second, millisecond, microsecond, nanosecond:
 
@@ -45,7 +46,7 @@ plain_time_compare(x, y)
 - overflow:
 
   `"constrain"` (the default) clamps each field to its range, `"reject"`
-  raises a `zutempo_range_error` (design 6.2).
+  raises a `zutempo_range_error`.
 
 - x, y:
 

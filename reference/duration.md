@@ -2,9 +2,9 @@
 
 A `duration()` is a length of time in ten fields, years to nanoseconds,
 each a float64-representable integer as Temporal defines them, stored as
-a list of ten double vectors (design 4.1). All fields share one sign.
-Years, months and weeks are calendar units: operations that need their
-length take `relative_to`, a date, and fail without it (design 6.5).
+a list of ten double vectors. All fields share one sign. Years, months
+and weeks are calendar units: operations that need their length take
+`relative_to`, a date, and fail without it.
 
 ## Usage
 
@@ -31,8 +31,9 @@ duration_compare(x, y, relative_to = NULL)
 - years:
 
   The years, or a string in ISO 8601 form (`"P1Y2M3DT4H5M6.789S"`, a
-  fraction only on the smallest unit present), or a `duration()` to
-  return as is.
+  fraction only on the smallest unit present), a `duration()` to return
+  as is, or a `difftime`, whose exact seconds become seconds and
+  nanoseconds.
 
 - months, weeks, days, hours, minutes, seconds, milliseconds,
   microseconds, nanoseconds:
@@ -51,9 +52,12 @@ duration_compare(x, y, relative_to = NULL)
 
   A
   [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md),
-  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
-  or a string either reads: the date the calendar units are counted
-  from. Required when either duration has years, months or weeks.
+  [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
+  or a string one of them reads (a zone in brackets makes it zoned): the
+  start the calendar units are counted from; with a zoned value, days
+  follow the zone. Required when either duration has years, months or
+  weeks.
 
 ## Value
 

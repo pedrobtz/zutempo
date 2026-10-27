@@ -10,7 +10,7 @@ only the time part applies and the result wraps within the day. On a
 [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
 the date part moves through the calendar in the value's zone, resolved
 as `"compatible"`, and the time part moves the exact time, so a day
-across a clock change is not 24 hours (design 6.5). On a
+across a clock change is not 24 hours. On a
 [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
 the result is a balanced duration, and calendar units are an error.
 
@@ -85,7 +85,7 @@ temporal_subtract(x, other, ..., overflow = "constrain")
 - overflow:
 
   `"constrain"` (the default) clamps a day that the target month lacks,
-  `"reject"` raises a `zutempo_range_error` (design 6.2). Not for a
+  `"reject"` raises a `zutempo_range_error`. Not for a
   [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
   or a
   [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md).

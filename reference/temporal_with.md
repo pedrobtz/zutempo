@@ -6,7 +6,7 @@ with the named fields replaced and the rest kept, resolving the result
 with `overflow`. `temporal_with_plain_time()` is `withPlainTime()`,
 `temporal_with_time_zone()` is `withTimeZone()` (the same instant read
 in another zone), and `temporal_with_calendar()` is `withCalendar()`,
-which accepts only `"iso8601"` in this version (design D7).
+which accepts only `"iso8601"` in this version.
 
 ## Usage
 
@@ -83,7 +83,9 @@ temporal_with_calendar(x, calendar)
 - overflow:
 
   `"constrain"` (the default) clamps out-of-range fields, `"reject"`
-  raises a `zutempo_range_error` for them (design 6.2).
+  raises a `zutempo_range_error` for them. A
+  [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
+  has nothing to clamp: the value is checked and has no effect.
 
 - time:
 

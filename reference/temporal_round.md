@@ -1,8 +1,7 @@
 # Round a Temporal value
 
 Temporal's [`round()`](https://rdrr.io/r/base/Round.html), to an
-increment of `smallest_unit` with one of the nine rounding modes (design
-6.4).
+increment of `smallest_unit` with one of the nine rounding modes.
 [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
 rounds within the day;
 [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
@@ -120,7 +119,7 @@ temporal_round(
   [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
   [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
   or a string one of them reads, required to round years, months or
-  weeks; with a zoned value, days follow the zone (design 6.5).
+  weeks; with a zoned value, days follow the zone.
 
 ## Value
 
@@ -141,7 +140,11 @@ temporal_round(plain_date_time("2026-01-31T23:59"), "hour")
 temporal_round(duration(hours = 25), largest_unit = "day")
 #> <zutempo_duration[1]>
 #> [1] P1DT1H
-temporal_round(duration(hours = 25), largest_unit = "day", relative_to = "2026-03-07")
+temporal_round(
+  duration(hours = 25),
+  largest_unit = "day",
+  relative_to = "2026-03-07"
+)
 #> <zutempo_duration[1]>
 #> [1] P1DT1H
 ```

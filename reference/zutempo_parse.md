@@ -1,7 +1,7 @@
 # Read strings as a Temporal type, with `NA` for those that fail
 
-The bulk-reading escape of the string constructors (design 6.8). A
-constructor such as
+The bulk-reading escape of the string constructors. A constructor such
+as
 [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
 stops at the first string it cannot read; `zutempo_parse()` reads the
 rest and returns `NA` for each string that fails, with the reasons in an

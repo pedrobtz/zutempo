@@ -5,7 +5,7 @@ Methods for base R's [`as.Date()`](https://rdrr.io/r/base/as.Date.html),
 [`as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html), and
 `temporal_to_difftime()`, which stands in for
 [`as.difftime()`](https://rdrr.io/r/base/difftime.html) because base R's
-is not a generic (design 6.10). The other direction is the constructors:
+is not a generic. The other direction is the constructors:
 `plain_date(<Date>)`, `instant(<POSIXct>)`,
 `zoned_date_time(<POSIXct>)`, `plain_date_time(<POSIXct>)`,
 `plain_time(<difftime>)` and `duration(<difftime>)`.

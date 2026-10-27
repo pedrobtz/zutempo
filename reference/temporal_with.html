@@ -4,12 +4,12 @@ the named fields replaced and the rest kept, resolving the result with
 overflow. temporal_with_plain_time() is withPlainTime(),
 temporal_with_time_zone() is withTimeZone() (the same instant read
 in another zone), and temporal_with_calendar() is withCalendar(),
-which accepts only &quot;iso8601&quot; in this version (design D7)."><meta property="og:description" content="temporal_with() is Temporal's with(): it returns a copy of x with
+which accepts only &quot;iso8601&quot; in this version."><meta property="og:description" content="temporal_with() is Temporal's with(): it returns a copy of x with
 the named fields replaced and the rest kept, resolving the result with
 overflow. temporal_with_plain_time() is withPlainTime(),
 temporal_with_time_zone() is withTimeZone() (the same instant read
 in another zone), and temporal_with_calendar() is withCalendar(),
-which accepts only &quot;iso8601&quot; in this version (design D7)."></head><body>
+which accepts only &quot;iso8601&quot; in this version."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -58,7 +58,7 @@ the named fields replaced and the rest kept, resolving the result with
 <code>overflow</code>. <code>temporal_with_plain_time()</code> is <code>withPlainTime()</code>,
 <code>temporal_with_time_zone()</code> is <code>withTimeZone()</code> (the same instant read
 in another zone), and <code>temporal_with_calendar()</code> is <code>withCalendar()</code>,
-which accepts only <code>"iso8601"</code> in this version (design D7).</p>
+which accepts only <code>"iso8601"</code> in this version.</p>
     </div>
 
     <div class="section level2">
@@ -136,7 +136,8 @@ to agree.</p></dd>
 
 <dt id="arg-overflow">overflow<a class="anchor" aria-label="anchor" href="#arg-overflow"></a></dt>
 <dd><p><code>"constrain"</code> (the default) clamps out-of-range fields,
-<code>"reject"</code> raises a <code>zutempo_range_error</code> for them (design 6.2).</p></dd>
+<code>"reject"</code> raises a <code>zutempo_range_error</code> for them. A <code><a href="duration.html">duration()</a></code> has
+nothing to clamp: the value is checked and has no effect.</p></dd>
 
 
 <dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>

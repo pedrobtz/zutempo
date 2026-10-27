@@ -3,9 +3,9 @@
 A `plain_date_time()` is a calendar date in the ISO 8601 calendar with a
 time of day to the nanosecond and no time zone, stored as a complex
 vector whose real part is the epoch day and whose imaginary part is the
-nanoseconds of day (design 4.1). The constructor is
-`Temporal.PlainDateTime` and `Temporal.PlainDateTime.from()` in one: it
-reads fields, strings or another zutempo value.
+nanoseconds of day. The constructor is `Temporal.PlainDateTime` and
+`Temporal.PlainDateTime.from()` in one: it reads fields, strings or
+another zutempo value.
 
 ## Usage
 
@@ -34,9 +34,12 @@ plain_date_time_compare(x, y)
 
   The year, or a string in ISO 8601 form (`"2026-01-31T12:30:45.5"`, a
   date alone for midnight, an offset is ignored and `Z` is rejected), or
-  a
+  a `plain_date_time()`,
   [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
-  (for midnight) or `plain_date_time()` to convert.
+  (for midnight),
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md),
+  `Date` (for midnight), `POSIXct` or `POSIXlt` value to convert. A
+  zoned or `POSIXt` value gives its wall-clock time in its own zone.
 
 - month, day:
 
@@ -58,7 +61,7 @@ plain_date_time_compare(x, y)
 - overflow:
 
   `"constrain"` (the default) clamps each field to its range, `"reject"`
-  raises a `zutempo_range_error` (design 6.2).
+  raises a `zutempo_range_error`.
 
 - x, y:
 

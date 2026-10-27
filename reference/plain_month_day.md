@@ -2,10 +2,10 @@
 
 A `plain_month_day()` is a month and day with no year, such as a
 birthday, in the ISO 8601 calendar, stored as an integer
-`month * 32 + day` (design 4.1). Temporal keeps the day valid in a
-reference year, 1972, so February 29 is a `plain_month_day()`. The
-constructor is `Temporal.PlainMonthDay` and
-`Temporal.PlainMonthDay.from()` in one: it reads fields, strings or a
+`month * 32 + day`. Temporal keeps the day valid in a reference year,
+1972, so February 29 is a `plain_month_day()`. The constructor is
+`Temporal.PlainMonthDay` and `Temporal.PlainMonthDay.from()` in one: it
+reads fields, strings or a
 [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
 or
 [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md).
@@ -55,7 +55,7 @@ plain_month_day(
 - overflow:
 
   `"constrain"` (the default) clamps `month` and `day`, `"reject"`
-  raises a `zutempo_range_error` (design 6.2).
+  raises a `zutempo_range_error`.
 
 ## Value
 

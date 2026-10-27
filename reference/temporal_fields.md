@@ -1,10 +1,10 @@
 # Fields of a Temporal value
 
-One accessor per Temporal property, named after it in snake case (design
-5). Each is an S3 generic with methods for the zutempo classes and a
-default that calls the function of the same name from another attached
-package, so that `lubridate::year()` and the others keep working on
-their own objects after zutempo is attached.
+One accessor per Temporal property, named after it in snake case. Each
+is an S3 generic with methods for the zutempo classes and a default that
+calls the function of the same name from another attached package, so
+that `lubridate::year()` and the others keep working on their own
+objects after zutempo is attached.
 
 ## Usage
 
@@ -514,14 +514,30 @@ hours_in_day(x, ...)
 
 ## Value
 
-An integer vector, or a character vector for `calendar_id()`, `era()`
-and `month_code()`, or a logical vector for `in_leap_year()`, with `NA`
-where `x` is `NA`.
+A vector of the length of `x`, with `NA` where `x` is `NA`:
+
+- character for `calendar_id()`, `era()`, `month_code()`, `offset()`,
+  `time_zone_id()` and `epoch_nanoseconds()`;
+
+- logical for `in_leap_year()` and `blank()`;
+
+- double for `epoch_milliseconds()`, `offset_nanoseconds()`,
+  `hours_in_day()` and the duration fields, `years()` to
+  `nanoseconds()`;
+
+- integer for every other field.
+
+On a
+[`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md),
+[`sign()`](https://rdrr.io/r/base/sign.html) returns an integer vector
+of -1, 0 and 1 and [`abs()`](https://rdrr.io/r/base/MathFun.html) a
+[`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md);
+other `Math` functions are an error.
 
 ## Fields
 
 - `calendar_id()`: `calendarId`, the calendar identifier, always
-  "iso8601".
+  `"iso8601"`.
 
 - `era()`: `era`, the era, `NA` in the ISO 8601 calendar.
 
@@ -566,6 +582,31 @@ where `x` is `NA`.
 - `microsecond()`: `microsecond`, 0 to 999.
 
 - `nanosecond()`: `nanosecond`, 0 to 999.
+
+- `epoch_milliseconds()`: `epochMilliseconds`, the milliseconds since
+  1970-01-01T00:00Z, floored.
+
+- `epoch_nanoseconds()`: `epochNanoseconds`, the nanoseconds since
+  1970-01-01T00:00Z, as decimal strings: they do not fit in a double.
+
+- `offset_nanoseconds()`: `offsetNanoseconds`, the zone's UTC offset.
+
+- `offset()`: `offset`, the UTC offset as `"+HH:MM"`, with seconds if it
+  has them.
+
+- `time_zone_id()`: `timeZoneId`, the time zone identifier.
+
+- `hours_in_day()`: `hoursInDay`, the length of the day in the zone, in
+  hours.
+
+- `years()`, `months()`, `weeks()`, `days()`, `hours()`, `minutes()`,
+  `seconds()`, `milliseconds()`, `microseconds()`, `nanoseconds()`: the
+  fields of a
+  [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md).
+
+- `blank()`: `blank`, whether every field of a
+  [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
+  is zero.
 
 ## Examples
 

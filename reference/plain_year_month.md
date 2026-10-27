@@ -1,9 +1,9 @@
 # Months: Temporal's PlainYearMonth
 
 A `plain_year_month()` is a month of a year in the ISO 8601 calendar,
-stored as an integer count of months since January 1970 (design 4.1).
-The constructor is `Temporal.PlainYearMonth` and
-`Temporal.PlainYearMonth.from()` in one: it reads fields, strings or a
+stored as an integer count of months since January 1970. The constructor
+is `Temporal.PlainYearMonth` and `Temporal.PlainYearMonth.from()` in
+one: it reads fields, strings or a
 [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
 or
 [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md).
@@ -50,7 +50,7 @@ plain_year_month_compare(x, y)
 - overflow:
 
   `"constrain"` (the default) clamps `month` to 1 to 12, `"reject"`
-  raises a `zutempo_range_error` (design 6.2).
+  raises a `zutempo_range_error`.
 
 - x, y:
 

@@ -2,9 +2,9 @@
 
 Temporal's `until()` and `since()`: the duration from `x` to `other`
 (`until`), or from `other` to `x` (`since`), balanced up to
-`largest_unit` and rounded to `smallest_unit` (design 6.6). Defaults
-follow the type: days for dates and date-times, hours for times, zoned
-values and instants, years for year-months. Two
+`largest_unit` and rounded to `smallest_unit`. Defaults follow the type:
+days for dates and date-times, hours for times, zoned values and
+instants, years for year-months. Two
 [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
 values in different zones can only be differenced in time units.
 
@@ -184,8 +184,9 @@ temporal_since(
 
 - rounding_increment:
 
-  A positive integer that divides the next larger unit evenly for time
-  units.
+  A positive integer up to 10^9. With a time unit as `smallest_unit` it
+  must also divide the next larger unit evenly and be smaller than it:
+  24 hours, 60 minutes or seconds, 1000 of the sub-second units.
 
 - rounding_mode:
 
@@ -202,7 +203,11 @@ A
 temporal_until(plain_date("2026-01-31"), "2026-03-01")
 #> <zutempo_duration[1]>
 #> [1] P29D
-temporal_until(plain_date("2026-01-31"), "2026-03-01", largest_unit = "month")
+temporal_until(
+  plain_date("2026-01-31"),
+  "2026-03-01",
+  largest_unit = "month"
+)
 #> <zutempo_duration[1]>
 #> [1] P1M1D
 temporal_since(plain_time("13:30"), "12:00")
