@@ -11,10 +11,7 @@ test_that("offsets agree with base R at every transition and sampled hours", {
   # Seconds normally, far longer under gctorture, which this test cannot
   # tell anything new: its C calls are the ones the oracle makes.
   skip_if(identical(Sys.getenv("ZUTEMPO_GCTORTURE_SAMPLE"), "true"))
-  skip_if(
-    is.na(zutempo_info()[["tzdir"]]),
-    "no time zone database on this machine"
-  )
+  skip_without_tzdb()
   # Both read the same files: base R's default can be another database
   # than zutempo's (R's own copy on macOS even when the system's is newer),
   # and a version that changed a zone's rules would differ for that reason
@@ -42,10 +39,7 @@ test_that("offsets agree with base R at every hour from 1900 to 2100", {
     identical(Sys.getenv("ZUTEMPO_EXTENDED_TESTS"), "true"),
     "ZUTEMPO_EXTENDED_TESTS is not set"
   )
-  skip_if(
-    is.na(zutempo_info()[["tzdir"]]),
-    "no time zone database on this machine"
-  )
+  skip_without_tzdb()
   # Both read the same files: base R's default can be another database
   # than zutempo's (R's own copy on macOS even when the system's is newer),
   # and a version that changed a zone's rules would differ for that reason

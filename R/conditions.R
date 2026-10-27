@@ -12,8 +12,10 @@
 # Every condition raised from a vectorised call carries `index`, the
 # 1-based position of the first failing element, or NULL when no element
 # applies. A parse error also carries `position`, the 1-based byte of the
-# string where it failed (design 10). The C glue reaches this function
-# through ztp_r_raise().
+# string where it failed (design 10). An error about an option argument
+# (an invalid `rounding_mode`, a missing `smallest_unit`) carries `option`,
+# the argument's name. The C glue reaches this function through
+# ztp_r_raise().
 
 zutempo_condition_classes <- list(
   range = "zutempo_range_error",
@@ -27,7 +29,8 @@ stop_zutempo <- function(
   kind = "range",
   index = NULL,
   call = NULL,
-  position = NULL
+  position = NULL,
+  option = NULL
 ) {
   classes <- zutempo_condition_classes[[kind]]
   if (is.null(classes)) {
@@ -53,6 +56,9 @@ stop_zutempo <- function(
   fields <- list(message = message, call = call, index = index)
   if (!is.null(position)) {
     fields$position <- as.numeric(position)
+  }
+  if (!is.null(option)) {
+    fields$option <- as.character(option)
   }
   cond <- structure(
     class = c(classes, "zutempo_error", "error", "condition"),

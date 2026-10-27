@@ -119,9 +119,19 @@ test262_option_names <- c(
 )
 
 test262_option_error <- function(error) {
-  pattern <- sprintf("^`(%s)` ", paste(test262_option_names, collapse = "|"))
   inherits(error, "zutempo_type_error") &&
-    grepl(pattern, conditionMessage(error))
+    isTRUE(error[["option"]] %in% test262_option_names)
+}
+
+# R raises its own error for a missing argument, where JavaScript passes
+# undefined and throws a TypeError. R 4.5.0 gave that error a class; before
+# it, only the message tells it apart.
+test262_missing_argument <- function(error) {
+  if (getRversion() >= "4.5.0") {
+    return(inherits(error, "missingArgError"))
+  }
+  !inherits(error, "zutempo_error") &&
+    grepl("is missing, with no default", conditionMessage(error))
 }
 
 # A JavaScript constructor call. Constructors take ISO fields and never
@@ -300,12 +310,7 @@ test262_problem <- function(type, case) {
     if (expected_throw == "RangeError" && test262_option_error(value)) {
       return(NULL)
     }
-    # R raises its own error for a missing argument, where JavaScript
-    # passes undefined and throws a TypeError.
-    if (
-      expected_throw == "TypeError" &&
-        grepl("is missing, with no default", conditionMessage(value))
-    ) {
+    if (expected_throw == "TypeError" && test262_missing_argument(value)) {
       return(NULL)
     }
     if (!inherits(value, oracle_error_class(expected_throw))) {

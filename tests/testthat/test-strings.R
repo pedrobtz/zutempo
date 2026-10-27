@@ -169,6 +169,27 @@ test_that("a parse error carries the position of the first bad byte", {
   expect_identical(err[["position"]], 4)
   err <- tryCatch(plain_date("2026-01-31[!foo=bar]"), error = identity)
   expect_identical(err[["position"]], 11)
+  err <- tryCatch(plain_date("2026-01-3x"), error = identity)
+  expect_identical(err[["position"]], 10)
+  # A UTC designator where PlainDate's goal forbids one.
+  err <- tryCatch(plain_date("2026-01-31T12:30Z"), error = identity)
+  expect_identical(err[["position"]], 17)
+  # A decimal mark with no digits after it, in a time and a date-time.
+  err <- tryCatch(plain_time("12:30:45."), error = identity)
+  expect_identical(err[["position"]], 10)
+  err <- tryCatch(plain_date_time("2026-03-07T12:30:45,"), error = identity)
+  expect_identical(err[["position"]], 21)
+  # An offset zone annotation with ":" and no minutes.
+  err <- tryCatch(
+    zoned_date_time("2026-03-07T12:00+01:00[+01:]"),
+    error = identity
+  )
+  expect_s3_class(err, "zutempo_parse_error")
+  expect_identical(err[["position"]], 28)
+  # A key annotation whose key stops before the "=".
+  err <- tryCatch(plain_date("2026-01-31[u.ca=iso8601]"), error = identity)
+  expect_s3_class(err, "zutempo_parse_error")
+  expect_identical(err[["position"]], 13)
   # A range error has no position.
   err <- tryCatch(plain_date("2026-01-31[u-ca=hebrew]"), error = identity)
   expect_null(err[["position"]])

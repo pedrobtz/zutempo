@@ -1,31 +1,46 @@
 test_that("subsetting, combining and repeating keep the class", {
   for (x in plain_values()) {
     cls <- class(x)
-    expect_identical(class(x[1:2]), cls)
-    expect_identical(class(x[[2]]), cls)
-    expect_identical(class(c(x[1], x[2])), cls)
-    expect_identical(c(x[1], x[2]), x[1:2])
-    expect_identical(class(rep(x[1], 3)), cls)
-    expect_identical(class(rev(x)), cls)
-    expect_identical(rev(rev(x)), x)
-    expect_identical(class(unique(c(x, x))), cls)
-    expect_identical(unique(c(x, x)), x)
-    expect_identical(is.na(x), c(FALSE, FALSE, TRUE))
-    expect_identical(length(x[0]), 0L)
-    expect_identical(class(x[0]), cls)
+    what <- cls[1L]
+    expect_identical(class(x[1:2]), cls, info = what)
+    expect_identical(class(x[[2]]), cls, info = what)
+    expect_identical(class(c(x[1], x[2])), cls, info = what)
+    expect_identical(c(x[1], x[2]), x[1:2], info = what)
+    expect_identical(c(x[1], NA), x[c(1, 3)], info = what)
+    expect_identical(class(rep(x[1], 3)), cls, info = what)
+    expect_identical(class(rev(x)), cls, info = what)
+    expect_identical(rev(rev(x)), x, info = what)
+    expect_identical(class(unique(c(x, x))), cls, info = what)
+    expect_identical(unique(c(x, x)), x, info = what)
+    expect_identical(is.na(x), c(FALSE, FALSE, TRUE), info = what)
+    expect_identical(length(x[0]), 0L, info = what)
+    expect_identical(class(x[0]), cls, info = what)
+  }
+})
+
+test_that("assignment and length<- keep the class", {
+  for (x in plain_values()) {
+    cls <- class(x)
+    what <- cls[1L]
     y <- x
     y[3] <- x[1]
-    expect_identical(y[3], x[1])
+    expect_identical(y[3], x[1], info = what)
     y[[2]] <- x[1]
-    expect_identical(y[2], x[1])
+    expect_identical(y[2], x[1], info = what)
     y[1] <- NA
-    expect_true(is.na(y[1]))
+    expect_true(is.na(y[1]), info = what)
     length(y) <- 5
-    expect_identical(class(y), cls)
-    expect_true(is.na(y[5]))
-    expect_error(y[1] <- 5, class = "zutempo_type_error")
-    expect_error(c(x, 1), class = "zutempo_type_error")
-    expect_identical(c(x[1], NA), x[c(1, 3)])
+    expect_identical(class(y), cls, info = what)
+    expect_true(is.na(y[5]), info = what)
+  }
+})
+
+test_that("assigning or combining another class is a type error", {
+  for (x in plain_values()) {
+    what <- class(x)[1L]
+    y <- x
+    expect_error(y[1] <- 5, class = "zutempo_type_error", info = what)
+    expect_error(c(x, 1), class = "zutempo_type_error", info = what)
   }
   expect_error(
     c(plain_date("2026-01-31"), plain_time("12:00")),
@@ -112,12 +127,10 @@ test_that("pillar prints the classes in a tibble-like column", {
 })
 
 test_that("accessors fall back to the function they mask", {
-  skip_if_not_installed("withr")
   env <- new.env()
   env$year <- function(x, ...) "masked year"
-  withr::local_options(list())
-  withr::defer(detach("local:zutempo_test"), envir = parent.frame())
   attach(env, name = "local:zutempo_test", warn.conflicts = FALSE)
+  withr::defer(detach("local:zutempo_test"))
   # Call the generic by its namespace: the attached environment sits in
   # front of the package on the search path.
   expect_identical(zutempo::year(structure(1, class = "other")), "masked year")

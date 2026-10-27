@@ -1,5 +1,8 @@
 # zutempo 0.0.0.9000
 
+* An error about an option argument has a field `option` with the
+  argument's name, so code can tell which option was wrong without reading
+  the message: `tryCatch(..., zutempo_error = function(e) e[["option"]])`.
 * Operators on dates and times are a `zutempo_type_error` that names the
   function to use, such as `temporal_add()` or `temporal_equals()`. Before,
   base R's operators ran on the stored numbers and gave wrong values
@@ -16,7 +19,6 @@
   tzdata lacks, and keep the tzone of zones that are equal under
   `TimeZoneEquals`, such as `Asia/Calcutta` and `Asia/Kolkata`. The help
   page says that `as.POSIXlt()` of mixed zones does not round-trip.
-
 * Documentation: a README from Temporal to R, a table of every Temporal
   member and its R function on each type's help page, `?zutempo_options`
   for the options the functions share, and articles on the package website:
