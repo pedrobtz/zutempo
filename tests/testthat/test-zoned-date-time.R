@@ -3,7 +3,7 @@
 # test-oracle-zoned-date-time.R. Zone rules come from the committed slim
 # fixtures.
 
-test_that("a vector mixing three zones survives subsetting, combination and a round trip", {
+test_that("a vector mixing three zones keeps each zone through subsetting and combination", {
   with_tzdir(tz_fixture_dir("slim"), {
     x <- zoned_date_time(c(
       "2026-03-07T12:00[America/New_York]",
@@ -23,6 +23,22 @@ test_that("a vector mixing three zones survives subsetting, combination and a ro
     expect_identical(time_zone_id(rep(x, 2)), rep(ids, 2))
     expect_identical(time_zone_id(rep(x, each = 2)), rep(ids, each = 2))
     expect_identical(time_zone_id(rev(x)), rev(ids))
+    expect_identical(c(zoned_date_time(character()), x), x)
+    expect_length(zoned_date_time(character()), 0L)
+    expect_identical(
+      time_zone_id(zoned_date_time(c(NA, "2026-03-07T12:00[UTC]"))),
+      c(NA, "UTC")
+    )
+  })
+})
+
+test_that("sorting and unique() order zoned values by instant, stably", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-07T17:00[Europe/Lisbon]",
+      "2026-03-07T22:30[Asia/Calcutta]"
+    ))
     # One instant three times: sorting is stable and keeps the zones.
     expect_identical(format(sort(x)), format(x))
     expect_identical(order(x), 1:3)
@@ -31,6 +47,23 @@ test_that("a vector mixing three zones survives subsetting, combination and a ro
       c(1L, 3L, 2L)
     )
     expect_identical(format(unique(c(x, x[2], x[1]))), format(x))
+    # The same instant in two zones is one instant.
+    expect_identical(temporal_to_instant(x[1]), instant("2026-03-07T17:00Z"))
+    expect_identical(
+      epoch_milliseconds(x),
+      rep(epoch_milliseconds(instant("2026-03-07T17:00Z")), 3)
+    )
+  })
+})
+
+test_that("assignment and length<- recode the zone table", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-07T17:00[Europe/Lisbon]",
+      "2026-03-07T22:30[Asia/Calcutta]"
+    ))
+    ids <- c("America/New_York", "Europe/Lisbon", "Asia/Calcutta")
     y <- x
     y[2] <- x[3]
     expect_identical(time_zone_id(y), ids[c(1, 3, 3)])
@@ -43,6 +76,17 @@ test_that("a vector mixing three zones survives subsetting, combination and a ro
     length(y) <- 5
     expect_identical(is.na(y), c(FALSE, FALSE, TRUE, TRUE, TRUE))
     expect_identical(format(y)[1:2], format(x)[2:3])
+  })
+})
+
+test_that("zoned values survive data frames, rbind, saveRDS and printing", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-07T17:00[Europe/Lisbon]",
+      "2026-03-07T22:30[Asia/Calcutta]"
+    ))
+    ids <- c("America/New_York", "Europe/Lisbon", "Asia/Calcutta")
     df <- data.frame(when = x, n = 1:3)
     both <- rbind(df, df)
     expect_s3_class(both$when, "zutempo_zoned_date_time")
@@ -55,18 +99,6 @@ test_that("a vector mixing three zones survives subsetting, combination and a ro
     expect_identical(time_zone_id(back), ids)
     expect_identical(as.character(x), format(x))
     expect_match(capture.output(print(x))[1], "zutempo_zoned_date_time\\[3\\]")
-    expect_identical(c(zoned_date_time(character()), x), x)
-    expect_length(zoned_date_time(character()), 0L)
-    expect_identical(
-      time_zone_id(zoned_date_time(c(NA, "2026-03-07T12:00[UTC]"))),
-      c(NA, "UTC")
-    )
-    # The same instant in two zones is one instant.
-    expect_identical(temporal_to_instant(x[1]), instant("2026-03-07T17:00Z"))
-    expect_identical(
-      epoch_milliseconds(x),
-      rep(epoch_milliseconds(instant("2026-03-07T17:00Z")), 3)
-    )
   })
 })
 
@@ -455,7 +487,7 @@ test_that("strings with a zone annotation are read by the other types and ignore
   })
 })
 
-test_that("zoned arithmetic recycles, propagates NA and keeps each element's zone", {
+test_that("zoned add and subtract recycle, propagate NA and keep each element's zone", {
   with_tzdir(tz_fixture_dir("slim"), {
     x <- zoned_date_time(c(
       "2026-03-07T12:00[America/New_York]",
@@ -493,6 +525,16 @@ test_that("zoned arithmetic recycles, propagates NA and keeps each element's zon
       )),
       "2026-03-08T14:00:00-04:00[America/New_York]"
     )
+  })
+})
+
+test_that("durations round, total and compare relative to a zoned value", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-28T12:00[Europe/Lisbon]",
+      NA
+    ))
     expect_identical(
       format(temporal_round(
         duration(hours = 25),
@@ -553,7 +595,16 @@ test_that("zoned arithmetic recycles, propagates NA and keeps each element's zon
       ),
       class = "zutempo_type_error"
     )
-    # until and since across elements.
+  })
+})
+
+test_that("zoned until and since work across elements and check the zones", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-28T12:00[Europe/Lisbon]",
+      NA
+    ))
     y <- temporal_add(x, "P1DT2H")
     d <- temporal_until(x, y, largest_unit = "day")
     expect_identical(format(d), c("P1DT2H", "P1DT2H", NA))
@@ -584,7 +635,16 @@ test_that("zoned arithmetic recycles, propagates NA and keeps each element's zon
       temporal_until(x[1], y[1], "extra"),
       class = "zutempo_type_error"
     )
-    # round.
+  })
+})
+
+test_that("zoned round rounds in each element's zone", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    y <- zoned_date_time(c(
+      "2026-03-08T14:00[America/New_York]",
+      "2026-03-29T14:00[Europe/Lisbon]",
+      NA
+    ))
     expect_identical(
       format(temporal_round(y, "day")),
       c(
@@ -599,7 +659,16 @@ test_that("zoned arithmetic recycles, propagates NA and keeps each element's zon
       temporal_round(y, "day", rounding_increment = 2),
       class = "zutempo_range_error"
     )
-    # transitions.
+  })
+})
+
+test_that("time zone transitions are found in each element's zone", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- zoned_date_time(c(
+      "2026-03-07T12:00[America/New_York]",
+      "2026-03-28T12:00[Europe/Lisbon]",
+      NA
+    ))
     nxt <- temporal_get_time_zone_transition(x, "next")
     expect_identical(
       format(nxt),
@@ -634,16 +703,55 @@ test_that("zoned arithmetic recycles, propagates NA and keeps each element's zon
       temporal_get_time_zone_transition(x, "sideways"),
       class = "zutempo_type_error"
     )
-    # The fat fixture agrees with the slim one on transitions past 2037.
-    far <- zoned_date_time("2050-01-01T00:00[America/New_York]")
-    slim_next <- temporal_get_time_zone_transition(far, "next")
-    withr::with_options(list(zutempo.tzdir = tz_fixture_dir("fat")), {
-      zutempo_tz_reset()
-      expect_identical(
-        format(temporal_get_time_zone_transition(far, "next")),
-        format(slim_next)
-      )
-    })
+  })
+})
+
+test_that("the fat fixture agrees with the slim one on transitions past 2037", {
+  far <- "2050-01-01T00:00[America/New_York]"
+  slim_next <- with_tzdir(
+    tz_fixture_dir("slim"),
+    format(temporal_get_time_zone_transition(zoned_date_time(far), "next"))
+  )
+  fat_next <- with_tzdir(
+    tz_fixture_dir("fat"),
+    format(temporal_get_time_zone_transition(zoned_date_time(far), "next"))
+  )
+  expect_identical(fat_next, slim_next)
+  expect_identical(slim_next, "2050-03-13T03:00:00-04:00[America/New_York]")
+})
+
+test_that("a gap at local midnight resolves to the day before with earlier", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    # Sao Paulo's clocks went from 00:00 to 01:00 on 2018-11-04.
+    expect_identical(
+      format(zoned_date_time(
+        2018,
+        11,
+        4,
+        0,
+        30,
+        time_zone = "America/Sao_Paulo",
+        disambiguation = "earlier"
+      )),
+      "2018-11-03T23:30:00-03:00[America/Sao_Paulo]"
+    )
+    expect_identical(
+      format(zoned_date_time(
+        2018,
+        11,
+        4,
+        0,
+        30,
+        time_zone = "America/Sao_Paulo"
+      )),
+      "2018-11-04T01:30:00-02:00[America/Sao_Paulo]"
+    )
+    expect_identical(
+      format(temporal_start_of_day(
+        zoned_date_time("2018-11-04T12:00[America/Sao_Paulo]")
+      )),
+      "2018-11-04T01:00:00-02:00[America/Sao_Paulo]"
+    )
   })
 })
 
