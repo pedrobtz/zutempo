@@ -113,6 +113,8 @@ test_that("duration add, subtract, round, total and compare without relative_to"
   )
   expect_error(temporal_total(duration("PT1H")), class = "zutempo_type_error")
   expect_identical(duration_compare("PT1H", "PT60M"), 0L)
+  # Equal fields are equal without a relative_to, even with months.
+  expect_identical(duration_compare("P1M", "P1M"), 0L)
   expect_identical(duration_compare("P1D", "PT24H"), 0L)
   expect_identical(duration_compare("-PT1H", "PT1H"), -1L)
   expect_error(duration_compare("P1M", "P30D"), class = "zutempo_range_error")
