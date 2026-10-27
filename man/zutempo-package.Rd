@@ -4,9 +4,9 @@
 \name{zutempo-package}
 \alias{zutempo}
 \alias{zutempo-package}
-\title{zutempo: Dates, Times and Durations Following the 'TC39' Temporal Specification}
+\title{zutempo: Dates, Times and Durations Following 'JavaScript' Temporal}
 \description{
-An implementation of the Temporal date and time model of 'ECMA-262' in 'R', with a native 'C' core: 'Instant', 'ZonedDateTime', 'PlainDateTime', 'PlainDate', 'PlainTime', 'PlainYearMonth', 'PlainMonthDay', 'Duration' and 'Now', in the ISO 8601 calendar, with 'IANA' time zones read from the same database that base 'R' uses. Values are stored exactly in 'R' vectors, arithmetic is done over the specification's full ranges with exact 128-bit intermediates, and strings follow RFC 9557 with annotations. Every result is meant to match the result of the same operation in a browser or in 'Node'.
+An implementation of the Temporal date and time model of 'ECMAScript', the language standard 'ECMA-262' behind 'JavaScript', in 'R', with a native 'C' core: 'Instant', 'ZonedDateTime', 'PlainDateTime', 'PlainDate', 'PlainTime', 'PlainYearMonth', 'PlainMonthDay', 'Duration' and 'Now', in the ISO 8601 calendar, with the time zones of the Internet Assigned Numbers Authority (IANA) read from the same database that base 'R' uses. Values are stored exactly in 'R' vectors, arithmetic is done over the specification's full ranges with exact 128-bit intermediates, and strings follow the Internet Extended Date/Time Format of RFC 9557, with annotations. Every result is meant to match the result of the same operation in a browser or in 'Node.js'.
 }
 \section{Scope}{
 
@@ -40,6 +40,11 @@ Useful links:
 Authors:
 \itemize{
   \item Pedro Baltazar \email{pedrobtz@gmail.com} [copyright holder]
+}
+
+Other contributors:
+\itemize{
+  \item Ecma International (Test262 tests translated into tests/testthat/test262/, see inst/COPYRIGHTS) [copyright holder]
 }
 
 }

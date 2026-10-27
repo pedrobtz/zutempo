@@ -8,3 +8,9 @@
 ^tools$
 ^README\.Rmd$
 ^vignettes$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^AGENTS\.md$
+^\.claude$
+^\.superpowers$
+^\.worktrees$

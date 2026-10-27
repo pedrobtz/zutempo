@@ -19,3 +19,6 @@ lubridate
 polyfill
 tzdata
 zutempo's
+Ecma
+js
+testthat
