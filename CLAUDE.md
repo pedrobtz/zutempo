@@ -145,7 +145,8 @@ Design §4 is the reference. The layers, top down:
 - `tests/testthat/tzdata/`: fat and slim TZif fixtures for 22 zones with
   the transitions `zdump` reports, from `tools/tz/fixtures.R` (needs `zic`
   and `zdump`). Regenerate when the tzdata pin moves.
-- `src/init.c`: the only exported symbol, `R_init_zutempo`. R reaches the
+- `src/init.c`: the only exported symbols, `R_init_zutempo` and
+  `R_unload_zutempo` (which frees the zone cache). R reaches the
   registered routines as `C_<name>` (`useDynLib(..., .fixes = "C_")`).
 - A `zoned_date_time()` is the instant's complex vector with the attribute
   `zone` (an integer code per element) and `zones` (the identifiers, in
@@ -265,7 +266,9 @@ Design §4 is the reference. The layers, top down:
   in the glue a shape reaches, not in the values; that cut the run by
   about 40% (2026-10-15). Add cases freely; add expectations with care.
   A heavy loop over values in another test file samples the same way.
-- **Keep the suite inside the CRAN time budget.** Not yet measured.
+- **Keep the suite inside the CRAN time budget.** Measured 2026-10-27 on
+  Apple silicon: about 25 s of CPU on the CRAN path (`NOT_CRAN=false`,
+  test262 and agreement skipped), about 65 s with `NOT_CRAN=true`.
 
 ## Definition of done
 

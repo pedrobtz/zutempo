@@ -20,11 +20,18 @@ test_that("zutempo_info() reports the build", {
   expect_match(info$zufast, "^[0-9]+\\.[0-9]+\\.[0-9]+")
   expect_type(info$int128, "logical")
   expect_length(info$int128, 1L)
+})
+
+test_that("the engine uses __int128 unless the build asked it not to", {
   # CI's fallback leg sets ZUTEMPO_CFLAGS=-DZUF_NO_INT128 before the build
-  # (src/Makevars). When it did, the engine must say so.
-  if (grepl("ZUF_NO_INT128", Sys.getenv("ZUTEMPO_CFLAGS"), fixed = TRUE)) {
-    expect_false(info$int128)
-  }
+  # (src/Makevars), and the variable stays set for the tests. Every 64-bit
+  # GCC and Clang has __int128; a 32-bit build may not.
+  fallback <- grepl("ZUF_NO_INT128", Sys.getenv("ZUTEMPO_CFLAGS"), fixed = TRUE)
+  skip_if(
+    !fallback && .Machine$sizeof.pointer < 8L,
+    "a 32-bit build may have no __int128"
+  )
+  expect_identical(zutempo_info()$int128, !fallback)
 })
 
 test_that("zutempo_info() prints every pin", {

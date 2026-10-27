@@ -289,9 +289,15 @@ test_that("Duration <-> difftime is the total in seconds", {
 })
 
 test_that("PlainYearMonth and PlainMonthDay have no base R conversion", {
-  expect_error(as.Date(plain_year_month("2026-03")))
+  # No method: base R's as.Date.default() raises its own error.
+  expect_error(as.Date(plain_year_month("2026-03")), class = "simpleError")
+  expect_error(as.Date(plain_month_day("03-07")), class = "simpleError")
   expect_identical(
     as.Date(temporal_to_plain_date(plain_year_month("2026-03"), day = 7)),
+    as.Date("2026-03-07")
+  )
+  expect_identical(
+    as.Date(temporal_to_plain_date(plain_month_day("03-07"), year = 2026)),
     as.Date("2026-03-07")
   )
 })

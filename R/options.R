@@ -6,7 +6,8 @@ ztp_match_option <- function(value, choices, name) {
   if (!is.character(value) || length(value) != 1L || is.na(value)) {
     stop_zutempo(
       sprintf("`%s` must be a single string", name),
-      kind = "type"
+      kind = "type",
+      option = name
     )
   }
   i <- match(value, choices)
@@ -18,10 +19,17 @@ ztp_match_option <- function(value, choices, name) {
         paste0("\"", choices, "\"", collapse = ", "),
         value
       ),
-      kind = "type"
+      kind = "type",
+      option = name
     )
   }
   i
+}
+
+# A required option that was not given: a type error, as GetOption throws
+# a RangeError for an undefined required value (design 10).
+ztp_option_required <- function(name) {
+  stop_zutempo(sprintf("`%s` is required", name), kind = "type", option = name)
 }
 
 # GetTemporalOverflowOption: 0 constrain, 1 reject.
@@ -71,7 +79,11 @@ ztp_unit_code <- function(
   name = "smallest_unit"
 ) {
   if (!is.character(unit) || length(unit) != 1L || is.na(unit)) {
-    stop_zutempo(sprintf("`%s` must be a single string", name), kind = "type")
+    stop_zutempo(
+      sprintf("`%s` must be a single string", name),
+      kind = "type",
+      option = name
+    )
   }
   i <- match(unit, ztp_units)
   if (is.na(i)) {
@@ -80,7 +92,8 @@ ztp_unit_code <- function(
   if (is.na(i)) {
     stop_zutempo(
       sprintf("`%s` must be a Temporal unit, not \"%s\"", name, unit),
-      kind = "type"
+      kind = "type",
+      option = name
     )
   }
   allowed <- ztp_unit_category[i] == group ||
@@ -89,7 +102,8 @@ ztp_unit_code <- function(
   if (!allowed) {
     stop_zutempo(
       sprintf("`%s` cannot be \"%s\" here", name, unit),
-      kind = "range"
+      kind = "range",
+      option = name
     )
   }
   i - 1L
@@ -104,13 +118,18 @@ ztp_increment <- function(rounding_increment, maximum, inclusive) {
       length(rounding_increment) != 1L ||
       is.na(rounding_increment)
   ) {
-    stop_zutempo("`rounding_increment` must be a single number", kind = "type")
+    stop_zutempo(
+      "`rounding_increment` must be a single number",
+      kind = "type",
+      option = "rounding_increment"
+    )
   }
   increment <- trunc(rounding_increment)
   if (!is.finite(increment) || increment < 1 || increment > 1e9) {
     stop_zutempo(
       "`rounding_increment` must be between 1 and 1000000000",
-      kind = "range"
+      kind = "range",
+      option = "rounding_increment"
     )
   }
   limit <- if (inclusive) maximum else maximum - 1
@@ -121,7 +140,8 @@ ztp_increment <- function(rounding_increment, maximum, inclusive) {
         format(increment, scientific = FALSE),
         format(maximum, scientific = FALSE)
       ),
-      kind = "range"
+      kind = "range",
+      option = "rounding_increment"
     )
   }
   as.double(increment)
@@ -135,13 +155,18 @@ ztp_increment_unchecked <- function(rounding_increment) {
       length(rounding_increment) != 1L ||
       is.na(rounding_increment)
   ) {
-    stop_zutempo("`rounding_increment` must be a single number", kind = "type")
+    stop_zutempo(
+      "`rounding_increment` must be a single number",
+      kind = "type",
+      option = "rounding_increment"
+    )
   }
   increment <- trunc(rounding_increment)
   if (!is.finite(increment) || increment < 1 || increment > 1e9) {
     stop_zutempo(
       "`rounding_increment` must be between 1 and 1000000000",
-      kind = "range"
+      kind = "range",
+      option = "rounding_increment"
     )
   }
   as.double(increment)
@@ -237,20 +262,23 @@ ztp_fractional_digits <- function(fractional_second_digits) {
         "`fractional_second_digits` must be \"auto\" or 0 to 9, not \"%s\"",
         x
       ),
-      kind = "type"
+      kind = "type",
+      option = "fractional_second_digits"
     )
   }
   if (!is.numeric(x) || length(x) != 1L || is.na(x)) {
     stop_zutempo(
       "`fractional_second_digits` must be \"auto\" or a single number",
-      kind = "type"
+      kind = "type",
+      option = "fractional_second_digits"
     )
   }
   digits <- floor(x)
   if (!is.finite(digits) || digits < 0 || digits > 9) {
     stop_zutempo(
       "`fractional_second_digits` must be between 0 and 9",
-      kind = "range"
+      kind = "range",
+      option = "fractional_second_digits"
     )
   }
   as.integer(digits)
@@ -275,7 +303,8 @@ ztp_precision_record <- function(
     if (name == "hour" || (!minute && name == "minute")) {
       stop_zutempo(
         sprintf("`smallest_unit` cannot be \"%s\" here", smallest_unit),
-        kind = "range"
+        kind = "range",
+        option = "smallest_unit"
       )
     }
     precision <- c(

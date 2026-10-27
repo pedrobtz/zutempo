@@ -512,7 +512,8 @@ temporal_round.zutempo_duration <- function(
   if (largest >= 0L && largest > smallest) {
     stop_zutempo(
       "`largest_unit` must not be smaller than `smallest_unit`",
-      kind = "range"
+      kind = "range",
+      option = "largest_unit"
     )
   }
   n <- ztp_relative_length(x, relative_to)
@@ -556,7 +557,7 @@ temporal_total <- function(x, unit, relative_to = NULL) {
 #' @export
 temporal_total.zutempo_duration <- function(x, unit, relative_to = NULL) {
   if (missing(unit)) {
-    stop_zutempo("`unit` is required", kind = "type")
+    ztp_option_required("unit")
   }
   code <- ztp_unit_code(unit, "datetime", name = "unit")
   n <- ztp_relative_length(x, relative_to)

@@ -261,7 +261,7 @@ temporal_round.zutempo_instant <- function(
 ) {
   ztp_check_dots_empty(...)
   if (is.null(smallest_unit)) {
-    stop_zutempo("`smallest_unit` is required", kind = "type")
+    ztp_option_required("smallest_unit")
   }
   unit <- ztp_unit_code(smallest_unit, "time")
   mode <- ztp_rounding_mode_code(rounding_mode)

@@ -331,7 +331,32 @@ test_that("the POSIX footer rule handles every form in the files and the v3 hour
     ),
     c(-18000L, -14400L, -14400L, -18000L)
   )
-  expect_error(utoff("EST5", "2026-01-01T00:00") |> invisible(), NA)
+  # A standard time alone; an unquoted name.
+  expect_identical(utoff("EST5", "2026-01-01T00:00"), -18000L)
+  # DST with neither an offset nor rules: one hour ahead, on the US rules
+  # POSIX gives as the default (M3.2.0,M11.1.0).
+  expect_identical(
+    utoff(
+      "EST5EDT",
+      c(
+        "2026-01-15T12:00",
+        "2026-03-08T06:59:59",
+        "2026-03-08T07:00:00",
+        "2026-07-15T12:00",
+        "2026-11-01T06:00:00"
+      )
+    ),
+    c(-18000L, -18000L, -14400L, -14400L, -18000L)
+  )
+  # Offsets with minutes and seconds, as zic writes for local mean time.
+  expect_identical(utoff("<-034630>3:46:30", "2026-01-01T00:00"), -13590L)
+  expect_identical(
+    utoff(
+      "<+0020>-0:20<+0120>-1:20:00,M3.5.0,M10.5.0/3",
+      c("2026-01-15T12:00", "2026-07-15T12:00")
+    ),
+    c(1200L, 4800L)
+  )
   expect_error(
     .Call(zutempo:::C_ztp_r_tz_rule_utoff, "nonsense,,", 0),
     class = "zutempo_tz_error"
@@ -397,15 +422,14 @@ test_that("without a database, UTC and offsets work and named zones are tz error
       temporal_to_string(instant("2026-07-01T16:00Z"), time_zone = "UTC"),
       "2026-07-01T16:00:00+00:00"
     )
-    cond <- tryCatch(
+    # The wording ("not in the database at ...") is in test-messages.R.
+    expect_error(
       temporal_to_string(
         instant("2026-07-01T16:00Z"),
         time_zone = "America/New_York"
       ),
-      error = identity
+      class = "zutempo_tz_error"
     )
-    expect_s3_class(cond, "zutempo_tz_error")
-    expect_match(conditionMessage(cond), "not in the database")
     info <- zutempo_info()
     expect_identical(info$tzdir, empty)
     expect_true(is.na(info$tz_version))
@@ -429,7 +453,7 @@ test_that("zutempo_info() describes this machine's database", {
   zutempo_tz_reset()
   withr::defer(zutempo_tz_reset())
   info <- zutempo_info()
-  skip_if(is.na(info$tzdir), "no time zone database on this machine")
+  skip_without_tzdb()
   expect_true(dir.exists(info$tzdir))
   expect_match(
     info$tz_version,
@@ -477,19 +501,55 @@ test_that("the cache refreshes when the directory option changes", {
 })
 
 test_that("a damaged TZif file is a tz error, not a crash", {
+  withr::defer(zutempo_tz_reset())
   path <- file.path(tz_fixture_dir("slim"), "Asia/Tokyo")
   bytes <- readBin(path, "raw", n = file.size(path))
-  bad <- function(b) .Call(zutempo:::C_ztp_r_tz_load, "Fuzz/Zone", b)
-  expect_error(bad(bytes[1:20]), class = "zutempo_tz_error")
-  expect_error(
-    bad(as.raw(c(0x54, 0x5a, 0x69, 0x66, 0x32, rep(0xff, 60)))),
-    class = "zutempo_tz_error"
+  at <- tzif_layout(bytes)
+  # The layout read the file as zic wrote it: nine transitions, three
+  # types and the footer "JST-9".
+  expect_identical(
+    unlist(at[c("timecnt", "typecnt")]),
+    c(timecnt = 9, typecnt = 3)
   )
-  expect_error(bad(raw(0)), class = "zutempo_tz_error")
-  truncated <- bytes[seq_len(length(bytes) - 40L)]
-  expect_error(bad(truncated), class = "zutempo_tz_error")
-  expect_silent(bad(bytes))
-  zutempo_tz_reset()
+  expect_identical(rawToChar(bytes[at$footer:length(bytes)]), "\nJST-9\n")
+  patch <- function(offset, value) {
+    b <- bytes
+    b[offset + seq_along(value) - 1L] <- as.raw(value)
+    b
+  }
+  # The second transition equal to the first.
+  repeated <- patch(at$times + 8L, as.integer(bytes[at$times + 0:7]))
+  damaged <- list(
+    "too short for a header" = bytes[1:20],
+    "a header with a bad version" = as.raw(c(
+      0x54,
+      0x5a,
+      0x69,
+      0x66,
+      0x32,
+      rep(0xff, 60)
+    )),
+    "empty" = raw(0),
+    "truncated in the 32-bit block" = bytes[seq_len(at$header2 + 10L)],
+    "a second header without its magic" = patch(at$header2 + 3L, 0x58),
+    "truncated in the 64-bit block" = bytes[seq_len(length(bytes) - 40L)],
+    "transitions not ascending" = repeated,
+    "a transition type past the types" = patch(at$idx, 3L),
+    "an abbreviation index past the characters" = patch(at$types + 5L, 12L),
+    "a footer without its closing newline" = bytes[-length(bytes)],
+    "a footer that is not a TZ rule" = c(
+      bytes[seq_len(at$footer)],
+      charToRaw("nonsense,,\n")
+    )
+  )
+  for (what in names(damaged)) {
+    expect_error(
+      .Call(zutempo:::C_ztp_r_tz_load, "Fuzz/Zone", damaged[[what]]),
+      class = "zutempo_tz_error",
+      info = what
+    )
+  }
+  expect_silent(.Call(zutempo:::C_ztp_r_tz_load, "Fuzz/Zone", bytes))
 })
 
 test_that("the database is looked up once per setting, and again after a reset", {
@@ -510,4 +570,116 @@ test_that("the database is looked up once per setting, and again after a reset",
   # ... until a reset.
   zutempo_tz_reset()
   expect_identical(zutempo_info()[["tzdir"]], dir)
+})
+
+test_that("each platform tries its directories in base R's order", {
+  withr::local_options(list(zutempo.tzdir = NULL))
+  withr::local_envvar(TZDIR = NA)
+  r_copy <- file.path(R.home("share"), "zoneinfo")
+  local_mocked_bindings(ztp_dir_exists = function(paths) {
+    rep(TRUE, length(paths))
+  })
+  tried <- function(platform) {
+    with_mocked_bindings(
+      zutempo:::ztp_tz_find(),
+      ztp_tz_platform = function() platform
+    )
+  }
+  linux <- tried("Linux")
+  expect_identical(linux$tried, c("/usr/share/zoneinfo", r_copy))
+  expect_identical(linux$dir, "/usr/share/zoneinfo")
+  darwin <- tried("Darwin")
+  expect_identical(darwin$tried, c(r_copy, "/var/db/timezone/zoneinfo"))
+  expect_identical(darwin$dir, r_copy)
+  windows <- tried("windows")
+  expect_identical(windows$tried, r_copy)
+  expect_identical(windows$dir, r_copy)
+  # Another Unix reads the system's database first, as Linux does.
+  expect_identical(tried("SunOS")$tried, linux$tried)
+})
+
+test_that("the lookup takes the first directory that exists", {
+  withr::local_options(list(zutempo.tzdir = NULL))
+  withr::local_envvar(TZDIR = NA)
+  r_copy <- file.path(R.home("share"), "zoneinfo")
+  local_mocked_bindings(
+    ztp_tz_platform = function() "Linux",
+    ztp_dir_exists = function(paths) paths == r_copy
+  )
+  found <- zutempo:::ztp_tz_find()
+  expect_identical(found$dir, r_copy)
+  expect_identical(found$tried, c("/usr/share/zoneinfo", r_copy))
+})
+
+test_that("the option comes before TZDIR, and both know R's special values", {
+  withr::local_options(list(zutempo.tzdir = NULL))
+  withr::local_envvar(TZDIR = NA)
+  r_copy <- file.path(R.home("share"), "zoneinfo")
+  local_mocked_bindings(
+    ztp_tz_platform = function() "Linux",
+    ztp_dir_exists = function(paths) rep(TRUE, length(paths))
+  )
+  withr::with_envvar(c(TZDIR = "internal"), {
+    expect_identical(
+      zutempo:::ztp_tz_find()$tried,
+      c(r_copy, "/usr/share/zoneinfo")
+    )
+  })
+  withr::with_envvar(c(TZDIR = "macOS"), {
+    expect_identical(
+      zutempo:::ztp_tz_find()$tried,
+      c("/var/db/timezone/zoneinfo", "/usr/share/zoneinfo", r_copy)
+    )
+  })
+  # An empty TZDIR is no setting.
+  withr::with_envvar(c(TZDIR = ""), {
+    expect_identical(
+      zutempo:::ztp_tz_find()$tried,
+      c("/usr/share/zoneinfo", r_copy)
+    )
+  })
+  withr::with_options(list(zutempo.tzdir = "/opt/zoneinfo"), {
+    withr::with_envvar(c(TZDIR = "macOS"), {
+      expect_identical(
+        zutempo:::ztp_tz_find()$tried,
+        c(
+          "/opt/zoneinfo",
+          "/var/db/timezone/zoneinfo",
+          "/usr/share/zoneinfo",
+          r_copy
+        )
+      )
+    })
+  })
+  withr::with_options(list(zutempo.tzdir = "internal"), {
+    expect_identical(zutempo:::ztp_tz_find()$dir, r_copy)
+  })
+})
+
+test_that("with no database anywhere, named zones are tz errors and UTC works", {
+  withr::local_options(list(zutempo.tzdir = NULL))
+  withr::local_envvar(TZDIR = NA)
+  local_mocked_bindings(ztp_dir_exists = function(paths) {
+    rep(FALSE, length(paths))
+  })
+  zutempo_tz_reset()
+  withr::defer(zutempo_tz_reset())
+  info <- zutempo_info()
+  expect_true(is.na(info$tzdir))
+  expect_true(is.na(info$tz_version))
+  expect_error(
+    zoned_date_time(c(
+      "2026-03-07T12:00[UTC]",
+      "2026-03-07T12:00[Europe/Paris]"
+    )),
+    class = "zutempo_tz_error"
+  )
+  expect_identical(
+    format(zoned_date_time("2026-03-07T12:00[+01:00]")),
+    "2026-03-07T12:00:00+01:00[+01:00]"
+  )
+  expect_identical(
+    temporal_to_string(instant("2026-07-01T16:00Z"), time_zone = "UTC"),
+    "2026-07-01T16:00:00+00:00"
+  )
 })

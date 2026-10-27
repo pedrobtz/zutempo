@@ -39,10 +39,10 @@ ztp_tz_find <- function() {
     tried <- c(tried, ztp_tz_special_dir(env))
   }
   r_copy <- file.path(R.home("share"), "zoneinfo")
-  sysname <- Sys.info()[["sysname"]]
-  if (.Platform$OS.type == "windows") {
+  platform <- ztp_tz_platform()
+  if (platform == "windows") {
     tried <- c(tried, r_copy)
-  } else if (identical(sysname, "Darwin")) {
+  } else if (platform == "Darwin") {
     # R's own copy first, as base R reads it (and OlsonNames() lists it)
     # even when the system's is newer, though ?timezones says otherwise.
     tried <- c(tried, r_copy, "/var/db/timezone/zoneinfo")
@@ -50,11 +50,22 @@ ztp_tz_find <- function() {
     tried <- c(tried, "/usr/share/zoneinfo", r_copy)
   }
   tried <- unique(tried)
-  exists <- dir.exists(tried)
+  exists <- ztp_dir_exists(tried)
   list(
     dir = if (any(exists)) tried[which(exists)[1L]] else NA_character_,
     tried = tried
   )
+}
+
+# The platform that decides the candidates: "windows", else the system's
+# name ("Darwin", "Linux", ...). Thin wrappers over base R, so the tests
+# can mock every branch of the lookup on any machine.
+ztp_tz_platform <- function() {
+  if (.Platform$OS.type == "windows") "windows" else Sys.info()[["sysname"]]
+}
+
+ztp_dir_exists <- function(paths) {
+  dir.exists(paths)
 }
 
 # R's special values for TZDIR.
