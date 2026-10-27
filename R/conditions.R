@@ -6,6 +6,9 @@
 #       zutempo_tz_error          unknown zones, missing database
 #     zutempo_type_error          wrong classes, invalid option values
 #
+#   zutempo_warning               root of the warnings
+#     zutempo_tz_warning          a system time zone that cannot be read
+#
 # Every condition raised from a vectorised call carries `index`, the
 # 1-based position of the first failing element, or NULL when no element
 # applies. A parse error also carries `position`, the 1-based byte of the
@@ -56,4 +59,20 @@ stop_zutempo <- function(
     fields
   )
   stop(cond)
+}
+
+zutempo_warning_classes <- list(
+  tz = "zutempo_tz_warning"
+)
+
+warn_zutempo <- function(message, kind = "tz", call = NULL) {
+  classes <- zutempo_warning_classes[[kind]]
+  if (is.null(classes)) {
+    stop("unknown condition kind: ", kind)
+  }
+  cond <- structure(
+    class = c(classes, "zutempo_warning", "warning", "condition"),
+    list(message = message, call = call)
+  )
+  warning(cond)
 }
