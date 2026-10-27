@@ -228,7 +228,10 @@ test_that("Now's zone is the one Sys.timezone() names", {
 
 test_that("the system zone falls back to UTC when base R has none", {
   withr::local_envvar(TZ = "Mars/Olympus_Mons")
-  expect_identical(now_time_zone_id(), "UTC")
+  expect_warning(
+    expect_identical(now_time_zone_id(), "UTC"),
+    class = "zutempo_tz_warning"
+  )
 })
 
 test_that("constructor arguments are checked", {

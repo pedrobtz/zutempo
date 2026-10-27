@@ -25,10 +25,19 @@ now_plain_time_iso(time_zone = NULL)
 \code{now_time_zone_id()} returns a string; the others the value named.
 }
 \description{
-Temporal's \code{Temporal.Now} functions: the system time zone as base R
-reads it (\code{Sys.timezone()}, falling back to \code{"UTC"}), and the current
-time as a \code{zoned_date_time()}, \code{plain_date_time()}, \code{plain_date()} or
-\code{plain_time()} in that zone or in \code{time_zone}.
+Temporal's \code{Temporal.Now} functions: the system time zone, and the
+current time as a \code{zoned_date_time()}, \code{plain_date_time()},
+\code{plain_date()} or \code{plain_time()} in that zone or in \code{time_zone}.
+}
+\details{
+The system time zone is read as the C library that base R formats with
+reads it. The \code{TZ} environment variable comes first, without a leading
+\code{:}; a path under a zone directory, such as
+\verb{/usr/share/zoneinfo/Europe/Berlin}, names the zone at that path.
+Without \code{TZ} it is \code{Sys.timezone()}, and without either it is \code{"UTC"}.
+A zone that is set but cannot be read, such as a POSIX TZ string or a
+zone the database lacks, gives \code{"UTC"} with a warning of class
+\code{zutempo_tz_warning}.
 }
 \section{Members}{
 

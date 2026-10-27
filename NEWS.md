@@ -3,6 +3,22 @@
 * An error about an option argument has a field `option` with the
   argument's name, so code can tell which option was wrong without reading
   the message: `tryCatch(..., zutempo_error = function(e) e[["option"]])`.
+* Operators on dates and times are a `zutempo_type_error` that names the
+  function to use, such as `temporal_add()` or `temporal_equals()`. Before,
+  base R's operators ran on the stored numbers and gave wrong values
+  (`instant(x) + 0.5`) or answers that disagreed with `temporal_equals()`
+  (`z1 == z2`). `min()`, `max()` and `range()` return a value of the same
+  type, in the order `sort()` uses; a `plain_month_day()` has no order, so
+  they are errors there, as `sum()` and the others are on every type.
+* The system time zone reads `TZ` in the forms the C library accepts: a
+  leading `:` is dropped, and a path under a zone directory names its zone.
+  A zone that is set but cannot be read gives `"UTC"` with a
+  `zutempo_tz_warning`, where before it gave `"UTC"` silently.
+* `as.POSIXct()` and `as.POSIXlt()` of a zoned value give an offset of
+  `-13:00` or `-14:00` the tzone `"UTC"` rather than an `Etc/GMT` zone
+  tzdata lacks, and keep the tzone of zones that are equal under
+  `TimeZoneEquals`, such as `Asia/Calcutta` and `Asia/Kolkata`. The help
+  page says that `as.POSIXlt()` of mixed zones does not round-trip.
 * Documentation: a README from Temporal to R, a table of every Temporal
   member and its R function on each type's help page, `?zutempo_options`
   for the options the functions share, and articles on the package website:
