@@ -1,8 +1,9 @@
 /*
  * init.c -- registration of the package's native routines.
  *
- * Every symbol but R_init_zutempo is hidden (src/Makevars passes
- * $(C_VISIBILITY)), so the entry point carries attribute_visible. R
+ * Every symbol but R_init_zutempo and R_unload_zutempo is hidden
+ * (src/Makevars passes $(C_VISIBILITY)), so the two carry
+ * attribute_visible. R
  * reaches native code through the registered table alone:
  * R_useDynamicSymbols(dll, FALSE) stops .Call() from looking up symbols
  * by name, and R_forceSymbols(dll, TRUE) makes the R side use the
@@ -10,6 +11,7 @@
  */
 
 #include "ztp_r.h"
+#include "ztp_tz.h"
 
 #include <R_ext/Rdynload.h>
 #include <R_ext/Visibility.h>
@@ -104,4 +106,13 @@ attribute_visible void R_init_zutempo(DllInfo *dll)
     R_registerRoutines(dll, NULL, call_methods, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
     R_forceSymbols(dll, TRUE);
+}
+
+/* Free the zone cache's heap blocks when the DLL unloads, so that
+   unloading and loading again (devtools::load_all(), detach()) leaks
+   nothing. */
+attribute_visible void R_unload_zutempo(DllInfo *dll)
+{
+    (void)dll;
+    ztp_tz_cache_reset();
 }

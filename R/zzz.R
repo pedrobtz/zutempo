@@ -52,10 +52,41 @@ ztp_s3_register <- function(generic, class, method) {
       registerS3method(generic, class, method, envir = envir)
     }
   }
-  setHook(packageEvent(package, "onLoad"), register)
+  # Tag the hook, and drop one with the same tag from an earlier load, so
+  # that loading the package again does not pile hooks up.
+  tag <- paste(generic, class)
+  attr(register, "zutempo_hook") <- tag
+  hook <- packageEvent(package, "onLoad")
+  ztp_drop_hooks(hook, function(t) identical(t, tag))
+  setHook(hook, register)
   if (isNamespaceLoaded(package)) {
     register()
   }
+  invisible()
+}
+
+# Remove the hooks of `hook` whose tag satisfies `drop`.
+ztp_drop_hooks <- function(hook, drop = function(tag) TRUE) {
+  hooks <- getHook(hook)
+  keep <- vapply(
+    hooks,
+    function(h) {
+      tag <- attr(h, "zutempo_hook", exact = TRUE)
+      is.null(tag) || !drop(tag)
+    },
+    logical(1L)
+  )
+  if (!all(keep)) {
+    setHook(hook, hooks[keep], "replace")
+  }
+  invisible()
+}
+
+.onUnload <- function(libpath) {
+  for (package in c("vctrs", "pillar")) {
+    ztp_drop_hooks(packageEvent(package, "onLoad"))
+  }
+  library.dynam.unload("zutempo", libpath)
   invisible()
 }
 
