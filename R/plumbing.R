@@ -171,7 +171,7 @@ ztp_partial_fields <- function(fields, allowed) {
   fields
 }
 
-# --- subsetting and combination ------------------------------------------
+# --- subsetting and combination -----------------------------------------------
 
 ztp_subset <- function(x, i) {
   ztp_restore(unclass(x)[i], x)
@@ -290,7 +290,7 @@ as.data.frame.zutempo_plain_date_time <- function(x, ...) {
   as.data.frame.vector(x, ...)
 }
 
-# --- ordering --------------------------------------------------------------
+# --- ordering -----------------------------------------------------------------
 
 # Chronological order: epoch days and nanoseconds of day sort as numbers.
 
@@ -316,7 +316,7 @@ ztp_order_key_complex <- function(x) {
 #' @export
 xtfrm.zutempo_plain_date_time <- function(x) ztp_order_key_complex(x)
 
-# --- text -------------------------------------------------------------------
+# --- text ---------------------------------------------------------------------
 
 #' @export
 format.zutempo_plain_date <- function(x, ...) ztp_format(x, ...)
@@ -347,7 +347,7 @@ print.zutempo_plain_time <- function(x, ...) ztp_print(x, ...)
 #' @export
 print.zutempo_plain_date_time <- function(x, ...) ztp_print(x, ...)
 
-# --- the partial-date classes ----------------------------------------------
+# --- the partial-date classes -------------------------------------------------
 
 #' @export
 `[.zutempo_plain_year_month` <- function(x, i, ...) ztp_subset(x, i)

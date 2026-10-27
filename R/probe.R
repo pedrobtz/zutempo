@@ -1,6 +1,6 @@
-# The stage 1 probe (src/ztp_probe.h): one path from R through the glue to
-# the engine and zufast's headers, kept so that tests prove the layering.
-# Internal; later stages replace it with the real types.
+# The probe (src/ztp_probe.h): one path from R through the glue to the
+# engine and zufast's headers, kept so that the tests prove the layering
+# and the error path. Internal.
 
 ztp_probe_civil <- function(days) {
   .Call(C_ztp_r_probe_civil, as.double(days))

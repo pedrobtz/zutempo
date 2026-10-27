@@ -2,7 +2,7 @@
 #'
 #' A `plain_month_day()` is a month and day with no year, such as a
 #' birthday, in the ISO 8601 calendar, stored as an integer
-#' `month * 32 + day` (design 4.1). Temporal keeps the day valid in a
+#' `month * 32 + day`. Temporal keeps the day valid in a
 #' reference year, 1972, so February 29 is a `plain_month_day()`. The
 #' constructor is `Temporal.PlainMonthDay` and
 #' `Temporal.PlainMonthDay.from()` in one: it reads fields, strings or a
@@ -18,7 +18,7 @@
 #' @param year A year in which the day must exist; without it the reference
 #'   year 1972, a leap year, is used.
 #' @param overflow `"constrain"` (the default) clamps `month` and `day`,
-#'   `"reject"` raises a `zutempo_range_error` (design 6.2).
+#'   `"reject"` raises a `zutempo_range_error`.
 #' @return A `plain_month_day()` vector.
 #' @examples
 #' plain_month_day("02-29")
@@ -126,7 +126,7 @@ temporal_with.zutempo_plain_month_day <- function(
     c("year", "month", "month_code", "day")
   )
   ov <- ztp_overflow_code(overflow)
-  base <- list(
+  current <- list(
     year = NULL,
     month = as.double(ztp_month_day_month(x)),
     day = as.double(ztp_month_day_day(x))
@@ -137,7 +137,7 @@ temporal_with.zutempo_plain_month_day <- function(
     ztp_as_field(fields[["year"]], "year")
   }
   day <- if (is.null(fields[["day"]])) {
-    base[["day"]]
+    current[["day"]]
   } else {
     ztp_as_field(fields[["day"]], "day")
   }
@@ -149,7 +149,11 @@ temporal_with.zutempo_plain_month_day <- function(
       fields[["month_code"]]
     )
   } else {
-    merged <- ztp_recycle(list(year = year, month = base[["month"]], day = day))
+    merged <- ztp_recycle(list(
+      year = year,
+      month = current[["month"]],
+      day = day
+    ))
   }
   ztp_month_day_from_fields(
     merged[["year"]],
