@@ -179,7 +179,7 @@
 <li>
 <strong>Keep the long gctorture run inside its 120-minute budget.</strong> Its cost grows with the R code the tests run, not test blocks: an oracle file runs all its cases in one <code>test_that()</code> and compares fields in one <code>expect_equal()</code>. Under <code>ZUTEMPO_GCTORTURE_SAMPLE=true</code> the oracle runs one case per shape (<code>oracle_gctorture_sample()</code>), since a PROTECT bug is in the glue a shape reaches, not in the values; that cut the run by about 40% (2026-10-15). Add cases freely; add expectations with care. A heavy loop over values in another test file samples the same way.</li>
 <li>
-<strong>Keep the suite inside the CRAN time budget.</strong> Not yet measured.</li>
+<strong>Keep the suite inside the CRAN time budget.</strong> Measured 2026-10-27 on Apple silicon: about 25 s of CPU on the CRAN path (<code>NOT_CRAN=false</code>, test262 and agreement skipped), about 65 s with <code>NOT_CRAN=true</code>.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="definition-of-done">Definition of done<a class="anchor" aria-label="anchor" href="#definition-of-done"></a></h2>
