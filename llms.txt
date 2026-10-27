@@ -319,8 +319,7 @@ Temporal’s prototype methods, as `temporal_` and the method name.
 
 - [`zutempo`](https://pedrobtz.github.io/zutempo/reference/zutempo-package.md)
   [`zutempo-package`](https://pedrobtz.github.io/zutempo/reference/zutempo-package.md)
-  : zutempo: Dates, Times and Durations Following the 'TC39' Temporal
-  Specification
+  : zutempo: Dates, Times and Durations Following 'JavaScript' Temporal
 - [`zutempo_info()`](https://pedrobtz.github.io/zutempo/reference/zutempo_info.md)
   : What zutempo was built against
 - [`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md)
