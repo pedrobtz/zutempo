@@ -260,9 +260,9 @@ ztp_posixlt <- function(x) {
     at <- which(ids == id)
     tz <- ztp_posix_tzone(id)
     if (identical(tz, id)) {
-      lt <- as.POSIXlt(.POSIXct(ct[at], tz = tz), tz = tz)
-      isdst[at] <- lt$isdst
-      abbrev[at] <- lt$zone
+      lt <- unclass(as.POSIXlt(.POSIXct(ct[at], tz = tz), tz = tz))
+      isdst[at] <- lt[["isdst"]]
+      abbrev[at] <- lt[["zone"]]
     } else {
       isdst[at] <- 0L
       abbrev[at] <- id

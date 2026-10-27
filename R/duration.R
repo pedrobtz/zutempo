@@ -196,7 +196,7 @@ ztp_relative_to <- function(relative_to, n) {
       kind = "type"
     )
   }
-  none$days <- rep_len(unclass(relative_to), n)
+  none[["days"]] <- rep_len(unclass(relative_to), n)
   none
 }
 
@@ -220,10 +220,10 @@ duration_compare <- function(x, y, relative_to = NULL) {
     C_ztp_r_duration_compare,
     ztp_duration_data(x, n),
     ztp_duration_data(y, n),
-    rel$days,
-    rel$zoned,
-    rel$codes,
-    rel$zones
+    rel[["days"]],
+    rel[["zoned"]],
+    rel[["codes"]],
+    rel[["zones"]]
   )
 }
 
@@ -526,10 +526,10 @@ temporal_round.zutempo_duration <- function(
     increment,
     mode,
     smallest_given,
-    rel$days,
-    rel$zoned,
-    rel$codes,
-    rel$zones
+    rel[["days"]],
+    rel[["zoned"]],
+    rel[["codes"]],
+    rel[["zones"]]
   ))
 }
 
@@ -566,10 +566,10 @@ temporal_total.zutempo_duration <- function(x, unit, relative_to = NULL) {
     C_ztp_r_duration_total,
     ztp_duration_data(x, n),
     code,
-    rel$days,
-    rel$zoned,
-    rel$codes,
-    rel$zones
+    rel[["days"]],
+    rel[["zoned"]],
+    rel[["codes"]],
+    rel[["zones"]]
   )
 }
 
@@ -592,10 +592,10 @@ temporal_to_string.zutempo_duration <- function(
   .Call(
     C_ztp_r_duration_format,
     unclass(x),
-    p$precision,
-    p$increment,
-    p$unit,
-    p$mode
+    p[["precision"]],
+    p[["increment"]],
+    p[["unit"]],
+    p[["mode"]]
   )
 }
 
@@ -713,8 +713,8 @@ as.list.zutempo_duration <- function(x, ...) {
 # cannot be ordered (design 6.5).
 ztp_duration_order_key <- function(x) {
   data <- unclass(x)
-  calendar <- !is.na(data$years) &
-    (data$years != 0 | data$months != 0 | data$weeks != 0)
+  calendar <- !is.na(data[["years"]]) &
+    (data[["years"]] != 0 | data[["months"]] != 0 | data[["weeks"]] != 0)
   if (any(calendar)) {
     stop_zutempo(
       "durations with years, months or weeks cannot be ordered without `relative_to`; use duration_compare()",

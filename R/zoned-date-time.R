@@ -216,20 +216,20 @@ ztp_zoned_build <- function(z, ids) {
 # ToTemporalZonedDateTime for strings.
 ztp_zoned_from_strings <- function(x, dis, off) {
   parts <- .Call(C_ztp_r_zoned_parse, x)
-  ids <- ztp_tz_ensure_all(parts$tz)
+  ids <- ztp_tz_ensure_all(parts[["tz"]])
   zones <- unique(ids[!is.na(ids)])
   codes <- match(ids, zones)
   z <- .Call(
     C_ztp_r_zoned_interpret,
-    parts$day,
-    parts$ns,
+    parts[["day"]],
+    parts[["ns"]],
     codes,
     zones,
-    parts$behaviour,
-    parts$offset_ns,
+    parts[["behaviour"]],
+    parts[["offset_ns"]],
     dis,
     off,
-    parts$match_minutes
+    parts[["match_minutes"]]
   )
   new_zoned_date_time(z, codes, zones)
 }
@@ -702,15 +702,21 @@ temporal_to_string.zutempo_zoned_date_time <- function(
   v <- ztp_zdt_instant(x)
   # TemporalZonedDateTimeToString rounds the exact time, not the wall
   # clock (RoundTemporalInstant).
-  if (p$unit != 9L || p$increment != 1) {
-    v <- .Call(C_ztp_r_instant_round, v, p$increment, p$unit, p$mode)
+  if (p[["unit"]] != 9L || p[["increment"]] != 1) {
+    v <- .Call(
+      C_ztp_r_instant_round,
+      v,
+      p[["increment"]],
+      p[["unit"]],
+      p[["mode"]]
+    )
   }
   .Call(
     C_ztp_r_zoned_format,
     v,
     ztp_zdt_codes(x),
     ztp_zdt_zones_ready(x),
-    p$precision,
+    p[["precision"]],
     show_offset,
     show_zone,
     show_calendar
@@ -973,9 +979,16 @@ temporal_add.zutempo_zoned_date_time <- function(
   ov <- ztp_overflow_code(overflow)
   a <- ztp_zoned_with_duration(x, other, negate = FALSE)
   new_zoned_date_time(
-    .Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov),
-    a$codes,
-    a$zones
+    .Call(
+      C_ztp_r_zoned_add,
+      a[["z"]],
+      a[["codes"]],
+      a[["zones"]],
+      a[["data"]],
+      ov
+    ),
+    a[["codes"]],
+    a[["zones"]]
   )
 }
 
@@ -991,9 +1004,16 @@ temporal_subtract.zutempo_zoned_date_time <- function(
   ov <- ztp_overflow_code(overflow)
   a <- ztp_zoned_with_duration(x, other, negate = TRUE)
   new_zoned_date_time(
-    .Call(C_ztp_r_zoned_add, a$z, a$codes, a$zones, a$data, ov),
-    a$codes,
-    a$zones
+    .Call(
+      C_ztp_r_zoned_add,
+      a[["z"]],
+      a[["codes"]],
+      a[["zones"]],
+      a[["data"]],
+      ov
+    ),
+    a[["codes"]],
+    a[["zones"]]
   )
 }
 
@@ -1029,10 +1049,10 @@ ztp_zoned_difference <- function(
     ztp_zdt_instant(other)[io],
     ztp_zdt_codes(other)[io],
     ztp_zdt_zones_ready(other),
-    settings$largest,
-    settings$smallest,
-    settings$increment,
-    settings$mode
+    settings[["largest"]],
+    settings[["smallest"]],
+    settings[["increment"]],
+    settings[["mode"]]
   )
   if (since) {
     out <- ztp_negate_duration_data(out)
@@ -1110,9 +1130,9 @@ temporal_round.zutempo_zoned_date_time <- function(
     ztp_zdt_instant(x),
     ztp_zdt_codes(x),
     ztp_zdt_zones_ready(x),
-    opts$increment,
-    opts$unit,
-    opts$mode
+    opts[["increment"]],
+    opts[["unit"]],
+    opts[["mode"]]
   )
   new_zoned_date_time(z, ztp_zdt_codes(x), ztp_zdt_zones(x))
 }

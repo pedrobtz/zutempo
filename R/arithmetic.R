@@ -263,10 +263,10 @@ ztp_plain_date_difference <- function(
         C_ztp_r_plain_date_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
@@ -379,10 +379,10 @@ ztp_plain_time_difference <- function(
         C_ztp_r_plain_time_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
@@ -507,10 +507,10 @@ ztp_plain_date_time_difference <- function(
         C_ztp_r_plain_date_time_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
@@ -635,10 +635,10 @@ ztp_plain_year_month_difference <- function(
         C_ztp_r_plain_year_month_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,

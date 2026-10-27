@@ -70,7 +70,12 @@ plain_month_day <- function(
     )
   }
   fields <- ztp_month_day_fields(year, month, day, month_code)
-  ztp_month_day_from_fields(fields$year, fields$month, fields$day, ov)
+  ztp_month_day_from_fields(
+    fields[["year"]],
+    fields[["month"]],
+    fields[["day"]],
+    ov
+  )
 }
 
 ztp_check_no_month_day_fields <- function(day, month_code, year) {
@@ -132,7 +137,7 @@ temporal_with.zutempo_plain_month_day <- function(
     ztp_as_field(fields[["year"]], "year")
   }
   day <- if (is.null(fields[["day"]])) {
-    base$day
+    base[["day"]]
   } else {
     ztp_as_field(fields[["day"]], "day")
   }
@@ -144,9 +149,14 @@ temporal_with.zutempo_plain_month_day <- function(
       fields[["month_code"]]
     )
   } else {
-    merged <- ztp_recycle(list(year = year, month = base$month, day = day))
+    merged <- ztp_recycle(list(year = year, month = base[["month"]], day = day))
   }
-  ztp_month_day_from_fields(merged$year, merged$month, merged$day, ov)
+  ztp_month_day_from_fields(
+    merged[["year"]],
+    merged[["month"]],
+    merged[["day"]],
+    ov
+  )
 }
 
 #' @rdname temporal_to_plain_date

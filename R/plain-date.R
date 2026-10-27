@@ -177,9 +177,9 @@ temporal_with.zutempo_plain_date <- function(x, ..., overflow = "constrain") {
   merged <- ztp_merge_date_fields(base, fields)
   new_plain_date(.Call(
     C_ztp_r_plain_date_from_fields,
-    merged$year,
-    merged$month,
-    merged$day,
+    merged[["year"]],
+    merged[["month"]],
+    merged[["day"]],
     ov
   ))
 }
@@ -216,14 +216,14 @@ ztp_merge_date_fields <- function(base, fields) {
   year <- if (!is.null(fields[["year"]])) {
     ztp_as_field(fields[["year"]], "year")
   } else {
-    base$year
+    base[["year"]]
   }
   day <- if (!is.null(fields[["day"]])) {
     ztp_as_field(fields[["day"]], "day")
   } else {
-    base$day
+    base[["day"]]
   }
-  month <- base$month
+  month <- base[["month"]]
   if (!is.null(fields[["month"]]) || !is.null(fields[["month_code"]])) {
     resolved <- ztp_date_fields(
       year,

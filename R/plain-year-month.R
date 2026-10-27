@@ -69,7 +69,7 @@ plain_year_month <- function(
     )
   }
   fields <- ztp_year_month_fields(year, month, month_code)
-  ztp_year_month_from_fields(fields$year, fields$month, ov)
+  ztp_year_month_from_fields(fields[["year"]], fields[["month"]], ov)
 }
 
 ztp_year_month_from_fields <- function(year, month, ov) {
@@ -117,7 +117,7 @@ temporal_with.zutempo_plain_year_month <- function(
     day = 1
   )
   merged <- ztp_merge_date_fields(base, fields)
-  ztp_year_month_from_fields(merged$year, merged$month, ov)
+  ztp_year_month_from_fields(merged[["year"]], merged[["month"]], ov)
 }
 
 #' @rdname temporal_to_plain_date

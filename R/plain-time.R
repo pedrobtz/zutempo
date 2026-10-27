@@ -157,9 +157,9 @@ temporal_round.zutempo_plain_time <- function(
   new_plain_time(.Call(
     C_ztp_r_plain_time_round,
     unclass(x),
-    opts$increment,
-    opts$unit,
-    opts$mode
+    opts[["increment"]],
+    opts[["unit"]],
+    opts[["mode"]]
   ))
 }
 
@@ -179,8 +179,14 @@ temporal_to_string.zutempo_plain_time <- function(
     rounding_mode
   )
   ns <- unclass(x)
-  if (p$unit != 9L || p$increment != 1) {
-    ns <- .Call(C_ztp_r_plain_time_round, ns, p$increment, p$unit, p$mode)
+  if (p[["unit"]] != 9L || p[["increment"]] != 1) {
+    ns <- .Call(
+      C_ztp_r_plain_time_round,
+      ns,
+      p[["increment"]],
+      p[["unit"]],
+      p[["mode"]]
+    )
   }
-  .Call(C_ztp_r_plain_time_format, ns, p$precision)
+  .Call(C_ztp_r_plain_time_format, ns, p[["precision"]])
 }

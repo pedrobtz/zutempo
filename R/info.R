@@ -28,8 +28,8 @@ zutempo_info <- function() {
   structure(
     list(
       package = unname(getNamespaceVersion("zutempo")),
-      zufast = native$zufast,
-      int128 = native$int128,
+      zufast = native[["zufast"]],
+      int128 = native[["int128"]],
       spec_repository = pin("Specification"),
       spec_commit = pin("SpecificationCommit"),
       spec_date = pin("SpecificationDate"),
@@ -37,8 +37,8 @@ zutempo_info <- function() {
       test262_commit = pin("Test262Commit"),
       test262_date = pin("Test262Date"),
       tzdata = pin("Tzdata"),
-      tzdir = ztp_tz_current()$dir,
-      tz_version = ztp_tz_current()$version,
+      tzdir = ztp_tz_current()[["dir"]],
+      tz_version = ztp_tz_current()[["version"]],
       tz_form = ztp_tz_form(),
       tz_links_version = .Call(C_ztp_r_tz_links_version)
     ),
@@ -48,49 +48,49 @@ zutempo_info <- function() {
 
 #' @export
 print.zutempo_info <- function(x, ...) {
-  cat("zutempo ", x$package, "\n", sep = "")
+  cat("zutempo ", x[["package"]], "\n", sep = "")
   cat(
     "  zufast ",
-    x$zufast,
+    x[["zufast"]],
     ", 128-bit arithmetic: ",
-    if (isTRUE(x$int128)) "__int128" else "portable",
+    if (isTRUE(x[["int128"]])) "__int128" else "portable",
     "\n",
     sep = ""
   )
   cat(
     "  specification: ",
-    x$spec_repository,
+    x[["spec_repository"]],
     "@",
-    substr(x$spec_commit, 1, 12),
+    substr(x[["spec_commit"]], 1, 12),
     " (",
-    x$spec_date,
+    x[["spec_date"]],
     ")\n",
     sep = ""
   )
   cat(
     "  test262: ",
-    x$test262_repository,
+    x[["test262_repository"]],
     "@",
-    substr(x$test262_commit, 1, 12),
+    substr(x[["test262_commit"]], 1, 12),
     " (",
-    x$test262_date,
+    x[["test262_date"]],
     ")\n",
     sep = ""
   )
   cat(
     "  tzdata pin: ",
-    x$tzdata,
+    x[["tzdata"]],
     "; link table: ",
-    x$tz_links_version,
+    x[["tz_links_version"]],
     "\n",
     sep = ""
   )
   cat(
     "  tz database: ",
-    if (is.na(x$tzdir)) {
+    if (is.na(x[["tzdir"]])) {
       "none found"
     } else {
-      paste0(x$tzdir, " (", x$tz_version, ", ", x$tz_form, ")")
+      paste0(x[["tzdir"]], " (", x[["tz_version"]], ", ", x[["tz_form"]], ")")
     },
     "\n",
     sep = ""

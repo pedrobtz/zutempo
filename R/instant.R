@@ -182,10 +182,10 @@ ztp_instant_difference <- function(
         C_ztp_r_instant_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
@@ -300,10 +300,16 @@ temporal_to_string.zutempo_instant <- function(
     time_zone <- ztp_tz_ensure(time_zone)
   }
   v <- unclass(x)
-  if (p$unit != 9L || p$increment != 1) {
-    v <- .Call(C_ztp_r_instant_round, v, p$increment, p$unit, p$mode)
+  if (p[["unit"]] != 9L || p[["increment"]] != 1) {
+    v <- .Call(
+      C_ztp_r_instant_round,
+      v,
+      p[["increment"]],
+      p[["unit"]],
+      p[["mode"]]
+    )
   }
-  .Call(C_ztp_r_instant_format, v, time_zone, p$precision)
+  .Call(C_ztp_r_instant_format, v, time_zone, p[["precision"]])
 }
 
 #' The current time
