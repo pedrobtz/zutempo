@@ -87,14 +87,14 @@ and \code{relative_to}.}
 \item{relative_to}{For a \code{duration()}: a \code{plain_date()},
 \code{plain_date_time()}, \code{zoned_date_time()} or a string one of them
 reads, required to round years, months or weeks; with a zoned value,
-days follow the zone (design 6.5).}
+days follow the zone.}
 }
 \value{
 A value of the same class as \code{x}.
 }
 \description{
 Temporal's \code{round()}, to an increment of \code{smallest_unit} with one of the
-nine rounding modes (design 6.4). \code{plain_time()} rounds within the day;
+nine rounding modes. \code{plain_time()} rounds within the day;
 \code{plain_date_time()} carries into the date and also accepts \code{"day"}.
 }
 \examples{
@@ -102,5 +102,9 @@ temporal_round(plain_time("12:34:56"), "minute")
 temporal_round(plain_time("12:34:56"), "hour", rounding_mode = "floor")
 temporal_round(plain_date_time("2026-01-31T23:59"), "hour")
 temporal_round(duration(hours = 25), largest_unit = "day")
-temporal_round(duration(hours = 25), largest_unit = "day", relative_to = "2026-03-07")
+temporal_round(
+  duration(hours = 25),
+  largest_unit = "day",
+  relative_to = "2026-03-07"
+)
 }

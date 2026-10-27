@@ -3,7 +3,7 @@
 #' A `plain_date_time()` is a calendar date in the ISO 8601 calendar with a
 #' time of day to the nanosecond and no time zone, stored as a complex
 #' vector whose real part is the epoch day and whose imaginary part is the
-#' nanoseconds of day (design 4.1). The constructor is
+#' nanoseconds of day. The constructor is
 #' `Temporal.PlainDateTime` and `Temporal.PlainDateTime.from()` in one: it
 #' reads fields, strings or another zutempo value.
 #'
@@ -13,8 +13,10 @@
 #'
 #' @param year The year, or a string in ISO 8601 form
 #'   (`"2026-01-31T12:30:45.5"`, a date alone for midnight, an offset is
-#'   ignored and `Z` is rejected), or a `plain_date()` (for midnight) or
-#'   `plain_date_time()` to convert.
+#'   ignored and `Z` is rejected), or a `plain_date_time()`, `plain_date()`
+#'   (for midnight), `zoned_date_time()`, `Date` (for midnight), `POSIXct`
+#'   or `POSIXlt` value to convert. A zoned or `POSIXt` value gives its
+#'   wall-clock time in its own zone.
 #' @param month,day The month (1 to 12) and day of the month, when `year`
 #'   is a number. `month` may be replaced by `month_code`.
 #' @param hour,minute,second,millisecond,microsecond,nanosecond The time
@@ -22,7 +24,7 @@
 #' @param ... Must be empty.
 #' @param month_code The month as `"M01"` to `"M12"`, instead of `month`.
 #' @param overflow `"constrain"` (the default) clamps each field to its
-#'   range, `"reject"` raises a `zutempo_range_error` (design 6.2).
+#'   range, `"reject"` raises a `zutempo_range_error`.
 #' @param x,y `plain_date_time()` values or strings, for
 #'   `plain_date_time_compare()`.
 #' @return A `plain_date_time()` vector; `plain_date_time_compare()`
@@ -115,13 +117,13 @@ ztp_date_time_from_fields <- function(fields, ov) {
 # The fields of `local`, a plain date-time, with the ones given in `fields`
 # replaced: CalendarMergeFields for the date, then the time fields.
 ztp_merge_date_time_fields <- function(local, fields) {
-  base <- list(
+  current <- list(
     year = as.double(ztp_date_time_field(local, "year")),
     month = as.double(ztp_date_time_field(local, "month")),
     day = as.double(ztp_date_time_field(local, "day"))
   )
   date <- ztp_merge_date_fields(
-    base,
+    current,
     fields[intersect(names(fields), c("year", "month", "month_code", "day"))]
   )
   time <- lapply(ztp_time_field_names, function(f) {

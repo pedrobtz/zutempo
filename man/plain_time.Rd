@@ -22,8 +22,9 @@ plain_time_compare(x, y)
 \item{hour}{The hour (0 to 23), or a string in ISO 8601 form
 (\code{"12:30"}, \code{"12:30:45.123456789"}, \code{"T12"}, or a date-time whose
 date is ignored; a bare time that could also read as a month-day or
-year-month must carry the \code{T} prefix), or a \code{plain_time()} or
-\code{plain_date_time()} to convert.}
+year-month must carry the \code{T} prefix), or a \code{plain_time()},
+\code{plain_date_time()} or \code{zoned_date_time()} to convert, or a \code{difftime}
+from 0 up to 24 hours after midnight.}
 
 \item{minute, second, millisecond, microsecond, nanosecond}{The remaining
 fields, 0 by default.}
@@ -31,7 +32,7 @@ fields, 0 by default.}
 \item{...}{Must be empty.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps each field to its
-range, \code{"reject"} raises a \code{zutempo_range_error} (design 6.2).}
+range, \code{"reject"} raises a \code{zutempo_range_error}.}
 
 \item{x, y}{\code{plain_time()} values or strings, for \code{plain_time_compare()}.}
 }
@@ -41,8 +42,8 @@ integer vector of -1, 0 and 1.
 }
 \description{
 A \code{plain_time()} is a time of day with nanosecond precision and no date
-or time zone, stored as a double count of nanoseconds since midnight
-(design 4.1). The constructor is \code{Temporal.PlainTime} and
+or time zone, stored as a double count of nanoseconds since midnight.
+The constructor is \code{Temporal.PlainTime} and
 \code{Temporal.PlainTime.from()} in one: it reads fields, strings or another
 zutempo value.
 }

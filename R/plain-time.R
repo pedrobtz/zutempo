@@ -1,21 +1,22 @@
 #' Clock times: Temporal's PlainTime
 #'
 #' A `plain_time()` is a time of day with nanosecond precision and no date
-#' or time zone, stored as a double count of nanoseconds since midnight
-#' (design 4.1). The constructor is `Temporal.PlainTime` and
+#' or time zone, stored as a double count of nanoseconds since midnight.
+#' The constructor is `Temporal.PlainTime` and
 #' `Temporal.PlainTime.from()` in one: it reads fields, strings or another
 #' zutempo value.
 #'
 #' @param hour The hour (0 to 23), or a string in ISO 8601 form
 #'   (`"12:30"`, `"12:30:45.123456789"`, `"T12"`, or a date-time whose
 #'   date is ignored; a bare time that could also read as a month-day or
-#'   year-month must carry the `T` prefix), or a `plain_time()` or
-#'   `plain_date_time()` to convert.
+#'   year-month must carry the `T` prefix), or a `plain_time()`,
+#'   `plain_date_time()` or `zoned_date_time()` to convert, or a `difftime`
+#'   from 0 up to 24 hours after midnight.
 #' @param minute,second,millisecond,microsecond,nanosecond The remaining
 #'   fields, 0 by default.
 #' @param ... Must be empty.
 #' @param overflow `"constrain"` (the default) clamps each field to its
-#'   range, `"reject"` raises a `zutempo_range_error` (design 6.2).
+#'   range, `"reject"` raises a `zutempo_range_error`.
 #' @param x,y `plain_time()` values or strings, for `plain_time_compare()`.
 #' @return A `plain_time()` vector; `plain_time_compare()` returns an
 #'   integer vector of -1, 0 and 1.
@@ -123,14 +124,14 @@ plain_time_compare <- function(x, y) {
 temporal_with.zutempo_plain_time <- function(x, ..., overflow = "constrain") {
   fields <- ztp_partial_fields(list(...), ztp_time_field_names)
   ov <- ztp_overflow_code(overflow)
-  base <- lapply(ztp_time_field_names, function(f) {
+  current <- lapply(ztp_time_field_names, function(f) {
     as.double(ztp_time_field(x, f))
   })
-  names(base) <- ztp_time_field_names
+  names(current) <- ztp_time_field_names
   for (f in names(fields)) {
-    base[[f]] <- ztp_as_field(fields[[f]], f)
+    current[[f]] <- ztp_as_field(fields[[f]], f)
   }
-  merged <- ztp_recycle(base)
+  merged <- ztp_recycle(current)
   new_plain_time(do.call(
     .Call,
     c(list(C_ztp_r_plain_time_from_fields), unname(merged), list(ov))

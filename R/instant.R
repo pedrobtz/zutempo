@@ -3,14 +3,16 @@
 #' An `instant()` is an exact point on the time line with nanosecond
 #' precision and no calendar or time zone, stored as a complex vector whose
 #' real part is the whole seconds since 1970-01-01T00:00Z and whose
-#' imaginary part is the nanoseconds within that second (design 4.1). The
+#' imaginary part is the nanoseconds within that second. The
 #' range is 10^8 days either side of the epoch. The constructor is
 #' `Temporal.Instant` and `Temporal.Instant.from()` in one.
 #'
 #' @param x A string in ISO 8601 form with `Z` or a UTC offset
-#'   (`"2026-01-31T12:30:45.123456789Z"`, `"2026-01-31T12:30+05:30"`), or an
-#'   `instant()` to return as is. For `instant_from_epoch_milliseconds()`,
-#'   integral milliseconds since the epoch; for
+#'   (`"2026-01-31T12:30:45.123456789Z"`, `"2026-01-31T12:30+05:30"`), an
+#'   `instant()` to return as is, or a `zoned_date_time()` or `POSIXct` or
+#'   `POSIXlt` value to take the exact time of. For
+#'   `instant_from_epoch_milliseconds()`, integral milliseconds since the
+#'   epoch; for
 #'   `instant_from_epoch_nanoseconds()`, integral nanoseconds as numbers
 #'   exact in a double or as decimal strings.
 #' @param y An `instant()` or a string, for `instant_compare()`.
@@ -321,7 +323,7 @@ now_instant <- function() {
   new_instant(complex(real = whole, imaginary = ns))
 }
 
-# --- plumbing ---------------------------------------------------------------
+# --- plumbing -----------------------------------------------------------------
 
 #' @export
 `[.zutempo_instant` <- function(x, i, ...) ztp_subset(x, i)

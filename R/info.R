@@ -6,7 +6,7 @@
 #' the package follows, with the tzdata release its fixtures come from. The
 #' pins live in `inst/spec/PINS` and move only on purpose.
 #'
-#' The time zone fields describe the database zutempo reads (design 8):
+#' The time zone fields describe the database zutempo reads:
 #' `tzdir`, the directory found by base R's lookup order (`NA` when none
 #' exists), `tz_version`, the tzdata release it declares, `tz_form`,
 #' whether its files carry explicit transitions far into the future

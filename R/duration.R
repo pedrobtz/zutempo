@@ -2,13 +2,14 @@
 #'
 #' A `duration()` is a length of time in ten fields, years to nanoseconds,
 #' each a float64-representable integer as Temporal defines them, stored as
-#' a list of ten double vectors (design 4.1). All fields share one sign.
+#' a list of ten double vectors. All fields share one sign.
 #' Years, months and weeks are calendar units: operations that need their
-#' length take `relative_to`, a date, and fail without it (design 6.5).
+#' length take `relative_to`, a date, and fail without it.
 #'
 #' @param years The years, or a string in ISO 8601 form
 #'   (`"P1Y2M3DT4H5M6.789S"`, a fraction only on the smallest unit
-#'   present), or a `duration()` to return as is.
+#'   present), a `duration()` to return as is, or a `difftime`, whose exact
+#'   seconds become seconds and nanoseconds.
 #' @param months,weeks,days,hours,minutes,seconds,milliseconds,microseconds,nanoseconds
 #'   The remaining fields, 0 by default.
 #' @param ... Must be empty.
@@ -194,7 +195,10 @@ ztp_relative_to <- function(relative_to, n) {
   }
   if (!inherits(relative_to, "zutempo_plain_date")) {
     stop_zutempo(
-      "`relative_to` must be a plain_date(), a plain_date_time(), a zoned_date_time() or a string",
+      paste(
+        "`relative_to` must be a plain_date(), a plain_date_time(),",
+        "a zoned_date_time() or a string"
+      ),
       kind = "type"
     )
   }
@@ -220,7 +224,7 @@ duration_compare <- function(x, y, relative_to = NULL) {
   )
 }
 
-# --- fields -----------------------------------------------------------------
+# --- fields -------------------------------------------------------------------
 
 ztp_duration_field <- function(x, field) {
   unclass(x)[[field]]
@@ -370,7 +374,7 @@ Math.zutempo_duration <- function(x, ...) {
   )
 }
 
-# --- methods ----------------------------------------------------------------
+# --- methods ------------------------------------------------------------------
 
 #' @rdname temporal_with
 #' @export
@@ -511,13 +515,13 @@ temporal_round.zutempo_duration <- function(
 #'
 #' Temporal's `total()`: the whole duration as a possibly fractional count
 #' of `unit`. Years, months and weeks need `relative_to`; without it a day
-#' counts 24 hours (design 6.5).
+#' counts 24 hours.
 #'
 #' @param x A `duration()`.
 #' @param unit A Temporal unit, singular or plural.
 #' @param relative_to A `plain_date()`, `plain_date_time()`,
 #'   `zoned_date_time()` or a string one of them reads (a zone in brackets
-#'   makes it zoned); with a zoned value, days follow the zone (design 6.5).
+#'   makes it zoned); with a zoned value, days follow the zone.
 #' @return A double vector.
 #' @examples
 #' temporal_total(duration(hours = 25), "day")
@@ -573,7 +577,7 @@ temporal_to_string.zutempo_duration <- function(
   )
 }
 
-# --- plumbing for the record class ---------------------------------------
+# --- plumbing for the record class --------------------------------------------
 
 # A duration of length n with every element NA, which is what a logical
 # NA becomes in `[<-` and c().
@@ -695,7 +699,10 @@ ztp_duration_order_key <- function(x) {
     (data[["years"]] != 0 | data[["months"]] != 0 | data[["weeks"]] != 0)
   if (any(calendar)) {
     stop_zutempo(
-      "durations with years, months or weeks cannot be ordered without `relative_to`; use duration_compare()",
+      paste(
+        "durations with years, months or weeks cannot be ordered without",
+        "`relative_to`; use duration_compare()"
+      ),
       kind = "range",
       index = which(calendar)[1L]
     )

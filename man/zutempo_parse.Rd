@@ -30,7 +30,7 @@ read but its value was rejected), the condition \code{class} and the
 \code{message}.
 }
 \description{
-The bulk-reading escape of the string constructors (design 6.8). A
+The bulk-reading escape of the string constructors. A
 constructor such as \code{plain_date()} stops at the first string it cannot
 read; \code{zutempo_parse()} reads the rest and returns \code{NA} for each string
 that fails, with the reasons in an attribute.

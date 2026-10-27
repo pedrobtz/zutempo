@@ -9,15 +9,15 @@
 #' wraps within the day. On a `zoned_date_time()` the date part moves
 #' through the calendar in the value's zone, resolved as `"compatible"`,
 #' and the time part moves the exact time, so a day across a clock change
-#' is not 24 hours (design 6.5). On a `duration()` the result is a
+#' is not 24 hours. On a `duration()` the result is a
 #' balanced duration, and calendar units are an error.
 #'
 #' @param x A zutempo value.
 #' @param other A `duration()`, or a string that `duration()` reads.
 #' @param ... Must be empty.
 #' @param overflow `"constrain"` (the default) clamps a day that the
-#'   target month lacks, `"reject"` raises a `zutempo_range_error`
-#'   (design 6.2). Not for a `plain_time()` or a `duration()`.
+#'   target month lacks, `"reject"` raises a `zutempo_range_error`.
+#'   Not for a `plain_time()` or a `duration()`.
 #' @return A value of the same class as `x`.
 #' @examples
 #' temporal_add(plain_date("2026-01-31"), "P1M")
@@ -39,7 +39,7 @@ temporal_subtract <- function(x, other, ...) {
 #'
 #' Temporal's `until()` and `since()`: the duration from `x` to `other`
 #' (`until`), or from `other` to `x` (`since`), balanced up to
-#' `largest_unit` and rounded to `smallest_unit` (design 6.6). Defaults
+#' `largest_unit` and rounded to `smallest_unit`. Defaults
 #' follow the type: days for dates and date-times, hours for times, zoned
 #' values and instants, years for year-months. Two `zoned_date_time()`
 #' values in different zones can only be differenced in time units.
@@ -50,14 +50,20 @@ temporal_subtract <- function(x, other, ...) {
 #' @param ... Must be empty.
 #' @param largest_unit,smallest_unit Temporal units, singular or plural;
 #'   `largest_unit` may be `"auto"`.
-#' @param rounding_increment A positive integer that divides the next
-#'   larger unit evenly for time units.
+#' @param rounding_increment A positive integer up to 10^9. With a time
+#'   unit as `smallest_unit` it must also divide the next larger unit
+#'   evenly and be smaller than it: 24 hours, 60 minutes or seconds, 1000
+#'   of the sub-second units.
 #' @param rounding_mode One of the nine rounding modes; `"trunc"` by
 #'   default.
 #' @return A `duration()`.
 #' @examples
 #' temporal_until(plain_date("2026-01-31"), "2026-03-01")
-#' temporal_until(plain_date("2026-01-31"), "2026-03-01", largest_unit = "month")
+#' temporal_until(
+#'   plain_date("2026-01-31"),
+#'   "2026-03-01",
+#'   largest_unit = "month"
+#' )
 #' temporal_since(plain_time("13:30"), "12:00")
 #' @export
 temporal_until <- function(

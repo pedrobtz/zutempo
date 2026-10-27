@@ -50,9 +50,9 @@ ztp_tz_find <- function() {
     tried <- c(tried, "/usr/share/zoneinfo", r_copy)
   }
   tried <- unique(tried)
-  exists <- ztp_dir_exists(tried)
+  found <- ztp_dir_exists(tried)
   list(
-    dir = if (any(exists)) tried[which(exists)[1L]] else NA_character_,
+    dir = if (any(found)) tried[which(found)[1L]] else NA_character_,
     tried = tried
   )
 }
@@ -172,7 +172,7 @@ ztp_tz_reset_state <- function() {
 #' Forget the parsed time zones
 #'
 #' zutempo reads the time zone database the way base R does, and keeps the
-#' zones it has parsed for the session (design 8.4). The cache clears by
+#' zones it has parsed for the session. The cache clears by
 #' itself when the option `zutempo.tzdir` or the `TZDIR` variable changes;
 #' `zutempo_tz_reset()` clears it on demand, and looks for the database
 #' again, for a database that appeared or changed under a running session.

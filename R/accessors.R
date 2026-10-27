@@ -94,26 +94,37 @@ ztp_masked <- function(name, x, ...) {
 
 #' Fields of a Temporal value
 #'
-#' One accessor per Temporal property, named after it in snake case
-#' (design 5). Each is an S3 generic with methods for the zutempo classes
+#' One accessor per Temporal property, named after it in snake case.
+#' Each is an S3 generic with methods for the zutempo classes
 #' and a default that calls the function of the same name from another
 #' attached package, so that `lubridate::year()` and the others keep
 #' working on their own objects after zutempo is attached.
 #'
 #' @param x A zutempo value.
 #' @param ... Passed on by the default method to the function it masks.
-#' @return An integer vector, or a character vector for `calendar_id()`,
-#'   `era()` and `month_code()`, or a logical vector for `in_leap_year()`,
-#'   with `NA` where `x` is `NA`.
+#' @return A vector of the length of `x`, with `NA` where `x` is `NA`:
+#'   * character for `calendar_id()`, `era()`, `month_code()`, `offset()`,
+#'     `time_zone_id()` and `epoch_nanoseconds()`;
+#'   * logical for `in_leap_year()` and `blank()`;
+#'   * double for `epoch_milliseconds()`, `offset_nanoseconds()`,
+#'     `hours_in_day()` and the duration fields, `years()` to
+#'     `nanoseconds()`;
+#'   * integer for every other field.
+#'
+#'   On a `duration()`, `sign()` returns an integer vector of -1, 0 and 1
+#'   and `abs()` a `duration()`; other `Math` functions are an error.
 #' @section Fields:
-#' * `calendar_id()`: `calendarId`, the calendar identifier, always "iso8601".
+#' * `calendar_id()`: `calendarId`, the calendar identifier, always
+#'   `"iso8601"`.
 #' * `era()`: `era`, the era, `NA` in the ISO 8601 calendar.
-#' * `era_year()`: `eraYear`, the year within the era, `NA` in the ISO 8601 calendar.
+#' * `era_year()`: `eraYear`, the year within the era, `NA` in the ISO 8601
+#'   calendar.
 #' * `year()`: `year`, the year.
 #' * `month()`: `month`, the month, 1 to 12.
 #' * `month_code()`: `monthCode`, the month code, `"M01"` to `"M12"`.
 #' * `day()`: `day`, the day of the month.
-#' * `day_of_week()`: `dayOfWeek`, the day of the week, 1 (Monday) to 7 (Sunday).
+#' * `day_of_week()`: `dayOfWeek`, the day of the week, 1 (Monday) to 7
+#'   (Sunday).
 #' * `day_of_year()`: `dayOfYear`, the day of the year, from 1.
 #' * `week_of_year()`: `weekOfYear`, the ISO week number, 1 to 53.
 #' * `year_of_week()`: `yearOfWeek`, the year the ISO week belongs to.
@@ -128,6 +139,20 @@ ztp_masked <- function(name, x, ...) {
 #' * `millisecond()`: `millisecond`, 0 to 999.
 #' * `microsecond()`: `microsecond`, 0 to 999.
 #' * `nanosecond()`: `nanosecond`, 0 to 999.
+#' * `epoch_milliseconds()`: `epochMilliseconds`, the milliseconds since
+#'   1970-01-01T00:00Z, floored.
+#' * `epoch_nanoseconds()`: `epochNanoseconds`, the nanoseconds since
+#'   1970-01-01T00:00Z, as decimal strings: they do not fit in a double.
+#' * `offset_nanoseconds()`: `offsetNanoseconds`, the zone's UTC offset.
+#' * `offset()`: `offset`, the UTC offset as `"+HH:MM"`, with seconds if
+#'   it has them.
+#' * `time_zone_id()`: `timeZoneId`, the time zone identifier.
+#' * `hours_in_day()`: `hoursInDay`, the length of the day in the zone, in
+#'   hours.
+#' * `years()`, `months()`, `weeks()`, `days()`, `hours()`, `minutes()`,
+#'   `seconds()`, `milliseconds()`, `microseconds()`, `nanoseconds()`: the
+#'   fields of a `duration()`.
+#' * `blank()`: `blank`, whether every field of a `duration()` is zero.
 #' @examples
 #' x <- plain_date("2026-01-31")
 #' year(x)
@@ -494,59 +519,71 @@ nanosecond.zutempo_plain_date_time <- function(x, ...) {
 calendar_id.zutempo_plain_year_month <- function(x, ...) {
   ztp_constant_field(x, "iso8601")
 }
+
 #' @rdname temporal_fields
 #' @export
 era.zutempo_plain_year_month <- function(x, ...) {
   ztp_constant_field(x, NA_character_)
 }
+
 #' @rdname temporal_fields
 #' @export
 era_year.zutempo_plain_year_month <- function(x, ...) {
   ztp_constant_field(x, NA_integer_)
 }
+
 #' @rdname temporal_fields
 #' @export
 year.zutempo_plain_year_month <- function(x, ...) {
   as.integer(1970L + unclass(x) %/% 12L)
 }
+
 #' @rdname temporal_fields
 #' @export
 month.zutempo_plain_year_month <- function(x, ...) {
   as.integer(unclass(x) %% 12L + 1L)
 }
+
 #' @rdname temporal_fields
 #' @export
 month_code.zutempo_plain_year_month <- function(x, ...) ztp_month_code(month(x))
+
 #' @rdname temporal_fields
 #' @export
 days_in_year.zutempo_plain_year_month <- function(x, ...) {
   ztp_days_in_year(year(x))
 }
+
 #' @rdname temporal_fields
 #' @export
 days_in_month.zutempo_plain_year_month <- function(x, ...) {
   ztp_days_in_month(year(x), month(x))
 }
+
 #' @rdname temporal_fields
 #' @export
 months_in_year.zutempo_plain_year_month <- function(x, ...) {
   ztp_constant_field(x, 12L)
 }
+
 #' @rdname temporal_fields
 #' @export
 in_leap_year.zutempo_plain_year_month <- function(x, ...) {
   ztp_in_leap_year(year(x))
 }
+
 #' @rdname temporal_fields
 #' @export
 calendar_id.zutempo_plain_month_day <- function(x, ...) {
   ztp_constant_field(x, "iso8601")
 }
+
 #' @rdname temporal_fields
 #' @export
 month_code.zutempo_plain_month_day <- function(x, ...) {
   ztp_month_code(ztp_month_day_month(x))
 }
+
 #' @rdname temporal_fields
 #' @export
 day.zutempo_plain_month_day <- function(x, ...) {

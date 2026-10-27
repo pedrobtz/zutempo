@@ -19,8 +19,9 @@ plain_date_compare(x, y)
 \arguments{
 \item{year}{The year, or a string in ISO 8601 form (\code{"2026-01-31"}, a
 date-time whose time is ignored, or a year with a sign and six digits
-such as \code{"+275760-09-13"}), or a \code{plain_date()} or
-\code{plain_date_time()} to convert.}
+such as \code{"+275760-09-13"}), or a \code{plain_date()}, \code{plain_date_time()},
+\code{zoned_date_time()}, \code{Date}, \code{POSIXct} or \code{POSIXlt} value to convert. A
+zoned or \code{POSIXt} value gives its date in its own zone.}
 
 \item{month, day}{The month (1 to 12) and day of the month, when \code{year}
 is a number. \code{month} may be replaced by \code{month_code}.}
@@ -31,7 +32,7 @@ is a number. \code{month} may be replaced by \code{month_code}.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps \code{month} and \code{day} to
 their valid ranges, \code{"reject"} raises a \code{zutempo_range_error} for
-them (design 6.2).}
+them.}
 
 \item{x, y}{\code{plain_date()} values or strings, for \code{plain_date_compare()}.}
 }
@@ -42,7 +43,7 @@ integer vector of -1, 0 and 1.
 \description{
 A \code{plain_date()} is a calendar date in the ISO 8601 calendar with no
 time of day and no time zone, stored as an integer count of days since
-1970-01-01 (design 4.1). The constructor is \code{Temporal.PlainDate} and
+1970-01-01. The constructor is \code{Temporal.PlainDate} and
 \code{Temporal.PlainDate.from()} in one: it reads fields, strings or another
 zutempo value.
 }

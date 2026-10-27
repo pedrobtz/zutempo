@@ -15,7 +15,7 @@ ztp_parse_goals <- c(
 
 #' Read strings as a Temporal type, with `NA` for those that fail
 #'
-#' The bulk-reading escape of the string constructors (design 6.8). A
+#' The bulk-reading escape of the string constructors. A
 #' constructor such as `plain_date()` stops at the first string it cannot
 #' read; `zutempo_parse()` reads the rest and returns `NA` for each string
 #' that fails, with the reasons in an attribute.

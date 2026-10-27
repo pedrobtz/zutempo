@@ -73,7 +73,8 @@ temporal_with_time_zone(x, time_zone)
 to agree.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps out-of-range fields,
-\code{"reject"} raises a \code{zutempo_range_error} for them (design 6.2).}
+\code{"reject"} raises a \code{zutempo_range_error} for them. A \code{duration()} has
+nothing to clamp: the value is checked and has no effect.}
 
 \item{time}{A \code{plain_time()}, a string a \code{plain_time()} reads, or \code{NULL}
 for midnight.}
@@ -96,7 +97,7 @@ the named fields replaced and the rest kept, resolving the result with
 \code{overflow}. \code{temporal_with_plain_time()} is \code{withPlainTime()},
 \code{temporal_with_time_zone()} is \code{withTimeZone()} (the same instant read
 in another zone), and \code{temporal_with_calendar()} is \code{withCalendar()},
-which accepts only \code{"iso8601"} in this version (design D7).
+which accepts only \code{"iso8601"} in this version.
 }
 \examples{
 temporal_with(plain_date("2026-01-31"), month = 2)

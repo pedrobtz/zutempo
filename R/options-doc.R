@@ -1,17 +1,17 @@
 #' Options shared by zutempo's functions
 #'
 #' Temporal passes options in an object, `{ overflow: "reject" }`; zutempo
-#' takes them as named arguments, `overflow = "reject"` (design 6.9). Each
+#' takes them as named arguments, `overflow = "reject"`. Each
 #' function's help says which it takes and its default; this page says
 #' what each one means.
 #'
 #' An option that is not a single string, or a string the option does not
 #' know, is a `zutempo_type_error`. A value of the right kind that fails a
 #' range check, such as an increment that does not divide its unit, is a
-#' `zutempo_range_error` (design 10). Either condition has a field `option`
+#' `zutempo_range_error`. Either condition has a field `option`
 #' naming the option, as does the error for a required option left out
 #' (`smallest_unit` of `temporal_round()`). An `NA` option is an error, not
-#' a missing result (design 6.8).
+#' a missing result.
 #'
 #' @section `overflow`:
 #' What to do with a field out of its range, such as 31 February:
@@ -84,6 +84,10 @@
 #'   disambiguation = "earlier"
 #' )
 #'
-#' temporal_round(plain_time("12:30:45.5"), "second", rounding_mode = "halfEven")
+#' temporal_round(
+#'   plain_time("12:30:45.5"),
+#'   "second",
+#'   rounding_mode = "halfEven"
+#' )
 #' @name zutempo_options
 NULL

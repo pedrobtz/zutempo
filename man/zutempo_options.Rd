@@ -5,7 +5,7 @@
 \title{Options shared by zutempo's functions}
 \description{
 Temporal passes options in an object, \code{{ overflow: "reject" }}; zutempo
-takes them as named arguments, \code{overflow = "reject"} (design 6.9). Each
+takes them as named arguments, \code{overflow = "reject"}. Each
 function's help says which it takes and its default; this page says
 what each one means.
 }
@@ -13,10 +13,10 @@ what each one means.
 An option that is not a single string, or a string the option does not
 know, is a \code{zutempo_type_error}. A value of the right kind that fails a
 range check, such as an increment that does not divide its unit, is a
-\code{zutempo_range_error} (design 10). Either condition has a field \code{option}
+\code{zutempo_range_error}. Either condition has a field \code{option}
 naming the option, as does the error for a required option left out
 (\code{smallest_unit} of \code{temporal_round()}). An \code{NA} option is an error, not
-a missing result (design 6.8).
+a missing result.
 }
 \section{\code{overflow}}{
 
@@ -97,7 +97,11 @@ temporal_to_zoned_date_time(
   disambiguation = "earlier"
 )
 
-temporal_round(plain_time("12:30:45.5"), "second", rounding_mode = "halfEven")
+temporal_round(
+  plain_time("12:30:45.5"),
+  "second",
+  rounding_mode = "halfEven"
+)
 }
 \seealso{
 \code{\link[=temporal_round]{temporal_round()}}, \code{\link[=temporal_until]{temporal_until()}}, \code{\link[=temporal_add]{temporal_add()}},

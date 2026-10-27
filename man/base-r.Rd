@@ -66,7 +66,7 @@ where \code{x} is \code{NA}.
 \description{
 Methods for base R's \code{as.Date()}, \code{as.POSIXct()} and \code{as.POSIXlt()}, and
 \code{temporal_to_difftime()}, which stands in for \code{as.difftime()} because
-base R's is not a generic (design 6.10). The other direction is the
+base R's is not a generic. The other direction is the
 constructors: \verb{plain_date(<Date>)}, \verb{instant(<POSIXct>)},
 \verb{zoned_date_time(<POSIXct>)}, \verb{plain_date_time(<POSIXct>)},
 \verb{plain_time(<difftime>)} and \verb{duration(<difftime>)}.

@@ -2,13 +2,13 @@
 #'
 #' A `zoned_date_time()` is an exact time together with the time zone it is
 #' read in, so that it has both an `instant()` and a wall-clock date and
-#' time. Every element carries its own zone (design 4.2): the vector is an
+#' time. Every element carries its own zone: the vector is an
 #' `instant()` with an integer zone code per element into the `zones`
 #' attribute, the identifiers in the database's case. The constructor is
 #' `Temporal.ZonedDateTime` and `Temporal.ZonedDateTime.from()` in one.
 #'
 #' A local time that does not exist (a clock gap) or exists twice (a fold)
-#' is resolved by `disambiguation` (design 6.3): `"compatible"` (the
+#' is resolved by `disambiguation`: `"compatible"` (the
 #' default) moves a gap forward by its length and takes the earlier of a
 #' fold, `"earlier"` and `"later"` take that side, `"reject"` raises a
 #' `zutempo_range_error`. When the fields or the string carry a UTC offset
@@ -22,17 +22,20 @@
 #'   brackets (`"2026-03-07T12:00[America/New_York]"`,
 #'   `"2026-03-07T12:00-05:00[America/New_York]"`,
 #'   `"2026-03-07T17:00Z[Europe/Lisbon]"` for the instant shown in that
-#'   zone, `"2026-03-07[+05:30]"` for the start of that day), or a
-#'   `zoned_date_time()` to return as is.
+#'   zone, `"2026-03-07[+05:30]"` for the start of that day), a
+#'   `zoned_date_time()` to return as is, or a `POSIXct` or `POSIXlt` value,
+#'   placed in `time_zone` or else in its own `tzone` (the system zone when
+#'   that is empty).
 #' @param month,day The month (1 to 12) and day of the month, when `year`
 #'   is a number. `month` may be replaced by `month_code`.
 #' @param hour,minute,second,millisecond,microsecond,nanosecond The time
 #'   fields, 0 by default.
 #' @param ... Must be empty.
-#' @param time_zone The time zone of each value, when `year` is a number:
-#'   an IANA identifier such as `"Europe/Lisbon"`, `"UTC"`, or a fixed
-#'   offset such as `"+05:30"`; recycled with the fields. Identifiers match
-#'   regardless of case and are stored in the database's case.
+#' @param time_zone The time zone of each value, when `year` is a number or
+#'   a `POSIXt` value: an IANA identifier such as `"Europe/Lisbon"`, `"UTC"`,
+#'   or a fixed offset such as `"+05:30"`; recycled with the fields, or a
+#'   single zone for a `POSIXt` value. Identifiers match regardless of case
+#'   and are stored in the database's case.
 #' @param month_code The month as `"M01"` to `"M12"`, instead of `month`.
 #' @param offset_string The UTC offset the fields are given in, such as
 #'   `"-05:00"`, when the fields carry one (Temporal's `offset` field);
@@ -42,7 +45,7 @@
 #' @param offset What to do with a UTC offset that disagrees with the zone:
 #'   `"reject"`, `"use"`, `"ignore"` or `"prefer"`.
 #' @param overflow `"constrain"` (the default) clamps each field to its
-#'   range, `"reject"` raises a `zutempo_range_error` (design 6.2).
+#'   range, `"reject"` raises a `zutempo_range_error`.
 #' @param x,y `zoned_date_time()` values or strings, for
 #'   `zoned_date_time_compare()`, which orders by the instant alone.
 #' @return A `zoned_date_time()` vector; `zoned_date_time_compare()`
@@ -96,7 +99,10 @@ zoned_date_time <- function(
     ztp_check_no_fields(month, day, month_code)
     if (!is.null(time_zone)) {
       stop_zutempo(
-        "`time_zone` must be NULL when reading strings; the string carries the zone",
+        paste(
+          "`time_zone` must be NULL when reading strings;",
+          "the string carries the zone"
+        ),
         kind = "type"
       )
     }
@@ -321,7 +327,7 @@ temporal_equals.zutempo_zoned_date_time <- function(x, other) {
   same_instant & same_zone
 }
 
-# --- fields ---------------------------------------------------------------------
+# --- fields -------------------------------------------------------------------
 
 #' @rdname temporal_to_plain_date
 #' @export
@@ -357,8 +363,8 @@ temporal_to_plain_time.zutempo_zoned_date_time <- function(x) {
 #'
 #' Temporal's `toInstant()`, `toZonedDateTimeISO()` and `toZonedDateTime()`.
 #' An `instant()` becomes a `zoned_date_time()` in any zone; a
-#' `plain_date_time()` is resolved in the zone with `disambiguation`
-#' (design 6.3); a `plain_date()` gives the start of that day in the zone,
+#' `plain_date_time()` is resolved in the zone with `disambiguation`;
+#' a `plain_date()` gives the start of that day in the zone,
 #' or the given `plain_time` on that day.
 #'
 #' @param x A zutempo value.
@@ -374,7 +380,10 @@ temporal_to_plain_time.zutempo_zoned_date_time <- function(x) {
 #' @examples
 #' x <- zoned_date_time("2026-03-07T12:00[America/New_York]")
 #' temporal_to_instant(x)
-#' temporal_to_zoned_date_time_iso(instant("2026-03-07T17:00Z"), "Europe/Lisbon")
+#' temporal_to_zoned_date_time_iso(
+#'   instant("2026-03-07T17:00Z"),
+#'   "Europe/Lisbon"
+#' )
 #' temporal_to_zoned_date_time(plain_date("2026-03-08"), "America/New_York")
 #' temporal_to_zoned_date_time(
 #'   plain_date_time("2026-03-08T02:30"),
@@ -533,7 +542,7 @@ hours_in_day.zutempo_zoned_date_time <- function(x, ...) {
   )
 }
 
-# --- with ----------------------------------------------------------------------
+# --- with ---------------------------------------------------------------------
 
 #' @rdname temporal_with
 #' @export
@@ -691,7 +700,7 @@ temporal_to_string.zutempo_zoned_date_time <- function(
   )
 }
 
-# --- Now ------------------------------------------------------------------------
+# --- Now ----------------------------------------------------------------------
 
 #' The current time in a time zone
 #'
@@ -813,7 +822,7 @@ now_plain_time_iso <- function(time_zone = NULL) {
   temporal_to_plain_time(now_zoned_date_time_iso(time_zone))
 }
 
-# --- plumbing -------------------------------------------------------------------
+# --- plumbing -----------------------------------------------------------------
 
 #' @export
 `[.zutempo_zoned_date_time` <- function(x, i, ...) {
@@ -915,7 +924,7 @@ print.zutempo_zoned_date_time <- function(x, ...) ztp_print(x, ...)
 #' @export
 is.na.zutempo_zoned_date_time <- function(x) is.na(ztp_zdt_instant(x))
 
-# --- arithmetic (stage 8) --------------------------------------------------------
+# --- arithmetic ---------------------------------------------------------------
 
 # Recycle a zoned vector and a duration to a common length; returns the
 # instants, the codes and the loaded zone table, plus the duration data.

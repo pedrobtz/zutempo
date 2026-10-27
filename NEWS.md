@@ -1,5 +1,9 @@
 # zutempo 0.0.0.9000
 
+* The help pages now say what every accessor returns, that
+  `duration_compare()` takes a zoned `relative_to`, and which base R
+  classes each constructor converts. They no longer cite sections of the
+  internal design document.
 * A value that no constructor made is now a `zutempo_type_error` instead of
   a crash or a wrong result: a `zoned_date_time()` whose zone codes were
   dropped, kept at the wrong length or point past its zone table (as
@@ -31,8 +35,8 @@
   A zone that is set but cannot be read gives `"UTC"` with a
   `zutempo_tz_warning`, where before it gave `"UTC"` silently.
 * `as.POSIXct()` and `as.POSIXlt()` of a zoned value give an offset of
-  `-13:00` or `-14:00` the tzone `"UTC"` rather than an `Etc/GMT` zone
-  tzdata lacks, and keep the tzone of zones that are equal under
+  `-13:00` or `-14:00` the `tzone` `"UTC"` rather than an `Etc/GMT` zone
+  tzdata lacks, and keep the `tzone` of zones that are equal under
   `TimeZoneEquals`, such as `Asia/Calcutta` and `Asia/Kolkata`. The help
   page says that `as.POSIXlt()` of mixed zones does not round-trip.
 * Documentation: a README from Temporal to R, a table of every Temporal
