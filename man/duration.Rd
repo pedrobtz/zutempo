@@ -24,7 +24,8 @@ duration_compare(x, y, relative_to = NULL)
 \arguments{
 \item{years}{The years, or a string in ISO 8601 form
 (\code{"P1Y2M3DT4H5M6.789S"}, a fraction only on the smallest unit
-present), or a \code{duration()} to return as is.}
+present), a \code{duration()} to return as is, or a \code{difftime}, whose exact
+seconds become seconds and nanoseconds.}
 
 \item{months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds}{The remaining fields, 0 by default.}
 
@@ -32,9 +33,11 @@ present), or a \code{duration()} to return as is.}
 
 \item{x, y}{\code{duration()} values or strings, for \code{duration_compare()}.}
 
-\item{relative_to}{A \code{plain_date()}, \code{plain_date_time()} or a string
-either reads: the date the calendar units are counted from. Required
-when either duration has years, months or weeks.}
+\item{relative_to}{A \code{plain_date()}, \code{plain_date_time()},
+\code{zoned_date_time()} or a string one of them reads (a zone in brackets
+makes it zoned): the start the calendar units are counted from; with a
+zoned value, days follow the zone. Required when either duration has
+years, months or weeks.}
 }
 \value{
 A \code{duration()} vector; \code{duration_compare()} returns an integer
@@ -43,9 +46,9 @@ vector of -1, 0 and 1.
 \description{
 A \code{duration()} is a length of time in ten fields, years to nanoseconds,
 each a float64-representable integer as Temporal defines them, stored as
-a list of ten double vectors (design 4.1). All fields share one sign.
+a list of ten double vectors. All fields share one sign.
 Years, months and weeks are calendar units: operations that need their
-length take \code{relative_to}, a date, and fail without it (design 6.5).
+length take \code{relative_to}, a date, and fail without it.
 }
 \section{Members}{
 

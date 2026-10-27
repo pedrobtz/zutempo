@@ -9,15 +9,15 @@
 #' wraps within the day. On a `zoned_date_time()` the date part moves
 #' through the calendar in the value's zone, resolved as `"compatible"`,
 #' and the time part moves the exact time, so a day across a clock change
-#' is not 24 hours (design 6.5). On a `duration()` the result is a
+#' is not 24 hours. On a `duration()` the result is a
 #' balanced duration, and calendar units are an error.
 #'
 #' @param x A zutempo value.
 #' @param other A `duration()`, or a string that `duration()` reads.
 #' @param ... Must be empty.
 #' @param overflow `"constrain"` (the default) clamps a day that the
-#'   target month lacks, `"reject"` raises a `zutempo_range_error`
-#'   (design 6.2). Not for a `plain_time()` or a `duration()`.
+#'   target month lacks, `"reject"` raises a `zutempo_range_error`.
+#'   Not for a `plain_time()` or a `duration()`.
 #' @return A value of the same class as `x`.
 #' @examples
 #' temporal_add(plain_date("2026-01-31"), "P1M")
@@ -39,7 +39,7 @@ temporal_subtract <- function(x, other, ...) {
 #'
 #' Temporal's `until()` and `since()`: the duration from `x` to `other`
 #' (`until`), or from `other` to `x` (`since`), balanced up to
-#' `largest_unit` and rounded to `smallest_unit` (design 6.6). Defaults
+#' `largest_unit` and rounded to `smallest_unit`. Defaults
 #' follow the type: days for dates and date-times, hours for times, zoned
 #' values and instants, years for year-months. Two `zoned_date_time()`
 #' values in different zones can only be differenced in time units.
@@ -50,14 +50,20 @@ temporal_subtract <- function(x, other, ...) {
 #' @param ... Must be empty.
 #' @param largest_unit,smallest_unit Temporal units, singular or plural;
 #'   `largest_unit` may be `"auto"`.
-#' @param rounding_increment A positive integer that divides the next
-#'   larger unit evenly for time units.
+#' @param rounding_increment A positive integer up to 10^9. With a time
+#'   unit as `smallest_unit` it must also divide the next larger unit
+#'   evenly and be smaller than it: 24 hours, 60 minutes or seconds, 1000
+#'   of the sub-second units.
 #' @param rounding_mode One of the nine rounding modes; `"trunc"` by
 #'   default.
 #' @return A `duration()`.
 #' @examples
 #' temporal_until(plain_date("2026-01-31"), "2026-03-01")
-#' temporal_until(plain_date("2026-01-31"), "2026-03-01", largest_unit = "month")
+#' temporal_until(
+#'   plain_date("2026-01-31"),
+#'   "2026-03-01",
+#'   largest_unit = "month"
+#' )
 #' temporal_since(plain_time("13:30"), "12:00")
 #' @export
 temporal_until <- function(
@@ -139,7 +145,7 @@ ztp_difference_settings <- function(
   }
   maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
   increment <- if (is.na(maximum)) {
-    ztp_increment_unchecked(rounding_increment)
+    ztp_increment_value(rounding_increment)
   } else {
     ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
   }
@@ -170,26 +176,26 @@ ztp_negate_rounding_mode <- function(code) {
 }
 
 # The shared body of until() and since(): `since` negates the result.
-ztp_difference <- function(x, other, convert, call, settings, since) {
+ztp_difference <- function(x, other, convert, compute, settings, since) {
   other <- convert(other)
   n <- ztp_common_length(x, other)
   a <- rep_len(unclass(x), n)
   b <- rep_len(unclass(other), n)
-  out <- call(a, b, settings)
+  out <- compute(a, b, settings)
   if (since) {
     out <- ztp_negate_duration_data(out)
   }
   new_duration(out)
 }
 
-ztp_add_impl <- function(x, other, call, negate) {
+ztp_add_impl <- function(x, other, compute, negate) {
   other <- ztp_as_duration(other)
   n <- ztp_common_length(x, other)
   data <- ztp_duration_data(other, n)
   if (negate) {
     data <- ztp_negate_duration_data(data)
   }
-  call(rep_len(unclass(x), n), data)
+  compute(rep_len(unclass(x), n), data)
 }
 
 # --- PlainDate ----------------------------------------------------------------
@@ -263,14 +269,14 @@ ztp_plain_date_difference <- function(
         C_ztp_r_plain_date_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -293,7 +299,7 @@ temporal_until.zutempo_plain_date <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -316,7 +322,7 @@ temporal_since.zutempo_plain_date <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -379,14 +385,14 @@ ztp_plain_time_difference <- function(
         C_ztp_r_plain_time_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -409,7 +415,7 @@ temporal_until.zutempo_plain_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -432,7 +438,7 @@ temporal_since.zutempo_plain_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -507,14 +513,14 @@ ztp_plain_date_time_difference <- function(
         C_ztp_r_plain_date_time_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -537,7 +543,7 @@ temporal_until.zutempo_plain_date_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -560,7 +566,7 @@ temporal_since.zutempo_plain_date_time <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -635,14 +641,14 @@ ztp_plain_year_month_difference <- function(
         C_ztp_r_plain_year_month_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -665,7 +671,7 @@ temporal_until.zutempo_plain_year_month <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -688,6 +694,6 @@ temporal_since.zutempo_plain_year_month <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }

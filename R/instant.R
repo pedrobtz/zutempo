@@ -3,14 +3,16 @@
 #' An `instant()` is an exact point on the time line with nanosecond
 #' precision and no calendar or time zone, stored as a complex vector whose
 #' real part is the whole seconds since 1970-01-01T00:00Z and whose
-#' imaginary part is the nanoseconds within that second (design 4.1). The
+#' imaginary part is the nanoseconds within that second. The
 #' range is 10^8 days either side of the epoch. The constructor is
 #' `Temporal.Instant` and `Temporal.Instant.from()` in one.
 #'
 #' @param x A string in ISO 8601 form with `Z` or a UTC offset
-#'   (`"2026-01-31T12:30:45.123456789Z"`, `"2026-01-31T12:30+05:30"`), or an
-#'   `instant()` to return as is. For `instant_from_epoch_milliseconds()`,
-#'   integral milliseconds since the epoch; for
+#'   (`"2026-01-31T12:30:45.123456789Z"`, `"2026-01-31T12:30+05:30"`), an
+#'   `instant()` to return as is, or a `zoned_date_time()` or `POSIXct` or
+#'   `POSIXlt` value to take the exact time of. For
+#'   `instant_from_epoch_milliseconds()`, integral milliseconds since the
+#'   epoch; for
 #'   `instant_from_epoch_nanoseconds()`, integral nanoseconds as numbers
 #'   exact in a double or as decimal strings.
 #' @param y An `instant()` or a string, for `instant_compare()`.
@@ -79,16 +81,7 @@ ztp_as_instant <- function(x) {
 #' @rdname instant
 #' @export
 instant_compare <- function(x, y) {
-  args <- ztp_recycle(list(
-    unclass(ztp_as_instant(x)),
-    unclass(ztp_as_instant(y))
-  ))
-  a <- args[[1L]]
-  b <- args[[2L]]
-  out <- as.integer(sign(Re(a) - Re(b)))
-  tie <- !is.na(out) & out == 0L
-  out[tie] <- as.integer(sign(Im(a)[tie] - Im(b)[tie]))
-  out
+  ztp_compare_complex(ztp_as_instant(x), ztp_as_instant(y))
 }
 
 #' @rdname temporal_fields
@@ -182,14 +175,14 @@ ztp_instant_difference <- function(
         C_ztp_r_instant_until,
         a,
         b,
-        s$largest,
-        s$smallest,
-        s$increment,
-        s$mode
+        s[["largest"]],
+        s[["smallest"]],
+        s[["increment"]],
+        s[["mode"]]
       )
     },
     settings,
-    since
+    since = since
   )
 }
 
@@ -212,7 +205,7 @@ temporal_until.zutempo_instant <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    FALSE
+    since = FALSE
   )
 }
 
@@ -235,7 +228,7 @@ temporal_since.zutempo_instant <- function(
     smallest_unit,
     rounding_increment,
     rounding_mode,
-    TRUE
+    since = TRUE
   )
 }
 
@@ -295,15 +288,19 @@ temporal_to_string.zutempo_instant <- function(
     ) {
       stop_zutempo("`time_zone` must be a single string", kind = "type")
     }
-  }
-  if (!is.null(time_zone)) {
     time_zone <- ztp_tz_ensure(time_zone)
   }
   v <- unclass(x)
-  if (p$unit != 9L || p$increment != 1) {
-    v <- .Call(C_ztp_r_instant_round, v, p$increment, p$unit, p$mode)
+  if (ztp_needs_rounding(p)) {
+    v <- .Call(
+      C_ztp_r_instant_round,
+      v,
+      p[["increment"]],
+      p[["unit"]],
+      p[["mode"]]
+    )
   }
-  .Call(C_ztp_r_instant_format, v, time_zone, p$precision)
+  .Call(C_ztp_r_instant_format, v, time_zone, p[["precision"]])
 }
 
 #' The current time
@@ -326,7 +323,7 @@ now_instant <- function() {
   new_instant(complex(real = whole, imaginary = ns))
 }
 
-# --- plumbing ---------------------------------------------------------------
+# --- plumbing -----------------------------------------------------------------
 
 #' @export
 `[.zutempo_instant` <- function(x, i, ...) ztp_subset(x, i)

@@ -50,9 +50,9 @@ ztp_tz_find <- function() {
     tried <- c(tried, "/usr/share/zoneinfo", r_copy)
   }
   tried <- unique(tried)
-  exists <- ztp_dir_exists(tried)
+  found <- ztp_dir_exists(tried)
   list(
-    dir = if (any(exists)) tried[which(exists)[1L]] else NA_character_,
+    dir = if (any(found)) tried[which(found)[1L]] else NA_character_,
     tried = tried
   )
 }
@@ -61,7 +61,11 @@ ztp_tz_find <- function() {
 # name ("Darwin", "Linux", ...). Thin wrappers over base R, so the tests
 # can mock every branch of the lookup on any machine.
 ztp_tz_platform <- function() {
-  if (.Platform$OS.type == "windows") "windows" else Sys.info()[["sysname"]]
+  if (.Platform[["OS.type"]] == "windows") {
+    "windows"
+  } else {
+    Sys.info()[["sysname"]]
+  }
 }
 
 ztp_dir_exists <- function(paths) {
@@ -143,17 +147,17 @@ ztp_tz_index <- function(dir) {
 # which must not throw away a cache that still reads the same files.
 ztp_tz_current <- function() {
   found <- ztp_tz_candidates()
-  key <- if (is.na(found$dir)) "" else found$dir
+  key <- if (is.na(found[["dir"]])) "" else found[["dir"]]
   if (!identical(ztp_tz_state$key, key)) {
     ztp_tz_reset_state()
     ztp_tz_state$key <- key
-    ztp_tz_state$dir <- found$dir
-    ztp_tz_state$tried <- found$tried
-    ztp_tz_state$version <- ztp_tz_version(found$dir)
-    ztp_tz_state$index <- if (is.na(found$dir)) {
+    ztp_tz_state$dir <- found[["dir"]]
+    ztp_tz_state$tried <- found[["tried"]]
+    ztp_tz_state$version <- ztp_tz_version(found[["dir"]])
+    ztp_tz_state$index <- if (is.na(found[["dir"]])) {
       NULL
     } else {
-      ztp_tz_index(found$dir)
+      ztp_tz_index(found[["dir"]])
     }
   }
   ztp_tz_state
@@ -168,7 +172,7 @@ ztp_tz_reset_state <- function() {
 #' Forget the parsed time zones
 #'
 #' zutempo reads the time zone database the way base R does, and keeps the
-#' zones it has parsed for the session (design 8.4). The cache clears by
+#' zones it has parsed for the session. The cache clears by
 #' itself when the option `zutempo.tzdir` or the `TZDIR` variable changes;
 #' `zutempo_tz_reset()` clears it on demand, and looks for the database
 #' again, for a database that appeared or changed under a running session.
@@ -200,23 +204,27 @@ ztp_tz_ensure <- function(id, index = NULL) {
       sprintf(
         "no time zone database was found for \"%s\"; looked in %s",
         id,
-        paste(state$tried, collapse = ", ")
+        paste(state[["tried"]], collapse = ", ")
       ),
       kind = "tz",
       index = index
     )
   }
-  hit <- match(tolower(id), state$index$lower)
+  hit <- match(tolower(id), state$index[["lower"]])
   if (is.na(hit)) {
     stop_zutempo(
-      sprintf("time zone \"%s\" is not in the database at %s", id, state$dir),
+      sprintf(
+        "time zone \"%s\" is not in the database at %s",
+        id,
+        state[["dir"]]
+      ),
       kind = "tz",
       index = index
     )
   }
-  canonical <- state$index$id[hit]
+  canonical <- state$index[["id"]][hit]
   if (!.Call(C_ztp_r_tz_loaded, canonical)) {
-    path <- file.path(state$dir, canonical)
+    path <- file.path(state[["dir"]], canonical)
     bytes <- readBin(path, "raw", n = file.size(path))
     .Call(C_ztp_r_tz_load, canonical, bytes)
   }
@@ -254,7 +262,7 @@ ztp_tz_form <- function() {
     return(NA_character_)
   }
   for (zone in c("America/New_York", "Europe/London", "Australia/Sydney")) {
-    if (tolower(zone) %in% state$index$lower) {
+    if (tolower(zone) %in% state$index[["lower"]]) {
       id <- ztp_tz_ensure(zone)
       last <- .Call(C_ztp_r_tz_last_explicit, id)
       if (is.na(last)) {

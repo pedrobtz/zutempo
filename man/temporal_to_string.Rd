@@ -110,7 +110,7 @@ Temporal's \code{toString()}. \code{format()} takes the same options and
 \code{as.character()} gives the default strings. Years outside 0 to 9999 are
 written with a sign and six digits. By default a time's fraction keeps
 only its significant digits, and a UTC offset is written as \code{+HH:MM} or
-\code{-HH:MM}, rounded to the minute (design 9).
+\code{-HH:MM}, rounded to the minute.
 }
 \details{
 Each type takes the options its Temporal \code{toString()} has: the
@@ -132,5 +132,9 @@ temporal_to_string(
   rounding_mode = "halfExpand",
   calendar_name = "always"
 )
-format(duration("PT1M30.25S"), smallest_unit = "second", rounding_mode = "ceil")
+format(
+  duration("PT1M30.25S"),
+  smallest_unit = "second",
+  rounding_mode = "ceil"
+)
 }

@@ -20,7 +20,7 @@ the package follows, with the tzdata release its fixtures come from. The
 pins live in \code{inst/spec/PINS} and move only on purpose.
 }
 \details{
-The time zone fields describe the database zutempo reads (design 8):
+The time zone fields describe the database zutempo reads:
 \code{tzdir}, the directory found by base R's lookup order (\code{NA} when none
 exists), \code{tz_version}, the tzdata release it declares, \code{tz_form},
 whether its files carry explicit transitions far into the future

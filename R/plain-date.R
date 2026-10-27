@@ -2,7 +2,7 @@
 #'
 #' A `plain_date()` is a calendar date in the ISO 8601 calendar with no
 #' time of day and no time zone, stored as an integer count of days since
-#' 1970-01-01 (design 4.1). The constructor is `Temporal.PlainDate` and
+#' 1970-01-01. The constructor is `Temporal.PlainDate` and
 #' `Temporal.PlainDate.from()` in one: it reads fields, strings or another
 #' zutempo value.
 #'
@@ -11,15 +11,16 @@
 #'
 #' @param year The year, or a string in ISO 8601 form (`"2026-01-31"`, a
 #'   date-time whose time is ignored, or a year with a sign and six digits
-#'   such as `"+275760-09-13"`), or a `plain_date()` or
-#'   `plain_date_time()` to convert.
+#'   such as `"+275760-09-13"`), or a `plain_date()`, `plain_date_time()`,
+#'   `zoned_date_time()`, `Date`, `POSIXct` or `POSIXlt` value to convert. A
+#'   zoned or `POSIXt` value gives its date in its own zone.
 #' @param month,day The month (1 to 12) and day of the month, when `year`
 #'   is a number. `month` may be replaced by `month_code`.
 #' @param ... Must be empty.
 #' @param month_code The month as `"M01"` to `"M12"`, instead of `month`.
 #' @param overflow `"constrain"` (the default) clamps `month` and `day` to
 #'   their valid ranges, `"reject"` raises a `zutempo_range_error` for
-#'   them (design 6.2).
+#'   them.
 #' @param x,y `plain_date()` values or strings, for `plain_date_compare()`.
 #' @return A `plain_date()` vector; `plain_date_compare()` returns an
 #'   integer vector of -1, 0 and 1.
@@ -146,7 +147,8 @@ ztp_date_time_ns <- function(x) {
   out
 }
 
-# Coerce `other` to the class of `x` for the comparisons.
+# The ztp_as_<type>() helpers take a value of the class as is and pass
+# anything else to the constructor, as compare() and equals() do.
 ztp_as_plain_date <- function(x) {
   if (inherits(x, "zutempo_plain_date")) x else plain_date(x)
 }
@@ -169,71 +171,46 @@ temporal_with.zutempo_plain_date <- function(x, ..., overflow = "constrain") {
     c("year", "month", "month_code", "day")
   )
   ov <- ztp_overflow_code(overflow)
-  base <- list(
+  current <- list(
     year = as.double(ztp_date_field(x, "year")),
     month = as.double(ztp_date_field(x, "month")),
     day = as.double(ztp_date_field(x, "day"))
   )
-  merged <- ztp_merge_date_fields(base, fields)
+  merged <- ztp_merge_date_fields(current, fields)
   new_plain_date(.Call(
     C_ztp_r_plain_date_from_fields,
-    merged$year,
-    merged$month,
-    merged$day,
+    merged[["year"]],
+    merged[["month"]],
+    merged[["day"]],
     ov
   ))
 }
 
-# IsPartialTemporalObject and PrepareCalendarFields with ~partial~: the
-# replacement fields must be named, known and at least one.
-ztp_partial_fields <- function(fields, allowed) {
-  nms <- names(fields)
-  if (length(fields) == 0L) {
-    stop_zutempo("at least one field to replace is required", kind = "type")
-  }
-  if (is.null(nms) || any(!nzchar(nms))) {
-    stop_zutempo("fields to replace must be named", kind = "type")
-  }
-  unknown <- setdiff(nms, allowed)
-  if (length(unknown)) {
-    stop_zutempo(
-      sprintf(
-        "unknown field%s %s",
-        if (length(unknown) > 1L) "s" else "",
-        paste0("`", unknown, "`", collapse = ", ")
-      ),
-      kind = "type"
-    )
-  }
-  if (anyDuplicated(nms)) {
-    stop_zutempo("each field may be given once", kind = "type")
-  }
-  fields
-}
-
 # CalendarMergeFields then CalendarResolveFields for the ISO calendar.
-ztp_merge_date_fields <- function(base, fields) {
+ztp_merge_date_fields <- function(current, fields) {
   year <- if (!is.null(fields[["year"]])) {
     ztp_as_field(fields[["year"]], "year")
   } else {
-    base$year
+    current[["year"]]
   }
   day <- if (!is.null(fields[["day"]])) {
     ztp_as_field(fields[["day"]], "day")
   } else {
-    base$day
+    current[["day"]]
   }
-  month <- base$month
-  if (!is.null(fields[["month"]]) || !is.null(fields[["month_code"]])) {
-    resolved <- ztp_date_fields(
-      year,
-      ztp_as_field(fields[["month"]], "month"),
-      day,
-      fields[["month_code"]]
-    )
-    return(resolved)
+  if (is.null(fields[["month"]]) && is.null(fields[["month_code"]])) {
+    return(ztp_recycle(list(
+      year = year,
+      month = current[["month"]],
+      day = day
+    )))
   }
-  ztp_recycle(list(year = year, month = month, day = day))
+  ztp_date_fields(
+    year,
+    ztp_as_field(fields[["month"]], "month"),
+    day,
+    fields[["month_code"]]
+  )
 }
 
 #' @rdname temporal_with
@@ -267,7 +244,11 @@ ztp_time_or_midnight <- function(time) {
 #' @rdname temporal_to_plain_date
 #' @export
 temporal_to_plain_year_month.zutempo_plain_date <- function(x) {
-  ztp_year_month_from_fields(as.double(year(x)), as.double(month(x)), 0L)
+  ztp_year_month_from_fields(
+    as.double(year(x)),
+    as.double(month(x)),
+    ztp_overflow_constrain
+  )
 }
 
 #' @rdname temporal_to_plain_date
@@ -277,7 +258,7 @@ temporal_to_plain_month_day.zutempo_plain_date <- function(x) {
     as.double(year(x)),
     as.double(month(x)),
     as.double(day(x)),
-    0L
+    ztp_overflow_constrain
   )
 }
 

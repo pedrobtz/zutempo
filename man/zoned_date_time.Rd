@@ -31,8 +31,10 @@ zoned_date_time_compare(x, y)
 brackets (\code{"2026-03-07T12:00[America/New_York]"},
 \code{"2026-03-07T12:00-05:00[America/New_York]"},
 \code{"2026-03-07T17:00Z[Europe/Lisbon]"} for the instant shown in that
-zone, \code{"2026-03-07[+05:30]"} for the start of that day), or a
-\code{zoned_date_time()} to return as is.}
+zone, \code{"2026-03-07[+05:30]"} for the start of that day), a
+\code{zoned_date_time()} to return as is, or a \code{POSIXct} or \code{POSIXlt} value,
+placed in \code{time_zone} or else in its own \code{tzone} (the system zone when
+that is empty).}
 
 \item{month, day}{The month (1 to 12) and day of the month, when \code{year}
 is a number. \code{month} may be replaced by \code{month_code}.}
@@ -42,10 +44,11 @@ fields, 0 by default.}
 
 \item{...}{Must be empty.}
 
-\item{time_zone}{The time zone of each value, when \code{year} is a number:
-an IANA identifier such as \code{"Europe/Lisbon"}, \code{"UTC"}, or a fixed
-offset such as \code{"+05:30"}; recycled with the fields. Identifiers match
-regardless of case and are stored in the database's case.}
+\item{time_zone}{The time zone of each value, when \code{year} is a number or
+a \code{POSIXt} value: an IANA identifier such as \code{"Europe/Lisbon"}, \code{"UTC"},
+or a fixed offset such as \code{"+05:30"}; recycled with the fields, or a
+single zone for a \code{POSIXt} value. Identifiers match regardless of case
+and are stored in the database's case.}
 
 \item{month_code}{The month as \code{"M01"} to \code{"M12"}, instead of \code{month}.}
 
@@ -60,7 +63,7 @@ fold: \code{"compatible"}, \code{"earlier"}, \code{"later"} or \code{"reject"}.}
 \code{"reject"}, \code{"use"}, \code{"ignore"} or \code{"prefer"}.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps each field to its
-range, \code{"reject"} raises a \code{zutempo_range_error} (design 6.2).}
+range, \code{"reject"} raises a \code{zutempo_range_error}.}
 
 \item{x, y}{\code{zoned_date_time()} values or strings, for
 \code{zoned_date_time_compare()}, which orders by the instant alone.}
@@ -72,14 +75,14 @@ returns an integer vector of -1, 0 and 1.
 \description{
 A \code{zoned_date_time()} is an exact time together with the time zone it is
 read in, so that it has both an \code{instant()} and a wall-clock date and
-time. Every element carries its own zone (design 4.2): the vector is an
+time. Every element carries its own zone: the vector is an
 \code{instant()} with an integer zone code per element into the \code{zones}
 attribute, the identifiers in the database's case. The constructor is
 \code{Temporal.ZonedDateTime} and \code{Temporal.ZonedDateTime.from()} in one.
 }
 \details{
 A local time that does not exist (a clock gap) or exists twice (a fold)
-is resolved by \code{disambiguation} (design 6.3): \code{"compatible"} (the
+is resolved by \code{disambiguation}: \code{"compatible"} (the
 default) moves a gap forward by its length and takes the earlier of a
 fold, \code{"earlier"} and \code{"later"} take that side, \code{"reject"} raises a
 \code{zutempo_range_error}. When the fields or the string carry a UTC offset

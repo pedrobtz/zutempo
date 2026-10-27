@@ -45,14 +45,17 @@ An \code{instant()} or a \code{zoned_date_time()}.
 \description{
 Temporal's \code{toInstant()}, \code{toZonedDateTimeISO()} and \code{toZonedDateTime()}.
 An \code{instant()} becomes a \code{zoned_date_time()} in any zone; a
-\code{plain_date_time()} is resolved in the zone with \code{disambiguation}
-(design 6.3); a \code{plain_date()} gives the start of that day in the zone,
+\code{plain_date_time()} is resolved in the zone with \code{disambiguation};
+a \code{plain_date()} gives the start of that day in the zone,
 or the given \code{plain_time} on that day.
 }
 \examples{
 x <- zoned_date_time("2026-03-07T12:00[America/New_York]")
 temporal_to_instant(x)
-temporal_to_zoned_date_time_iso(instant("2026-03-07T17:00Z"), "Europe/Lisbon")
+temporal_to_zoned_date_time_iso(
+  instant("2026-03-07T17:00Z"),
+  "Europe/Lisbon"
+)
 temporal_to_zoned_date_time(plain_date("2026-03-08"), "America/New_York")
 temporal_to_zoned_date_time(
   plain_date_time("2026-03-08T02:30"),

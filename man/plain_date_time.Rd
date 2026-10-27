@@ -25,8 +25,10 @@ plain_date_time_compare(x, y)
 \arguments{
 \item{year}{The year, or a string in ISO 8601 form
 (\code{"2026-01-31T12:30:45.5"}, a date alone for midnight, an offset is
-ignored and \code{Z} is rejected), or a \code{plain_date()} (for midnight) or
-\code{plain_date_time()} to convert.}
+ignored and \code{Z} is rejected), or a \code{plain_date_time()}, \code{plain_date()}
+(for midnight), \code{zoned_date_time()}, \code{Date} (for midnight), \code{POSIXct}
+or \code{POSIXlt} value to convert. A zoned or \code{POSIXt} value gives its
+wall-clock time in its own zone.}
 
 \item{month, day}{The month (1 to 12) and day of the month, when \code{year}
 is a number. \code{month} may be replaced by \code{month_code}.}
@@ -39,7 +41,7 @@ fields, 0 by default.}
 \item{month_code}{The month as \code{"M01"} to \code{"M12"}, instead of \code{month}.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps each field to its
-range, \code{"reject"} raises a \code{zutempo_range_error} (design 6.2).}
+range, \code{"reject"} raises a \code{zutempo_range_error}.}
 
 \item{x, y}{\code{plain_date_time()} values or strings, for
 \code{plain_date_time_compare()}.}
@@ -52,7 +54,7 @@ returns an integer vector of -1, 0 and 1.
 A \code{plain_date_time()} is a calendar date in the ISO 8601 calendar with a
 time of day to the nanosecond and no time zone, stored as a complex
 vector whose real part is the epoch day and whose imaginary part is the
-nanoseconds of day (design 4.1). The constructor is
+nanoseconds of day. The constructor is
 \code{Temporal.PlainDateTime} and \code{Temporal.PlainDateTime.from()} in one: it
 reads fields, strings or another zutempo value.
 }

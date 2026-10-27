@@ -60,8 +60,8 @@ temporal_subtract(x, other, ...)
 \item{...}{Must be empty.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps a day that the
-target month lacks, \code{"reject"} raises a \code{zutempo_range_error}
-(design 6.2). Not for a \code{plain_time()} or a \code{duration()}.}
+target month lacks, \code{"reject"} raises a \code{zutempo_range_error}.
+Not for a \code{plain_time()} or a \code{duration()}.}
 }
 \value{
 A value of the same class as \code{x}.
@@ -73,7 +73,7 @@ days; on a \code{plain_time()} only the time part applies and the result
 wraps within the day. On a \code{zoned_date_time()} the date part moves
 through the calendar in the value's zone, resolved as \code{"compatible"},
 and the time part moves the exact time, so a day across a clock change
-is not 24 hours (design 6.5). On a \code{duration()} the result is a
+is not 24 hours. On a \code{duration()} the result is a
 balanced duration, and calendar units are an error.
 }
 \examples{

@@ -2,20 +2,23 @@
 #'
 #' A `duration()` is a length of time in ten fields, years to nanoseconds,
 #' each a float64-representable integer as Temporal defines them, stored as
-#' a list of ten double vectors (design 4.1). All fields share one sign.
+#' a list of ten double vectors. All fields share one sign.
 #' Years, months and weeks are calendar units: operations that need their
-#' length take `relative_to`, a date, and fail without it (design 6.5).
+#' length take `relative_to`, a date, and fail without it.
 #'
 #' @param years The years, or a string in ISO 8601 form
 #'   (`"P1Y2M3DT4H5M6.789S"`, a fraction only on the smallest unit
-#'   present), or a `duration()` to return as is.
+#'   present), a `duration()` to return as is, or a `difftime`, whose exact
+#'   seconds become seconds and nanoseconds.
 #' @param months,weeks,days,hours,minutes,seconds,milliseconds,microseconds,nanoseconds
 #'   The remaining fields, 0 by default.
 #' @param ... Must be empty.
 #' @param x,y `duration()` values or strings, for `duration_compare()`.
-#' @param relative_to A `plain_date()`, `plain_date_time()` or a string
-#'   either reads: the date the calendar units are counted from. Required
-#'   when either duration has years, months or weeks.
+#' @param relative_to A `plain_date()`, `plain_date_time()`,
+#'   `zoned_date_time()` or a string one of them reads (a zone in brackets
+#'   makes it zoned): the start the calendar units are counted from; with a
+#'   zoned value, days follow the zone. Required when either duration has
+#'   years, months or weeks.
 #' @return A `duration()` vector; `duration_compare()` returns an integer
 #'   vector of -1, 0 and 1.
 #' @examples
@@ -159,9 +162,9 @@ ztp_relative_to <- function(relative_to, n) {
       relative_to,
       ztp_parse_goals[["zoned_date_time"]]
     )
-    missing <- is.na(relative_to)
-    zoned <- !missing & is.na(check[["message"]])
-    zoned[missing] <- any(!missing) && all(zoned[!missing])
+    absent <- is.na(relative_to)
+    zoned <- !absent & is.na(check[["message"]])
+    zoned[absent] <- any(!absent) && all(zoned[!absent])
     if (all(zoned) && length(zoned)) {
       relative_to <- zoned_date_time(relative_to)
     } else if (any(zoned)) {
@@ -192,11 +195,14 @@ ztp_relative_to <- function(relative_to, n) {
   }
   if (!inherits(relative_to, "zutempo_plain_date")) {
     stop_zutempo(
-      "`relative_to` must be a plain_date(), a plain_date_time(), a zoned_date_time() or a string",
+      paste(
+        "`relative_to` must be a plain_date(), a plain_date_time(),",
+        "a zoned_date_time() or a string"
+      ),
       kind = "type"
     )
   }
-  none$days <- rep_len(unclass(relative_to), n)
+  none[["days"]] <- rep_len(unclass(relative_to), n)
   none
 }
 
@@ -205,29 +211,20 @@ ztp_relative_to <- function(relative_to, n) {
 duration_compare <- function(x, y, relative_to = NULL) {
   x <- ztp_as_duration(x)
   y <- ztp_as_duration(y)
-  n <- max(length(x), length(y))
-  if (length(x) == 0L || length(y) == 0L) {
-    n <- 0L
-  }
-  if (length(x) != 1L && length(x) != n || length(y) != 1L && length(y) != n) {
-    stop_zutempo(
-      "`x` and `y` cannot be recycled to a common length",
-      kind = "type"
-    )
-  }
+  n <- ztp_common_length(x, y)
   rel <- ztp_relative_to(relative_to, n)
   .Call(
     C_ztp_r_duration_compare,
     ztp_duration_data(x, n),
     ztp_duration_data(y, n),
-    rel$days,
-    rel$zoned,
-    rel$codes,
-    rel$zones
+    rel[["days"]],
+    rel[["zoned"]],
+    rel[["codes"]],
+    rel[["zones"]]
   )
 }
 
-# --- fields -----------------------------------------------------------------
+# --- fields -------------------------------------------------------------------
 
 ztp_duration_field <- function(x, field) {
   unclass(x)[[field]]
@@ -349,15 +346,15 @@ blank.default <- function(x, ...) ztp_masked("blank", x, ...)
 #' @export
 blank.zutempo_duration <- function(x, ...) ztp_duration_sign(x) == 0L
 
-# DurationSign over the fields: the first non-zero field decides.
+# DurationSign over the fields: the first non-zero field decides. The
+# loop runs from the smallest field up, so the last write, the one that
+# wins, is the largest non-zero field.
 ztp_duration_sign <- function(x) {
   data <- unclass(x)
   out <- rep(0L, length(data[[1L]]))
-  undecided <- rep(TRUE, length(out))
   for (f in rev(ztp_duration_fields)) {
-    out[!is.na(data[[f]]) & data[[f]] != 0] <- sign(data[[f]][
-      !is.na(data[[f]]) & data[[f]] != 0
-    ])
+    nz <- !is.na(data[[f]]) & data[[f]] != 0
+    out[nz] <- sign(data[[f]][nz])
   }
   out[is.na(data[[1L]])] <- NA_integer_
   as.integer(out)
@@ -377,12 +374,14 @@ Math.zutempo_duration <- function(x, ...) {
   )
 }
 
-# --- methods ----------------------------------------------------------------
+# --- methods ------------------------------------------------------------------
 
 #' @rdname temporal_with
 #' @export
 temporal_with.zutempo_duration <- function(x, ..., overflow = "constrain") {
   fields <- ztp_partial_fields(list(...), ztp_duration_fields)
+  # Validated only: a duration has no field to constrain, and Temporal's
+  # Duration with() takes no options. The argument is here for the generic.
   ztp_overflow_code(overflow)
   data <- unclass(x)
   for (f in names(fields)) {
@@ -451,25 +450,6 @@ temporal_subtract.zutempo_duration <- function(x, other, ...) {
   ))
 }
 
-ztp_common_length <- function(x, y) {
-  lx <- length(x)
-  ly <- length(y)
-  if (lx == 0L || ly == 0L) {
-    return(0L)
-  }
-  if (lx != 1L && ly != 1L && lx != ly) {
-    stop_zutempo(
-      sprintf(
-        "arguments cannot be recycled to a common length (lengths %d, %d)",
-        lx,
-        ly
-      ),
-      kind = "type"
-    )
-  }
-  max(lx, ly)
-}
-
 #' @rdname temporal_round
 #' @export
 temporal_round.zutempo_duration <- function(
@@ -493,23 +473,21 @@ temporal_round.zutempo_duration <- function(
   smallest <- if (smallest_given) {
     ztp_unit_code(smallest_unit, "datetime")
   } else {
-    9L
+    ztp_unit_nanosecond
   }
-  largest <- if (!largest_given) {
-    -1L
-  } else if (identical(largest_unit, "auto")) {
-    -1L
-  } else {
+  largest <- if (largest_given && !identical(largest_unit, "auto")) {
     ztp_unit_code(largest_unit, "datetime", name = "largest_unit")
+  } else {
+    ztp_unit_auto
   }
   mode <- ztp_rounding_mode_code(rounding_mode)
   maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
   increment <- if (is.na(maximum)) {
-    ztp_increment_unchecked(rounding_increment)
+    ztp_increment_value(rounding_increment)
   } else {
     ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
   }
-  if (largest >= 0L && largest > smallest) {
+  if (largest != ztp_unit_auto && largest > smallest) {
     stop_zutempo(
       "`largest_unit` must not be smaller than `smallest_unit`",
       kind = "range",
@@ -526,10 +504,10 @@ temporal_round.zutempo_duration <- function(
     increment,
     mode,
     smallest_given,
-    rel$days,
-    rel$zoned,
-    rel$codes,
-    rel$zones
+    rel[["days"]],
+    rel[["zoned"]],
+    rel[["codes"]],
+    rel[["zones"]]
   ))
 }
 
@@ -537,13 +515,13 @@ temporal_round.zutempo_duration <- function(
 #'
 #' Temporal's `total()`: the whole duration as a possibly fractional count
 #' of `unit`. Years, months and weeks need `relative_to`; without it a day
-#' counts 24 hours (design 6.5).
+#' counts 24 hours.
 #'
 #' @param x A `duration()`.
 #' @param unit A Temporal unit, singular or plural.
 #' @param relative_to A `plain_date()`, `plain_date_time()`,
 #'   `zoned_date_time()` or a string one of them reads (a zone in brackets
-#'   makes it zoned); with a zoned value, days follow the zone (design 6.5).
+#'   makes it zoned); with a zoned value, days follow the zone.
 #' @return A double vector.
 #' @examples
 #' temporal_total(duration(hours = 25), "day")
@@ -566,10 +544,10 @@ temporal_total.zutempo_duration <- function(x, unit, relative_to = NULL) {
     C_ztp_r_duration_total,
     ztp_duration_data(x, n),
     code,
-    rel$days,
-    rel$zoned,
-    rel$codes,
-    rel$zones
+    rel[["days"]],
+    rel[["zoned"]],
+    rel[["codes"]],
+    rel[["zones"]]
   )
 }
 
@@ -592,14 +570,22 @@ temporal_to_string.zutempo_duration <- function(
   .Call(
     C_ztp_r_duration_format,
     unclass(x),
-    p$precision,
-    p$increment,
-    p$unit,
-    p$mode
+    p[["precision"]],
+    p[["increment"]],
+    p[["unit"]],
+    p[["mode"]]
   )
 }
 
-# --- plumbing for the record class ---------------------------------------
+# --- plumbing for the record class --------------------------------------------
+
+# A duration of length n with every element NA, which is what a logical
+# NA becomes in `[<-` and c().
+ztp_na_duration <- function(n) {
+  new_duration(lapply(ztp_empty_duration_fields(), function(f) {
+    rep(NA_real_, n)
+  }))
+}
 
 ztp_duration_subset <- function(x, i) {
   new_duration(lapply(unclass(x), `[`, i))
@@ -625,9 +611,7 @@ names.zutempo_duration <- function(x) NULL
 #' @export
 `[<-.zutempo_duration` <- function(x, i, value) {
   if (is.logical(value) && all(is.na(value))) {
-    value <- new_duration(lapply(ztp_empty_duration_fields(), function(f) {
-      rep(NA_real_, length(value))
-    }))
+    value <- ztp_na_duration(length(value))
   }
   ztp_check_same_class(x, value, "the replacement value")
   data <- unclass(x)
@@ -650,9 +634,7 @@ c.zutempo_duration <- function(...) {
   dots <- dots[!vapply(dots, is.null, logical(1L))]
   dots <- lapply(dots, function(d) {
     if (is.logical(d) && all(is.na(d))) {
-      return(new_duration(lapply(ztp_empty_duration_fields(), function(f) {
-        rep(NA_real_, length(d))
-      })))
+      return(ztp_na_duration(length(d)))
     }
     ztp_check_same_class(..1, d, "every argument of c()")
     d
@@ -713,16 +695,27 @@ as.list.zutempo_duration <- function(x, ...) {
 # cannot be ordered (design 6.5).
 ztp_duration_order_key <- function(x) {
   data <- unclass(x)
-  calendar <- !is.na(data$years) &
-    (data$years != 0 | data$months != 0 | data$weeks != 0)
+  calendar <- !is.na(data[["years"]]) &
+    (data[["years"]] != 0 | data[["months"]] != 0 | data[["weeks"]] != 0)
   if (any(calendar)) {
     stop_zutempo(
-      "durations with years, months or weeks cannot be ordered without `relative_to`; use duration_compare()",
+      paste(
+        "durations with years, months or weeks cannot be ordered without",
+        "`relative_to`; use duration_compare()"
+      ),
       kind = "range",
       index = which(calendar)[1L]
     )
   }
-  .Call(C_ztp_r_duration_total, data, 9L, NULL, NULL, NULL, NULL)
+  .Call(
+    C_ztp_r_duration_total,
+    data,
+    ztp_unit_nanosecond,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+  )
 }
 
 #' @export

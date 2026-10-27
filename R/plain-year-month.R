@@ -1,7 +1,7 @@
 #' Months: Temporal's PlainYearMonth
 #'
 #' A `plain_year_month()` is a month of a year in the ISO 8601 calendar,
-#' stored as an integer count of months since January 1970 (design 4.1).
+#' stored as an integer count of months since January 1970.
 #' The constructor is `Temporal.PlainYearMonth` and
 #' `Temporal.PlainYearMonth.from()` in one: it reads fields, strings or a
 #' `plain_date()` or `plain_date_time()`.
@@ -18,7 +18,7 @@
 #' @param ... Must be empty.
 #' @param month_code The month as `"M01"` to `"M12"`, instead of `month`.
 #' @param overflow `"constrain"` (the default) clamps `month` to 1 to 12,
-#'   `"reject"` raises a `zutempo_range_error` (design 6.2).
+#'   `"reject"` raises a `zutempo_range_error`.
 #' @param x,y `plain_year_month()` values or strings, for
 #'   `plain_year_month_compare()`.
 #' @return A `plain_year_month()` vector; `plain_year_month_compare()`
@@ -69,7 +69,7 @@ plain_year_month <- function(
     )
   }
   fields <- ztp_year_month_fields(year, month, month_code)
-  ztp_year_month_from_fields(fields$year, fields$month, ov)
+  ztp_year_month_from_fields(fields[["year"]], fields[["month"]], ov)
 }
 
 ztp_year_month_from_fields <- function(year, month, ov) {
@@ -111,13 +111,13 @@ temporal_with.zutempo_plain_year_month <- function(
 ) {
   fields <- ztp_partial_fields(list(...), c("year", "month", "month_code"))
   ov <- ztp_overflow_code(overflow)
-  base <- list(
+  current <- list(
     year = as.double(year(x)),
     month = as.double(month(x)),
     day = 1
   )
-  merged <- ztp_merge_date_fields(base, fields)
-  ztp_year_month_from_fields(merged$year, merged$month, ov)
+  merged <- ztp_merge_date_fields(current, fields)
+  ztp_year_month_from_fields(merged[["year"]], merged[["month"]], ov)
 }
 
 #' @rdname temporal_to_plain_date
@@ -134,7 +134,7 @@ temporal_to_plain_date.zutempo_plain_year_month <- function(x, day, ...) {
     args[[1L]],
     args[[2L]],
     args[[3L]],
-    0L
+    ztp_overflow_constrain
   ))
 }
 

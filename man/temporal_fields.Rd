@@ -542,13 +542,23 @@ hours_in_day(x, ...)
 \item{...}{Passed on by the default method to the function it masks.}
 }
 \value{
-An integer vector, or a character vector for \code{calendar_id()},
-\code{era()} and \code{month_code()}, or a logical vector for \code{in_leap_year()},
-with \code{NA} where \code{x} is \code{NA}.
+A vector of the length of \code{x}, with \code{NA} where \code{x} is \code{NA}:
+\itemize{
+\item character for \code{calendar_id()}, \code{era()}, \code{month_code()}, \code{offset()},
+\code{time_zone_id()} and \code{epoch_nanoseconds()};
+\item logical for \code{in_leap_year()} and \code{blank()};
+\item double for \code{epoch_milliseconds()}, \code{offset_nanoseconds()},
+\code{hours_in_day()} and the duration fields, \code{years()} to
+\code{nanoseconds()};
+\item integer for every other field.
+}
+
+On a \code{duration()}, \code{sign()} returns an integer vector of -1, 0 and 1
+and \code{abs()} a \code{duration()}; other \code{Math} functions are an error.
 }
 \description{
-One accessor per Temporal property, named after it in snake case
-(design 5). Each is an S3 generic with methods for the zutempo classes
+One accessor per Temporal property, named after it in snake case.
+Each is an S3 generic with methods for the zutempo classes
 and a default that calls the function of the same name from another
 attached package, so that \code{lubridate::year()} and the others keep
 working on their own objects after zutempo is attached.
@@ -556,14 +566,17 @@ working on their own objects after zutempo is attached.
 \section{Fields}{
 
 \itemize{
-\item \code{calendar_id()}: \code{calendarId}, the calendar identifier, always "iso8601".
+\item \code{calendar_id()}: \code{calendarId}, the calendar identifier, always
+\code{"iso8601"}.
 \item \code{era()}: \code{era}, the era, \code{NA} in the ISO 8601 calendar.
-\item \code{era_year()}: \code{eraYear}, the year within the era, \code{NA} in the ISO 8601 calendar.
+\item \code{era_year()}: \code{eraYear}, the year within the era, \code{NA} in the ISO 8601
+calendar.
 \item \code{year()}: \code{year}, the year.
 \item \code{month()}: \code{month}, the month, 1 to 12.
 \item \code{month_code()}: \code{monthCode}, the month code, \code{"M01"} to \code{"M12"}.
 \item \code{day()}: \code{day}, the day of the month.
-\item \code{day_of_week()}: \code{dayOfWeek}, the day of the week, 1 (Monday) to 7 (Sunday).
+\item \code{day_of_week()}: \code{dayOfWeek}, the day of the week, 1 (Monday) to 7
+(Sunday).
 \item \code{day_of_year()}: \code{dayOfYear}, the day of the year, from 1.
 \item \code{week_of_year()}: \code{weekOfYear}, the ISO week number, 1 to 53.
 \item \code{year_of_week()}: \code{yearOfWeek}, the year the ISO week belongs to.
@@ -578,6 +591,20 @@ working on their own objects after zutempo is attached.
 \item \code{millisecond()}: \code{millisecond}, 0 to 999.
 \item \code{microsecond()}: \code{microsecond}, 0 to 999.
 \item \code{nanosecond()}: \code{nanosecond}, 0 to 999.
+\item \code{epoch_milliseconds()}: \code{epochMilliseconds}, the milliseconds since
+1970-01-01T00:00Z, floored.
+\item \code{epoch_nanoseconds()}: \code{epochNanoseconds}, the nanoseconds since
+1970-01-01T00:00Z, as decimal strings: they do not fit in a double.
+\item \code{offset_nanoseconds()}: \code{offsetNanoseconds}, the zone's UTC offset.
+\item \code{offset()}: \code{offset}, the UTC offset as \code{"+HH:MM"}, with seconds if
+it has them.
+\item \code{time_zone_id()}: \code{timeZoneId}, the time zone identifier.
+\item \code{hours_in_day()}: \code{hoursInDay}, the length of the day in the zone, in
+hours.
+\item \code{years()}, \code{months()}, \code{weeks()}, \code{days()}, \code{hours()}, \code{minutes()},
+\code{seconds()}, \code{milliseconds()}, \code{microseconds()}, \code{nanoseconds()}: the
+fields of a \code{duration()}.
+\item \code{blank()}: \code{blank}, whether every field of a \code{duration()} is zero.
 }
 }
 

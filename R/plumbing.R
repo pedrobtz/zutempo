@@ -2,7 +2,10 @@
 # are plain R vectors with a class attribute, so the methods here keep
 # that class through subsetting, combination and printing.
 
-ztp_plain_classes <- c(
+# The classes stored as a bare atomic vector with only a class attribute:
+# the plain types and the instant. They share this file's methods and the
+# vctrs registration, and a value of one is never a field.
+ztp_atomic_classes <- c(
   "zutempo_plain_date",
   "zutempo_plain_time",
   "zutempo_plain_date_time",
@@ -43,8 +46,8 @@ ztp_restore <- function(data, template) {
   data
 }
 
-ztp_is_plain <- function(x) {
-  inherits(x, ztp_plain_classes)
+ztp_is_atomic_class <- function(x) {
+  inherits(x, ztp_atomic_classes)
 }
 
 ztp_check_same_class <- function(x, value, what) {
@@ -79,6 +82,38 @@ ztp_recycle <- function(args) {
   lapply(args, function(a) if (length(a) == n) a else rep_len(a, n))
 }
 
+# The common length of two vectors under the same rule as ztp_recycle().
+ztp_common_length <- function(x, y) {
+  lx <- length(x)
+  ly <- length(y)
+  if (lx == 0L || ly == 0L) {
+    return(0L)
+  }
+  if (lx != 1L && ly != 1L && lx != ly) {
+    stop_zutempo(
+      sprintf(
+        "arguments cannot be recycled to a common length (lengths %d, %d)",
+        lx,
+        ly
+      ),
+      kind = "type"
+    )
+  }
+  max(lx, ly)
+}
+
+# Lexicographic comparison of two complex values, real part first: the
+# order of instants and of plain date-times. Recycled.
+ztp_compare_complex <- function(x, y) {
+  args <- ztp_recycle(list(unclass(x), unclass(y)))
+  a <- args[[1L]]
+  b <- args[[2L]]
+  out <- as.integer(sign(Re(a) - Re(b)))
+  tie <- !is.na(out) & out == 0L
+  out[tie] <- as.integer(sign(Im(a)[tie] - Im(b)[tie]))
+  out
+}
+
 ztp_check_dots_empty <- function(...) {
   if (...length() > 0L) {
     nms <- ...names()
@@ -93,7 +128,7 @@ ztp_check_dots_empty <- function(...) {
 
 # A field argument: numeric, or a logical vector of NAs (R's bare NA).
 ztp_is_field_like <- function(x) {
-  !ztp_is_plain(x) && (is.numeric(x) || (is.logical(x) && all(is.na(x))))
+  !ztp_is_atomic_class(x) && (is.numeric(x) || (is.logical(x) && all(is.na(x))))
 }
 
 ztp_as_field <- function(x, name) {
@@ -109,7 +144,34 @@ ztp_as_field <- function(x, name) {
   as.double(x)
 }
 
-# --- subsetting and combination ------------------------------------------
+# IsPartialTemporalObject and PrepareCalendarFields with ~partial~: the
+# replacement fields must be named, known and at least one.
+ztp_partial_fields <- function(fields, allowed) {
+  nms <- names(fields)
+  if (length(fields) == 0L) {
+    stop_zutempo("at least one field to replace is required", kind = "type")
+  }
+  if (is.null(nms) || any(!nzchar(nms))) {
+    stop_zutempo("fields to replace must be named", kind = "type")
+  }
+  unknown <- setdiff(nms, allowed)
+  if (length(unknown)) {
+    stop_zutempo(
+      sprintf(
+        "unknown field%s %s",
+        if (length(unknown) > 1L) "s" else "",
+        paste0("`", unknown, "`", collapse = ", ")
+      ),
+      kind = "type"
+    )
+  }
+  if (anyDuplicated(nms)) {
+    stop_zutempo("each field may be given once", kind = "type")
+  }
+  fields
+}
+
+# --- subsetting and combination -----------------------------------------------
 
 ztp_subset <- function(x, i) {
   ztp_restore(unclass(x)[i], x)
@@ -123,7 +185,7 @@ ztp_assign <- function(x, i, value) {
   if (is.null(value)) {
     stop_zutempo("cannot assign NULL", kind = "type")
   }
-  if (!all(is.na(value)) || ztp_is_plain(value)) {
+  if (!all(is.na(value)) || ztp_is_atomic_class(value)) {
     ztp_check_same_class(x, value, "the replacement value")
   }
   data <- unclass(x)
@@ -228,11 +290,9 @@ as.data.frame.zutempo_plain_date_time <- function(x, ...) {
   as.data.frame.vector(x, ...)
 }
 
-# --- ordering --------------------------------------------------------------
+# --- ordering -----------------------------------------------------------------
 
-# Chronological order: epoch days and nanoseconds of day sort as numbers;
-# a date-time sorts by its real part (the day) then its imaginary part
-# (the time), exactly, through order() rather than a lossy double.
+# Chronological order: epoch days and nanoseconds of day sort as numbers.
 
 #' @export
 xtfrm.zutempo_plain_date <- function(x) as.vector(unclass(x))
@@ -247,8 +307,8 @@ ztp_order_key_complex <- function(x) {
   if (length(o)) {
     s <- z[o]
     n <- length(s)
-    new <- c(TRUE, Re(s)[-1L] != Re(s)[-n] | Im(s)[-1L] != Im(s)[-n])
-    out[o] <- cumsum(new)
+    starts <- c(TRUE, Re(s)[-1L] != Re(s)[-n] | Im(s)[-1L] != Im(s)[-n])
+    out[o] <- cumsum(starts)
   }
   out
 }
@@ -256,7 +316,7 @@ ztp_order_key_complex <- function(x) {
 #' @export
 xtfrm.zutempo_plain_date_time <- function(x) ztp_order_key_complex(x)
 
-# --- text -------------------------------------------------------------------
+# --- text ---------------------------------------------------------------------
 
 #' @export
 format.zutempo_plain_date <- function(x, ...) ztp_format(x, ...)
@@ -287,7 +347,7 @@ print.zutempo_plain_time <- function(x, ...) ztp_print(x, ...)
 #' @export
 print.zutempo_plain_date_time <- function(x, ...) ztp_print(x, ...)
 
-# --- the partial-date classes ----------------------------------------------
+# --- the partial-date classes -------------------------------------------------
 
 #' @export
 `[.zutempo_plain_year_month` <- function(x, i, ...) ztp_subset(x, i)

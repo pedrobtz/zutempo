@@ -17,9 +17,11 @@ instant_compare(x, y)
 }
 \arguments{
 \item{x}{A string in ISO 8601 form with \code{Z} or a UTC offset
-(\code{"2026-01-31T12:30:45.123456789Z"}, \code{"2026-01-31T12:30+05:30"}), or an
-\code{instant()} to return as is. For \code{instant_from_epoch_milliseconds()},
-integral milliseconds since the epoch; for
+(\code{"2026-01-31T12:30:45.123456789Z"}, \code{"2026-01-31T12:30+05:30"}), an
+\code{instant()} to return as is, or a \code{zoned_date_time()} or \code{POSIXct} or
+\code{POSIXlt} value to take the exact time of. For
+\code{instant_from_epoch_milliseconds()}, integral milliseconds since the
+epoch; for
 \code{instant_from_epoch_nanoseconds()}, integral nanoseconds as numbers
 exact in a double or as decimal strings.}
 
@@ -33,7 +35,7 @@ vector of -1, 0 and 1.
 An \code{instant()} is an exact point on the time line with nanosecond
 precision and no calendar or time zone, stored as a complex vector whose
 real part is the whole seconds since 1970-01-01T00:00Z and whose
-imaginary part is the nanoseconds within that second (design 4.1). The
+imaginary part is the nanoseconds within that second. The
 range is 10^8 days either side of the epoch. The constructor is
 \code{Temporal.Instant} and \code{Temporal.Instant.from()} in one.
 }

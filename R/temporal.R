@@ -8,7 +8,7 @@
 #' `overflow`. `temporal_with_plain_time()` is `withPlainTime()`,
 #' `temporal_with_time_zone()` is `withTimeZone()` (the same instant read
 #' in another zone), and `temporal_with_calendar()` is `withCalendar()`,
-#' which accepts only `"iso8601"` in this version (design D7).
+#' which accepts only `"iso8601"` in this version.
 #'
 #' @param x A zutempo value.
 #' @param ... Fields to replace, named: `year`, `month`, `month_code`,
@@ -23,7 +23,8 @@
 #' @param time_zone For `temporal_with_time_zone()`: the new zone of each
 #'   value, recycled.
 #' @param overflow `"constrain"` (the default) clamps out-of-range fields,
-#'   `"reject"` raises a `zutempo_range_error` for them (design 6.2).
+#'   `"reject"` raises a `zutempo_range_error` for them. A `duration()` has
+#'   nothing to clamp: the value is checked and has no effect.
 #' @param time A `plain_time()`, a string a `plain_time()` reads, or `NULL`
 #'   for midnight.
 #' @param calendar A calendar identifier; only `"iso8601"` is supported.
@@ -129,7 +130,7 @@ temporal_equals <- function(x, other) {
 #' Round a Temporal value
 #'
 #' Temporal's `round()`, to an increment of `smallest_unit` with one of the
-#' nine rounding modes (design 6.4). `plain_time()` rounds within the day;
+#' nine rounding modes. `plain_time()` rounds within the day;
 #' `plain_date_time()` carries into the date and also accepts `"day"`.
 #'
 #' @param x A zutempo value.
@@ -146,7 +147,7 @@ temporal_equals <- function(x, other) {
 #' @param relative_to For a `duration()`: a `plain_date()`,
 #'   `plain_date_time()`, `zoned_date_time()` or a string one of them
 #'   reads, required to round years, months or weeks; with a zoned value,
-#'   days follow the zone (design 6.5).
+#'   days follow the zone.
 #' @param rounding_increment A positive integer that divides the next
 #'   larger unit evenly: 24 hours, 60 minutes or seconds, 1000 of the
 #'   sub-second units, and 1 for `"day"`.
@@ -159,7 +160,11 @@ temporal_equals <- function(x, other) {
 #' temporal_round(plain_time("12:34:56"), "hour", rounding_mode = "floor")
 #' temporal_round(plain_date_time("2026-01-31T23:59"), "hour")
 #' temporal_round(duration(hours = 25), largest_unit = "day")
-#' temporal_round(duration(hours = 25), largest_unit = "day", relative_to = "2026-03-07")
+#' temporal_round(
+#'   duration(hours = 25),
+#'   largest_unit = "day",
+#'   relative_to = "2026-03-07"
+#' )
 #' @order 1
 #' @export
 temporal_round <- function(
@@ -178,7 +183,7 @@ temporal_round <- function(
 #' `as.character()` gives the default strings. Years outside 0 to 9999 are
 #' written with a sign and six digits. By default a time's fraction keeps
 #' only its significant digits, and a UTC offset is written as `+HH:MM` or
-#' `-HH:MM`, rounded to the minute (design 9).
+#' `-HH:MM`, rounded to the minute.
 #'
 #' Each type takes the options its Temporal `toString()` has: the
 #' precision options on the types with a time, `calendar_name` on the
@@ -225,7 +230,11 @@ temporal_round <- function(
 #'   rounding_mode = "halfExpand",
 #'   calendar_name = "always"
 #' )
-#' format(duration("PT1M30.25S"), smallest_unit = "second", rounding_mode = "ceil")
+#' format(
+#'   duration("PT1M30.25S"),
+#'   smallest_unit = "second",
+#'   rounding_mode = "ceil"
+#' )
 #' @order 1
 #' @export
 temporal_to_string <- function(x, ...) {

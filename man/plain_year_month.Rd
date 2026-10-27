@@ -29,7 +29,7 @@ replaced by \code{month_code}.}
 \item{month_code}{The month as \code{"M01"} to \code{"M12"}, instead of \code{month}.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps \code{month} to 1 to 12,
-\code{"reject"} raises a \code{zutempo_range_error} (design 6.2).}
+\code{"reject"} raises a \code{zutempo_range_error}.}
 
 \item{x, y}{\code{plain_year_month()} values or strings, for
 \code{plain_year_month_compare()}.}
@@ -40,7 +40,7 @@ returns an integer vector of -1, 0 and 1.
 }
 \description{
 A \code{plain_year_month()} is a month of a year in the ISO 8601 calendar,
-stored as an integer count of months since January 1970 (design 4.1).
+stored as an integer count of months since January 1970.
 The constructor is \code{Temporal.PlainYearMonth} and
 \code{Temporal.PlainYearMonth.from()} in one: it reads fields, strings or a
 \code{plain_date()} or \code{plain_date_time()}.

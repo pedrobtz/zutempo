@@ -23,9 +23,9 @@ ztp_doc_members <- function(type) {
     sprintf("[%s()]", m[["r_name"]]),
     sprintf("none: %s", m[["note"]])
   )
-  order <- c("constructor", "from", "static", "property", "method", "now")
+  kinds <- c("constructor", "from", "static", "property", "method", "now")
   m[["r"]] <- r
-  m <- m[order(match(m[["kind"]], order)), , drop = FALSE]
+  m <- m[order(match(m[["kind"]], kinds)), , drop = FALSE]
   rows <- sprintf(
     "| %s | %s |",
     mapply(js, m[["kind"]], m[["member"]]),

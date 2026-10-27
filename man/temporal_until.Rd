@@ -168,8 +168,10 @@ reads.}
 \item{largest_unit, smallest_unit}{Temporal units, singular or plural;
 \code{largest_unit} may be \code{"auto"}.}
 
-\item{rounding_increment}{A positive integer that divides the next
-larger unit evenly for time units.}
+\item{rounding_increment}{A positive integer up to 10^9. With a time
+unit as \code{smallest_unit} it must also divide the next larger unit
+evenly and be smaller than it: 24 hours, 60 minutes or seconds, 1000
+of the sub-second units.}
 
 \item{rounding_mode}{One of the nine rounding modes; \code{"trunc"} by
 default.}
@@ -180,13 +182,17 @@ A \code{duration()}.
 \description{
 Temporal's \code{until()} and \code{since()}: the duration from \code{x} to \code{other}
 (\code{until}), or from \code{other} to \code{x} (\code{since}), balanced up to
-\code{largest_unit} and rounded to \code{smallest_unit} (design 6.6). Defaults
+\code{largest_unit} and rounded to \code{smallest_unit}. Defaults
 follow the type: days for dates and date-times, hours for times, zoned
 values and instants, years for year-months. Two \code{zoned_date_time()}
 values in different zones can only be differenced in time units.
 }
 \examples{
 temporal_until(plain_date("2026-01-31"), "2026-03-01")
-temporal_until(plain_date("2026-01-31"), "2026-03-01", largest_unit = "month")
+temporal_until(
+  plain_date("2026-01-31"),
+  "2026-03-01",
+  largest_unit = "month"
+)
 temporal_since(plain_time("13:30"), "12:00")
 }

@@ -16,7 +16,7 @@ temporal_total(x, unit, relative_to = NULL)
 
 \item{relative_to}{A \code{plain_date()}, \code{plain_date_time()},
 \code{zoned_date_time()} or a string one of them reads (a zone in brackets
-makes it zoned); with a zoned value, days follow the zone (design 6.5).}
+makes it zoned); with a zoned value, days follow the zone.}
 }
 \value{
 A double vector.
@@ -24,7 +24,7 @@ A double vector.
 \description{
 Temporal's \code{total()}: the whole duration as a possibly fractional count
 of \code{unit}. Years, months and weeks need \code{relative_to}; without it a day
-counts 24 hours (design 6.5).
+counts 24 hours.
 }
 \examples{
 temporal_total(duration(hours = 25), "day")

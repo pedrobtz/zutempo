@@ -55,10 +55,10 @@ stop_zutempo <- function(
   }
   fields <- list(message = message, call = call, index = index)
   if (!is.null(position)) {
-    fields$position <- as.numeric(position)
+    fields[["position"]] <- as.numeric(position)
   }
   if (!is.null(option)) {
-    fields$option <- as.character(option)
+    fields[["option"]] <- as.character(option)
   }
   cond <- structure(
     class = c(classes, "zutempo_error", "error", "condition"),

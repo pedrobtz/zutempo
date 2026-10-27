@@ -29,7 +29,7 @@ or \code{plain_date_time()} to convert. May be replaced by \code{month_code}.}
 year 1972, a leap year, is used.}
 
 \item{overflow}{\code{"constrain"} (the default) clamps \code{month} and \code{day},
-\code{"reject"} raises a \code{zutempo_range_error} (design 6.2).}
+\code{"reject"} raises a \code{zutempo_range_error}.}
 }
 \value{
 A \code{plain_month_day()} vector.
@@ -37,7 +37,7 @@ A \code{plain_month_day()} vector.
 \description{
 A \code{plain_month_day()} is a month and day with no year, such as a
 birthday, in the ISO 8601 calendar, stored as an integer
-\code{month * 32 + day} (design 4.1). Temporal keeps the day valid in a
+\code{month * 32 + day}. Temporal keeps the day valid in a
 reference year, 1972, so February 29 is a \code{plain_month_day()}. The
 constructor is \code{Temporal.PlainMonthDay} and
 \code{Temporal.PlainMonthDay.from()} in one: it reads fields, strings or a

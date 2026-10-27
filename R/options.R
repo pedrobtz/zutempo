@@ -32,9 +32,39 @@ ztp_option_required <- function(name) {
   stop_zutempo(sprintf("`%s` is required", name), kind = "type", option = name)
 }
 
-# GetTemporalOverflowOption: 0 constrain, 1 reject.
+# GetTemporalOverflowOption, in the engine's order: 0 constrain, 1 reject.
+ztp_overflows <- c("constrain", "reject")
+ztp_overflow_constrain <- match("constrain", ztp_overflows) - 1L
+
 ztp_overflow_code <- function(overflow) {
-  ztp_match_option(overflow, c("constrain", "reject"), "overflow") - 1L
+  ztp_match_option(overflow, ztp_overflows, "overflow") - 1L
+}
+
+# GetTemporalDisambiguationOption and GetTemporalOffsetOption, and the
+# behaviour of InterpretISODateTimeOffset, in the order of the
+# enumerations of src/ztp_zoned.h.
+ztp_disambiguations <- c("compatible", "earlier", "later", "reject")
+ztp_disambiguation_compatible <- match("compatible", ztp_disambiguations) - 1L
+
+ztp_offset_options <- c("prefer", "use", "ignore", "reject")
+ztp_offset_reject <- match("reject", ztp_offset_options) - 1L
+
+ztp_offset_behaviours <- c("option", "exact", "wall", "start_of_day")
+ztp_offset_behaviour_option <- match("option", ztp_offset_behaviours) - 1L
+ztp_offset_behaviour_wall <- match("wall", ztp_offset_behaviours) - 1L
+ztp_offset_behaviour_start_of_day <- match(
+  "start_of_day",
+  ztp_offset_behaviours
+) -
+  1L
+
+ztp_disambiguation_code <- function(disambiguation) {
+  ztp_match_option(disambiguation, ztp_disambiguations, "disambiguation") -
+    1L
+}
+
+ztp_offset_option_code <- function(offset) {
+  ztp_match_option(offset, ztp_offset_options, "offset") - 1L
 }
 
 # GetRoundingModeOption: Table 28, in the engine's order.
@@ -69,6 +99,10 @@ ztp_units <- c(
   "nanosecond"
 )
 ztp_unit_category <- c(rep("date", 4L), rep("time", 6L))
+ztp_unit_second <- match("second", ztp_units) - 1L
+ztp_unit_nanosecond <- match("nanosecond", ztp_units) - 1L
+# A largest unit of "auto": the engine takes the largest non-zero unit.
+ztp_unit_auto <- -1L
 
 # GetTemporalUnitValuedOption and ValidateTemporalUnitValue. `group` is
 # the unit group the member accepts; `extra` names units accepted on top.
@@ -113,25 +147,7 @@ ztp_unit_code <- function(
 # `maximum` is the dividend the increment must divide; when `inclusive`
 # is FALSE the increment must also be smaller than it.
 ztp_increment <- function(rounding_increment, maximum, inclusive) {
-  if (
-    !is.numeric(rounding_increment) ||
-      length(rounding_increment) != 1L ||
-      is.na(rounding_increment)
-  ) {
-    stop_zutempo(
-      "`rounding_increment` must be a single number",
-      kind = "type",
-      option = "rounding_increment"
-    )
-  }
-  increment <- trunc(rounding_increment)
-  if (!is.finite(increment) || increment < 1 || increment > 1e9) {
-    stop_zutempo(
-      "`rounding_increment` must be between 1 and 1000000000",
-      kind = "range",
-      option = "rounding_increment"
-    )
-  }
+  increment <- ztp_increment_value(rounding_increment)
   limit <- if (inclusive) maximum else maximum - 1
   if (increment > limit || maximum %% increment != 0) {
     stop_zutempo(
@@ -144,12 +160,12 @@ ztp_increment <- function(rounding_increment, maximum, inclusive) {
       option = "rounding_increment"
     )
   }
-  as.double(increment)
+  increment
 }
 
-# GetRoundingIncrementOption alone, for a date unit, which has no maximum:
-# a positive integer up to 10^9.
-ztp_increment_unchecked <- function(rounding_increment) {
+# GetRoundingIncrementOption alone: a positive integer up to 10^9. A date
+# unit has no maximum, so this is the whole check for its increment.
+ztp_increment_value <- function(rounding_increment) {
   if (
     !is.numeric(rounding_increment) ||
       length(rounding_increment) != 1L ||
@@ -248,6 +264,11 @@ ztp_month_from_code <- function(month_code) {
   as.double(substr(month_code, 2L, 3L))
 }
 
+# The precisions the formatter takes besides a digit count
+# (ZTP_PRECISION_* in src/ztp_format.h).
+ztp_precision_auto <- -1L
+ztp_precision_minute <- -2L
+
 # GetTemporalFractionalSecondDigitsOption: "auto" (-1) or a number floored
 # to 0 to 9. Another string is an invalid value (a type error, design 10);
 # a number out of range or not finite is a range error.
@@ -308,7 +329,7 @@ ztp_precision_record <- function(
       )
     }
     precision <- c(
-      minute = -2L,
+      minute = ztp_precision_minute,
       second = 0L,
       millisecond = 3L,
       microsecond = 6L,
@@ -317,17 +338,35 @@ ztp_precision_record <- function(
     return(list(precision = precision, unit = unit, increment = 1, mode = mode))
   }
   if (digits < 0L) {
-    return(list(precision = -1L, unit = 9L, increment = 1, mode = mode))
+    return(list(
+      precision = ztp_precision_auto,
+      unit = ztp_unit_nanosecond,
+      increment = 1,
+      mode = mode
+    ))
   }
   if (digits == 0L) {
-    return(list(precision = 0L, unit = 6L, increment = 1, mode = mode))
+    return(list(
+      precision = 0L,
+      unit = ztp_unit_second,
+      increment = 1,
+      mode = mode
+    ))
   }
+  # One to three digits round to milliseconds, four to six to
+  # microseconds, seven to nine to nanoseconds.
   list(
     precision = digits,
-    unit = 6L + (digits + 2L) %/% 3L,
+    unit = ztp_unit_second + (digits + 2L) %/% 3L,
     increment = 10^((3L - digits %% 3L) %% 3L),
     mode = mode
   )
+}
+
+# Whether a precision record asks for rounding before formatting: a unit
+# coarser than the nanosecond, or an increment above one.
+ztp_needs_rounding <- function(p) {
+  p[["unit"]] != ztp_unit_nanosecond || p[["increment"]] != 1
 }
 
 # GetTemporalShowCalendarNameOption, GetTemporalShowTimeZoneNameOption and
