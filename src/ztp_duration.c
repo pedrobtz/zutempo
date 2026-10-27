@@ -190,6 +190,15 @@ bool ztp_duration_is_valid(const ztp_duration *d)
     if (fabs(d->years) >= 4294967296.0 || fabs(d->months) >= 4294967296.0 ||
         fabs(d->weeks) >= 4294967296.0)
         return false;
+    /* A quick bound first: the normalised seconds in doubles, each term
+       within a relative 2^-52 of the exact one, so a sum below 2^52 is
+       certainly below the limit of 2^53. Only larger values need the
+       exact sum in 128 bits. */
+    if (fabs(d->days) * 86400.0 + fabs(d->hours) * 3600.0 + fabs(d->minutes) * 60.0 +
+            fabs(d->seconds) + fabs(d->milliseconds) * 1e-3 + fabs(d->microseconds) * 1e-6 +
+            fabs(d->nanoseconds) * 1e-9 <
+        4503599627370496.0)
+        return true;
     if (!ztp_duration_normalised_ns(d, &ns)) return false;
     return ztp_time_duration_in_range(ns);
 }
@@ -217,11 +226,14 @@ zuf_i128 ztp_time_duration_from_components(double hours, double minutes,
     const double fields[5] = {hours, minutes, seconds, milliseconds, microseconds};
     const int64_t scale[5] = {ZTP_NS_PER_HOUR, ZTP_NS_PER_MINUTE, ZTP_NS_PER_SECOND,
                               ZTP_NS_PER_MILLISECOND, ZTP_NS_PER_MICROSECOND};
-    zuf_i128 total, v;
+    zuf_i128 total = zuf_i128_from_i64(0), v;
 
-    ztp_i128_from_double(nanoseconds, &total);
+    /* The fields of a valid duration convert exactly (the glue checks
+       every stored duration with ztp_duration_is_valid() first); the
+       zero start keeps a misuse defined rather than reading garbage. */
+    if (!ztp_i128_from_double(nanoseconds, &total)) total = zuf_i128_from_i64(0);
     for (int i = 0; i < 5; i++) {
-        ztp_i128_from_double(fields[i], &v);
+        if (!ztp_i128_from_double(fields[i], &v)) v = zuf_i128_from_i64(0);
         total = zuf_i128_add_wrap(total, ztp_i128_mul_small(v, scale[i]));
     }
     return total;
@@ -246,7 +258,7 @@ ztp_internal_duration ztp_duration_to_internal_24h(const ztp_duration *d)
     ztp_internal_duration out = ztp_duration_to_internal(d);
     zuf_i128 days;
 
-    ztp_i128_from_double(d->days, &days);
+    if (!ztp_i128_from_double(d->days, &days)) days = zuf_i128_from_i64(0);   /* as above */
     out.time = zuf_i128_add_wrap(out.time, ztp_i128_mul_small(days, ZTP_NS_PER_DAY));
     out.date.days = 0;
     return out;
@@ -622,10 +634,10 @@ ztp_status ztp_duration_parse(ztp_ctx *ctx, size_t index, const char *s,
 done:
     if (!ok) {
         char shown[41];
-        size_t k = n < 40 ? n : 37;
+        size_t k = n <= 40 ? n : ztp_utf8_prefix(s, n, 37);
         if (position) *position = c.fail_pos;
         memcpy(shown, s, k);
-        if (n > 40) memcpy(shown + 37, "...", 3), k = 40;
+        if (n > 40) memcpy(shown + k, "...", 3), k += 3;
         shown[k] = '\0';
         ztp_fail(ctx, ZTP_ERR_PARSE, index,
                  "cannot parse \"%s\" as a duration: %s at byte %lu", shown,

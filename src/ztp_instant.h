@@ -29,7 +29,11 @@ bool ztp_epoch_ns_from_seconds(double x, zuf_i128 *out);
 
 /* Instant to POSIXct: the double nearest ns / 10^9, ties to even. */
 double ztp_seconds_from_epoch_ns(zuf_i128 ns);
-zuf_i128 ztp_epoch_ns_join(double seconds, double nanoseconds);
+/* The stored form back to epoch nanoseconds: false unless both parts are
+   integral, the nanoseconds in [0, 10^9) and the result a valid epoch
+   nanoseconds value (IsValidEpochNanoseconds), as no constructor makes
+   anything else. */
+bool ztp_epoch_ns_join(double seconds, double nanoseconds, zuf_i128 *out);
 
 /* --- zones -------------------------------------------------------------- */
 

@@ -13,9 +13,7 @@
 
 static bool ztp_r_instant_get(const Rcomplex *p, R_xlen_t i, zuf_i128 *ns)
 {
-    if (ISNAN(p[i].r)) return false;
-    *ns = ztp_epoch_ns_join(p[i].r, p[i].i);
-    return true;
+    return ztp_r_epoch_get(p, i, ns, "instant()");
 }
 
 static void ztp_r_instant_put(Rcomplex *p, R_xlen_t i, zuf_i128 ns)
@@ -39,7 +37,7 @@ static void ztp_r_instant_check(ztp_ctx *ctx, size_t index, zuf_i128 ns)
 
 SEXP ztp_r_instant_parse(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
     Rcomplex *po = COMPLEX(out);
     ztp_ctx ctx;
@@ -73,7 +71,7 @@ SEXP ztp_r_instant_parse(SEXP x)
 
 SEXP ztp_r_instant_from_epoch_ms(SEXP ms)
 {
-    R_xlen_t n = Rf_xlength(ms);
+    R_xlen_t n = ztp_r_arg(ms, REALSXP, -1, "x");
     const double *p = REAL(ms);
     SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
     Rcomplex *po = COMPLEX(out);
@@ -101,7 +99,7 @@ SEXP ztp_r_instant_from_epoch_ms(SEXP ms)
 /* From doubles (exact integers only) or decimal strings. */
 SEXP ztp_r_instant_from_epoch_ns(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, TYPEOF(x) == STRSXP ? STRSXP : REALSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
     Rcomplex *po = COMPLEX(out);
     ztp_ctx ctx;
@@ -120,7 +118,8 @@ SEXP ztp_r_instant_from_epoch_ns(SEXP x)
             r = zuf_parse_i128(s, s + strlen(s), &ns);
             if (r.status != ZUF_OK || r.ptr != s + strlen(s)) {
                 ztp_fail(&ctx, ZTP_ERR_RANGE, (size_t)i + 1,
-                         "\"%s\" is not a decimal integer", s);
+                         "\"%.*s\" is not a decimal integer",
+                         (int)ztp_utf8_prefix(s, strlen(s), 40), s);
                 ztp_r_raise(&ctx);
             }
         } else {
@@ -143,7 +142,7 @@ SEXP ztp_r_instant_from_epoch_ns(SEXP x)
 
 SEXP ztp_r_instant_epoch_ms(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
     SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
     double *po = REAL(out);
@@ -164,7 +163,7 @@ SEXP ztp_r_instant_epoch_ms(SEXP x)
 
 SEXP ztp_r_instant_epoch_ns_string(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
 
@@ -184,26 +183,18 @@ SEXP ztp_r_instant_epoch_ns_string(SEXP x)
     return out;
 }
 
-/* Reading a duration list element: shared with ztp_r_duration.c. */
-static bool ztp_r_dur_get(SEXP list, R_xlen_t i, ztp_duration *d)
-{
-    for (int f = 0; f < ZTP_DURATION_FIELDS; f++) {
-        double v = REAL(VECTOR_ELT(list, f))[i];
-        if (ISNAN(v)) return false;
-        ztp_duration_set_field(d, f, v);
-    }
-    return true;
-}
-
 /* AddDurationToInstant with ~add~; the R side negates for ~subtract~. */
 SEXP ztp_r_instant_add(SEXP x, SEXP dur)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
-    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
-    Rcomplex *po = COMPLEX(out);
+    SEXP out;
+    Rcomplex *po;
     ztp_ctx ctx;
 
+    ztp_r_duration_arg(dur, n, "duration");
+    out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    po = COMPLEX(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         zuf_i128 ns, result;
@@ -211,7 +202,7 @@ SEXP ztp_r_instant_add(SEXP x, SEXP dur)
         ztp_internal_duration internal;
         size_t idx = (size_t)i + 1;
 
-        if (!ztp_r_instant_get(p, i, &ns) || !ztp_r_dur_get(dur, i, &d)) {
+        if (!ztp_r_instant_get(p, i, &ns) || !ztp_r_duration_get(dur, i, &d)) {
             ztp_r_instant_put_na(po, i);
             continue;
         }
@@ -243,15 +234,24 @@ static SEXP ztp_r_dur_alloc(R_xlen_t n)
 SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
                          SEXP increment, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(x1);
+    R_xlen_t n = ztp_r_arg(x1, CPLXSXP, -1, "x");
     const Rcomplex *p1 = COMPLEX(x1), *p2 = COMPLEX(x2);
-    ztp_unit largest_unit = (ztp_unit)Rf_asInteger(largest);
-    ztp_unit smallest_unit = (ztp_unit)Rf_asInteger(smallest);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_rounding_mode rmode = (ztp_rounding_mode)Rf_asInteger(mode);
-    SEXP out = PROTECT(ztp_r_dur_alloc(n));
+    ztp_unit largest_unit, smallest_unit;
+    int64_t inc;
+    ztp_rounding_mode rmode;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_arg(x2, CPLXSXP, n, "other");
+    ztp_r_scalar(largest, "largest_unit");
+    ztp_r_scalar(smallest, "smallest_unit");
+    ztp_r_scalar(increment, "increment");
+    ztp_r_scalar(mode, "mode");
+    largest_unit = (ztp_unit)Rf_asInteger(largest);
+    smallest_unit = (ztp_unit)Rf_asInteger(smallest);
+    inc = (int64_t)Rf_asReal(increment);
+    rmode = (ztp_rounding_mode)Rf_asInteger(mode);
+    out = PROTECT(ztp_r_dur_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         zuf_i128 a, b;
@@ -259,7 +259,8 @@ SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
         ztp_duration result;
         size_t idx = (size_t)i + 1;
 
-        if (!ztp_r_instant_get(p1, i, &a) || !ztp_r_instant_get(p2, i, &b)) {
+        bool has_a = ztp_r_instant_get(p1, i, &a), has_b = ztp_r_instant_get(p2, i, &b);
+        if (!has_a || !has_b) {
             for (int f = 0; f < ZTP_DURATION_FIELDS; f++) REAL(VECTOR_ELT(out, f))[i] = NA_REAL;
             continue;
         }
@@ -278,15 +279,23 @@ SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
 
 SEXP ztp_r_instant_round(SEXP x, SEXP increment, SEXP unit, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_unit u = (ztp_unit)Rf_asInteger(unit);
-    ztp_rounding_mode m = (ztp_rounding_mode)Rf_asInteger(mode);
-    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
-    Rcomplex *po = COMPLEX(out);
+    int64_t inc;
+    ztp_unit u;
+    ztp_rounding_mode m;
+    SEXP out;
+    Rcomplex *po;
     ztp_ctx ctx;
 
+    ztp_r_scalar(increment, "increment");
+    ztp_r_scalar(unit, "unit");
+    ztp_r_scalar(mode, "mode");
+    inc = (int64_t)Rf_asReal(increment);
+    u = (ztp_unit)Rf_asInteger(unit);
+    m = (ztp_rounding_mode)Rf_asInteger(mode);
+    out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    po = COMPLEX(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         zuf_i128 ns, rounded;
@@ -305,14 +314,18 @@ SEXP ztp_r_instant_round(SEXP x, SEXP increment, SEXP unit, SEXP mode)
 /* Format with "Z", or in the zone named by `zone` (a single string). */
 SEXP ztp_r_instant_format(SEXP x, SEXP zone, SEXP precision)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
-    int prec = Rf_asInteger(precision);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    int prec;
+    SEXP out;
     ztp_zone z;
     const ztp_zone *zp = NULL;
     ztp_ctx ctx;
 
+    ztp_r_arg_or_null(zone, STRSXP, 1, "time_zone");
+    ztp_r_scalar(precision, "precision");
+    prec = Rf_asInteger(precision);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     ztp_ctx_init(&ctx);
     if (zone != R_NilValue) {
         const char *s = Rf_translateCharUTF8(STRING_ELT(zone, 0));
@@ -336,7 +349,7 @@ SEXP ztp_r_instant_format(SEXP x, SEXP zone, SEXP precision)
 /* Normalise a time zone identifier string, for tests and later stages. */
 SEXP ztp_r_zone_normalise(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
     ztp_ctx ctx;
 
@@ -361,7 +374,7 @@ SEXP ztp_r_zone_normalise(SEXP x)
    out-of-range value is a range error. */
 SEXP ztp_r_instant_from_seconds(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, REALSXP, -1, "x");
     const double *px = REAL(x);
     SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
     Rcomplex *po = COMPLEX(out);
@@ -389,7 +402,7 @@ SEXP ztp_r_instant_from_seconds(SEXP x)
 /* Instants to POSIXct seconds: the nearest double, ties to even. */
 SEXP ztp_r_instant_to_seconds(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
     SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
     double *po = REAL(out);
@@ -408,7 +421,7 @@ SEXP ztp_r_instant_to_seconds(SEXP x)
    huge value is a range error. */
 SEXP ztp_r_seconds_split(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, REALSXP, -1, "x");
     const double *px = REAL(x);
     const char *names[] = {"seconds", "nanoseconds", ""};
     SEXP out = PROTECT(Rf_mkNamed(VECSXP, names));

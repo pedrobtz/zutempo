@@ -130,6 +130,9 @@ ztp_status ztp_zone_start_of_day(ztp_ctx *ctx, size_t index, const ztp_zone *zon
         }
         t = found;
     }
+    /* Unreachable from R: a gap at midnight means a transition in the two
+       days before it, which the first steps of the search find. Kept as
+       a guard against zone data with a run of transitions that close. */
     return ztp_fail(ctx, ZTP_ERR_RANGE, index, "cannot find the start of the day in this time zone");
 }
 

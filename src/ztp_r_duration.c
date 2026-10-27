@@ -41,17 +41,6 @@ static void ztp_r_duration_put_na(SEXP list, R_xlen_t i)
         REAL(VECTOR_ELT(list, f))[i] = NA_REAL;
 }
 
-/* Read element i of a duration list; false when it is NA. */
-static bool ztp_r_duration_get(SEXP list, R_xlen_t i, ztp_duration *d)
-{
-    for (int f = 0; f < ZTP_DURATION_FIELDS; f++) {
-        double v = REAL(VECTOR_ELT(list, f))[i];
-        if (ISNAN(v)) return false;
-        ztp_duration_set_field(d, f, v);
-    }
-    return true;
-}
-
 /* ToIntegerIfIntegral on the fields of a would-be duration. */
 static bool ztp_r_duration_fields(ztp_ctx *ctx, SEXP list, R_xlen_t i,
                                   ztp_duration *d)
@@ -69,18 +58,28 @@ static bool ztp_r_duration_fields(ztp_ctx *ctx, SEXP list, R_xlen_t i,
     return true;
 }
 
-static R_xlen_t ztp_r_duration_length(SEXP list)
-{
-    return Rf_xlength(VECTOR_ELT(list, 0));
-}
-
 static int ztp_r_int(SEXP x) { return Rf_asInteger(x); }
+
+/* The scalar options of until() and since(), checked and read. */
+static void ztp_r_until_options(SEXP largest, SEXP smallest, SEXP increment, SEXP mode,
+                                ztp_unit *largest_unit, ztp_unit *smallest_unit,
+                                int64_t *inc, ztp_rounding_mode *rmode)
+{
+    ztp_r_scalar(largest, "largest_unit");
+    ztp_r_scalar(smallest, "smallest_unit");
+    ztp_r_scalar(increment, "increment");
+    ztp_r_scalar(mode, "mode");
+    *largest_unit = (ztp_unit)ztp_r_int(largest);
+    *smallest_unit = (ztp_unit)ztp_r_int(smallest);
+    *inc = (int64_t)Rf_asReal(increment);
+    *rmode = (ztp_rounding_mode)ztp_r_int(mode);
+}
 
 /* --- Duration itself ---------------------------------------------------- */
 
 SEXP ztp_r_duration_create(SEXP fields)
 {
-    R_xlen_t n = ztp_r_duration_length(fields);
+    R_xlen_t n = ztp_r_duration_arg(fields, -1, "fields");
     SEXP out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx ctx;
 
@@ -100,7 +99,7 @@ SEXP ztp_r_duration_create(SEXP fields)
 
 SEXP ztp_r_duration_parse(SEXP x)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, STRSXP, -1, "x");
     SEXP out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx ctx;
 
@@ -128,14 +127,23 @@ SEXP ztp_r_duration_parse(SEXP x)
 SEXP ztp_r_duration_format(SEXP dur, SEXP precision, SEXP increment, SEXP unit,
                            SEXP mode)
 {
-    R_xlen_t n = ztp_r_duration_length(dur);
-    int prec = ztp_r_int(precision);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_unit u = (ztp_unit)ztp_r_int(unit);
-    ztp_rounding_mode m = (ztp_rounding_mode)ztp_r_int(mode);
-    SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+    R_xlen_t n = ztp_r_duration_arg(dur, -1, "x");
+    int prec;
+    int64_t inc;
+    ztp_unit u;
+    ztp_rounding_mode m;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_scalar(precision, "precision");
+    ztp_r_scalar(increment, "increment");
+    ztp_r_scalar(unit, "unit");
+    ztp_r_scalar(mode, "mode");
+    prec = ztp_r_int(precision);
+    inc = (int64_t)Rf_asReal(increment);
+    u = (ztp_unit)ztp_r_int(unit);
+    m = (ztp_rounding_mode)ztp_r_int(mode);
+    out = PROTECT(Rf_allocVector(STRSXP, n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d;
@@ -163,8 +171,11 @@ SEXP ztp_r_duration_format(SEXP dur, SEXP precision, SEXP increment, SEXP unit,
 /* AddDurations with ~add~; the R side negates for ~subtract~. */
 SEXP ztp_r_duration_add(SEXP a, SEXP b)
 {
-    R_xlen_t n = ztp_r_duration_length(a);
-    SEXP out = PROTECT(ztp_r_duration_alloc(n));
+    R_xlen_t n = ztp_r_duration_arg(a, -1, "x");
+    SEXP out;
+
+    ztp_r_duration_arg(b, n, "other");
+    out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx ctx;
 
     ztp_ctx_init(&ctx);
@@ -203,9 +214,7 @@ SEXP ztp_r_duration_add(SEXP a, SEXP b)
 static bool ztp_r_relative(SEXP relative_days, R_xlen_t i, int32_t *day)
 {
     if (relative_days == R_NilValue) return false;
-    if (INTEGER(relative_days)[i] == NA_INTEGER) return false;
-    *day = INTEGER(relative_days)[i];
-    return true;
+    return ztp_r_date_get(INTEGER(relative_days), i, day);
 }
 
 static bool ztp_r_relative_na(SEXP relative_days, R_xlen_t i)
@@ -220,10 +229,16 @@ typedef struct {
     const ztp_zone *zones;
 } ztp_r_zoned_relative;
 
-static ztp_r_zoned_relative ztp_r_zoned_relative_open(SEXP zoned, SEXP codes, SEXP zones)
+/* Checks the relative values against the duration's length n. */
+static ztp_r_zoned_relative ztp_r_relative_open(SEXP relative_days, SEXP zoned, SEXP codes,
+                                                SEXP zones, R_xlen_t n)
 {
     ztp_r_zoned_relative r = {zoned, codes, NULL};
-    if (zoned != R_NilValue) r.zones = ztp_r_zones_open(zones);
+    ztp_r_arg_or_null(relative_days, INTSXP, n, "relative_to");
+    if (zoned != R_NilValue) {
+        ztp_r_zoned_arg(zoned, codes, zones, n);
+        r.zones = ztp_r_zones_open(zones);
+    }
     return r;
 }
 
@@ -237,7 +252,7 @@ static bool ztp_r_zoned_relative_get(const ztp_r_zoned_relative *r, R_xlen_t i,
                                      zuf_i128 *epoch, const ztp_zone **zone)
 {
     if (r->zoned == R_NilValue) return false;
-    *epoch = ztp_epoch_ns_join(COMPLEX(r->zoned)[i].r, COMPLEX(r->zoned)[i].i);
+    if (!ztp_r_epoch_get(COMPLEX(r->zoned), i, epoch, "zoned_date_time()")) return false;
     *zone = &r->zones[INTEGER(r->codes)[i] - 1];
     return true;
 }
@@ -248,16 +263,28 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
                           SEXP mode, SEXP smallest_present, SEXP relative_days,
                           SEXP relative_zoned, SEXP relative_codes, SEXP relative_zones)
 {
-    ztp_r_zoned_relative zrel = ztp_r_zoned_relative_open(relative_zoned, relative_codes, relative_zones);
-    R_xlen_t n = ztp_r_duration_length(dur);
-    int largest_code = ztp_r_int(largest);
-    ztp_unit smallest_unit = (ztp_unit)ztp_r_int(smallest);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_rounding_mode rmode = (ztp_rounding_mode)ztp_r_int(mode);
-    bool smallest_given = Rf_asLogical(smallest_present) == TRUE;
-    SEXP out = PROTECT(ztp_r_duration_alloc(n));
+    R_xlen_t n = ztp_r_duration_arg(dur, -1, "x");
+    ztp_r_zoned_relative zrel =
+        ztp_r_relative_open(relative_days, relative_zoned, relative_codes, relative_zones, n);
+    int largest_code;
+    ztp_unit smallest_unit;
+    int64_t inc;
+    ztp_rounding_mode rmode;
+    bool smallest_given;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_scalar(largest, "largest_unit");
+    ztp_r_scalar(smallest, "smallest_unit");
+    ztp_r_scalar(increment, "increment");
+    ztp_r_scalar(mode, "mode");
+    ztp_r_scalar(smallest_present, "smallest_present");
+    largest_code = ztp_r_int(largest);
+    smallest_unit = (ztp_unit)ztp_r_int(smallest);
+    inc = (int64_t)Rf_asReal(increment);
+    rmode = (ztp_rounding_mode)ztp_r_int(mode);
+    smallest_given = Rf_asLogical(smallest_present) == TRUE;
+    out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d, result;
@@ -275,6 +302,8 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
         existing = ztp_duration_default_largest_unit(&d);
         if (largest_code < 0) {
             largest_unit = existing < smallest_unit ? existing : smallest_unit;
+            /* R/duration.R raises this itself and never passes -2; the
+               check is for C callers (test-error-branches.R calls it). */
             if (!smallest_given && largest_code == -2) {
                 ztp_fail(&ctx, ZTP_ERR_RANGE, idx,
                          "one of `smallest_unit` and `largest_unit` is required");
@@ -283,6 +312,8 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
         } else {
             largest_unit = (ztp_unit)largest_code;
         }
+        /* R/duration.R raises this itself for an explicit largest unit, and
+           an automatic one is never smaller; for C callers. */
         if (largest_unit > smallest_unit) {
             ztp_fail(&ctx, ZTP_ERR_RANGE, idx,
                      "`largest_unit` must not be smaller than `smallest_unit`");
@@ -358,13 +389,18 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
 SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days, SEXP relative_zoned,
                           SEXP relative_codes, SEXP relative_zones)
 {
-    R_xlen_t n = ztp_r_duration_length(dur);
-    ztp_unit u = (ztp_unit)ztp_r_int(unit);
-    ztp_r_zoned_relative zrel = ztp_r_zoned_relative_open(relative_zoned, relative_codes, relative_zones);
-    SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
-    double *po = REAL(out);
+    R_xlen_t n = ztp_r_duration_arg(dur, -1, "x");
+    ztp_r_zoned_relative zrel =
+        ztp_r_relative_open(relative_days, relative_zoned, relative_codes, relative_zones, n);
+    ztp_unit u;
+    SEXP out;
+    double *po;
     ztp_ctx ctx;
 
+    ztp_r_scalar(unit, "unit");
+    u = (ztp_unit)ztp_r_int(unit);
+    out = PROTECT(Rf_allocVector(REALSXP, n));
+    po = REAL(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d;
@@ -438,12 +474,16 @@ static ztp_status ztp_r_date_duration_days(ztp_ctx *ctx, size_t idx,
 SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days, SEXP relative_zoned,
                             SEXP relative_codes, SEXP relative_zones)
 {
-    R_xlen_t n = ztp_r_duration_length(a);
-    ztp_r_zoned_relative zrel = ztp_r_zoned_relative_open(relative_zoned, relative_codes, relative_zones);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
-    int *po = INTEGER(out);
+    R_xlen_t n = ztp_r_duration_arg(a, -1, "one");
+    ztp_r_zoned_relative zrel;
+    SEXP out;
+    int *po;
     ztp_ctx ctx;
 
+    ztp_r_duration_arg(b, n, "two");
+    zrel = ztp_r_relative_open(relative_days, relative_zoned, relative_codes, relative_zones, n);
+    out = PROTECT(Rf_allocVector(INTSXP, n));
+    po = INTEGER(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration da, db;
@@ -505,13 +545,18 @@ SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days, SEXP relative_zo
 
 SEXP ztp_r_plain_date_add(SEXP days, SEXP dur, SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(days);
+    R_xlen_t n = ztp_r_arg(days, INTSXP, -1, "x");
     const int *pd = INTEGER(days);
-    ztp_overflow ov = (ztp_overflow)ztp_r_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
-    int *po = INTEGER(out);
+    ztp_overflow ov;
+    SEXP out;
+    int *po;
     ztp_ctx ctx;
 
+    ztp_r_duration_arg(dur, n, "duration");
+    ztp_r_scalar(overflow, "overflow");
+    ov = (ztp_overflow)ztp_r_int(overflow);
+    out = PROTECT(Rf_allocVector(INTSXP, n));
+    po = INTEGER(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d;
@@ -519,9 +564,9 @@ SEXP ztp_r_plain_date_add(SEXP days, SEXP dur, SEXP overflow)
         ztp_date_duration dd;
         zuf_i128 q;
         int64_t r, whole;
-        int32_t result;
+        int32_t day, result;
 
-        if (pd[i] == NA_INTEGER || !ztp_r_duration_get(dur, i, &d)) {
+        if (!ztp_r_date_get(pd, i, &day) || !ztp_r_duration_get(dur, i, &d)) {
             po[i] = NA_INTEGER;
             continue;
         }
@@ -531,7 +576,7 @@ SEXP ztp_r_plain_date_add(SEXP days, SEXP dur, SEXP overflow)
         zuf_i128_to_i64(q, &whole);
         dd = internal.date;
         dd.days = (double)whole;
-        if (ztp_calendar_date_add(&ctx, (size_t)i + 1, pd[i], &dd, ov, &result) != ZTP_OK)
+        if (ztp_calendar_date_add(&ctx, (size_t)i + 1, day, &dd, ov, &result) != ZTP_OK)
             ztp_r_raise(&ctx);
         po[i] = (int)result;
     }
@@ -542,30 +587,35 @@ SEXP ztp_r_plain_date_add(SEXP days, SEXP dur, SEXP overflow)
 SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
                             SEXP increment, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(d1);
+    R_xlen_t n = ztp_r_arg(d1, INTSXP, -1, "x");
     const int *p1 = INTEGER(d1), *p2 = INTEGER(d2);
-    ztp_unit largest_unit = (ztp_unit)ztp_r_int(largest);
-    ztp_unit smallest_unit = (ztp_unit)ztp_r_int(smallest);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_rounding_mode rmode = (ztp_rounding_mode)ztp_r_int(mode);
-    SEXP out = PROTECT(ztp_r_duration_alloc(n));
+    ztp_unit largest_unit, smallest_unit;
+    int64_t inc;
+    ztp_rounding_mode rmode;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_arg(d2, INTSXP, n, "other");
+    ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
+                        &inc, &rmode);
+    out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_internal_duration diff, rounded;
         ztp_duration result;
         size_t idx = (size_t)i + 1;
+        int32_t a, b;
+        bool has_a = ztp_r_date_get(p1, i, &a), has_b = ztp_r_date_get(p2, i, &b);
 
-        if (p1[i] == NA_INTEGER || p2[i] == NA_INTEGER) {
+        if (!has_a || !has_b) {
             ztp_r_duration_put_na(out, i);
             continue;
         }
-        ztp_calendar_date_until(p1[i], p2[i], largest_unit, &diff.date);
+        ztp_calendar_date_until(a, b, largest_unit, &diff.date);
         diff.time = zuf_i128_from_i64(0);
-        if (p1[i] != p2[i] && (smallest_unit != ZTP_UNIT_DAY || inc != 1)) {
-            if (ztp_round_relative_duration(&ctx, idx, &diff, p1[i], 0, ztp_epoch_ns_of(p1[i], 0),
-                                            ztp_epoch_ns_of(p2[i], 0), NULL, largest_unit,
+        if (a != b && (smallest_unit != ZTP_UNIT_DAY || inc != 1)) {
+            if (ztp_round_relative_duration(&ctx, idx, &diff, a, 0, ztp_epoch_ns_of(a, 0),
+                                            ztp_epoch_ns_of(b, 0), NULL, largest_unit,
                                             inc, smallest_unit, rmode, &rounded) != ZTP_OK)
                 ztp_r_raise(&ctx);
             diff = rounded;
@@ -580,22 +630,25 @@ SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
 
 SEXP ztp_r_plain_time_add(SEXP ns, SEXP dur)
 {
-    R_xlen_t n = Rf_xlength(ns);
+    R_xlen_t n = ztp_r_arg(ns, REALSXP, -1, "x");
     const double *p = REAL(ns);
-    SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
-    double *po = REAL(out);
+    SEXP out;
+    double *po;
 
+    ztp_r_duration_arg(dur, n, "duration");
+    out = PROTECT(Rf_allocVector(REALSXP, n));
+    po = REAL(out);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d;
         ztp_internal_duration internal;
-        int64_t result_ns, days;
+        int64_t t, result_ns, days;
 
-        if (ISNAN(p[i]) || !ztp_r_duration_get(dur, i, &d)) {
+        if (!ztp_r_time_get(p, i, &t) || !ztp_r_duration_get(dur, i, &d)) {
             po[i] = NA_REAL;
             continue;
         }
         internal = ztp_duration_to_internal(&d);
-        ztp_add_time((int64_t)p[i], internal.time, &result_ns, &days);
+        ztp_add_time(t, internal.time, &result_ns, &days);
         po[i] = (double)result_ns;
     }
     UNPROTECT(1);
@@ -605,27 +658,32 @@ SEXP ztp_r_plain_time_add(SEXP ns, SEXP dur)
 SEXP ztp_r_plain_time_until(SEXP t1, SEXP t2, SEXP largest, SEXP smallest,
                             SEXP increment, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(t1);
+    R_xlen_t n = ztp_r_arg(t1, REALSXP, -1, "x");
     const double *p1 = REAL(t1), *p2 = REAL(t2);
-    ztp_unit largest_unit = (ztp_unit)ztp_r_int(largest);
-    ztp_unit smallest_unit = (ztp_unit)ztp_r_int(smallest);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_rounding_mode rmode = (ztp_rounding_mode)ztp_r_int(mode);
-    SEXP out = PROTECT(ztp_r_duration_alloc(n));
+    ztp_unit largest_unit, smallest_unit;
+    int64_t inc;
+    ztp_rounding_mode rmode;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_arg(t2, REALSXP, n, "other");
+    ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
+                        &inc, &rmode);
+    out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_internal_duration diff;
         ztp_duration result;
         size_t idx = (size_t)i + 1;
+        int64_t a, b;
+        bool has_a = ztp_r_time_get(p1, i, &a), has_b = ztp_r_time_get(p2, i, &b);
 
-        if (ISNAN(p1[i]) || ISNAN(p2[i])) {
+        if (!has_a || !has_b) {
             ztp_r_duration_put_na(out, i);
             continue;
         }
         memset(&diff.date, 0, sizeof diff.date);
-        if (ztp_time_duration_round(&ctx, idx, zuf_i128_from_i64((int64_t)p2[i] - (int64_t)p1[i]),
+        if (ztp_time_duration_round(&ctx, idx, zuf_i128_from_i64(b - a),
                                     inc, smallest_unit, rmode, &diff.time) != ZTP_OK)
             ztp_r_raise(&ctx);
         if (ztp_duration_from_internal(&ctx, idx, &diff, largest_unit, &result) != ZTP_OK)
@@ -638,32 +696,37 @@ SEXP ztp_r_plain_time_until(SEXP t1, SEXP t2, SEXP largest, SEXP smallest,
 
 SEXP ztp_r_plain_date_time_add(SEXP x, SEXP dur, SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(x);
+    R_xlen_t n = ztp_r_arg(x, CPLXSXP, -1, "x");
     const Rcomplex *p = COMPLEX(x);
-    ztp_overflow ov = (ztp_overflow)ztp_r_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
-    Rcomplex *po = COMPLEX(out);
+    ztp_overflow ov;
+    SEXP out;
+    Rcomplex *po;
     ztp_ctx ctx;
 
+    ztp_r_duration_arg(dur, n, "duration");
+    ztp_r_scalar(overflow, "overflow");
+    ov = (ztp_overflow)ztp_r_int(overflow);
+    out = PROTECT(Rf_allocVector(CPLXSXP, n));
+    po = COMPLEX(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d;
         ztp_internal_duration internal;
-        int64_t time_ns, days;
+        int64_t t, time_ns, days;
         ztp_date_duration dd;
-        int32_t added;
+        int32_t day, added;
         size_t idx = (size_t)i + 1;
 
-        if (ISNAN(p[i].r) || !ztp_r_duration_get(dur, i, &d)) {
+        if (!ztp_r_date_time_get(p, i, &day, &t) || !ztp_r_duration_get(dur, i, &d)) {
             po[i].r = NA_REAL;
             po[i].i = NA_REAL;
             continue;
         }
         internal = ztp_duration_to_internal_24h(&d);
-        ztp_add_time((int64_t)p[i].i, internal.time, &time_ns, &days);
+        ztp_add_time(t, internal.time, &time_ns, &days);
         dd = internal.date;
         dd.days = (double)days;
-        if (ztp_calendar_date_add(&ctx, idx, (int32_t)p[i].r, &dd, ov, &added) != ZTP_OK)
+        if (ztp_calendar_date_add(&ctx, idx, day, &dd, ov, &added) != ZTP_OK)
             ztp_r_raise(&ctx);
         if (!ztp_iso_date_time_within_limits(added, time_ns)) {
             ztp_fail(&ctx, ZTP_ERR_RANGE, idx,
@@ -680,27 +743,33 @@ SEXP ztp_r_plain_date_time_add(SEXP x, SEXP dur, SEXP overflow)
 SEXP ztp_r_plain_date_time_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
                                  SEXP increment, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(x1);
+    R_xlen_t n = ztp_r_arg(x1, CPLXSXP, -1, "x");
     const Rcomplex *p1 = COMPLEX(x1), *p2 = COMPLEX(x2);
-    ztp_unit largest_unit = (ztp_unit)ztp_r_int(largest);
-    ztp_unit smallest_unit = (ztp_unit)ztp_r_int(smallest);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_rounding_mode rmode = (ztp_rounding_mode)ztp_r_int(mode);
-    SEXP out = PROTECT(ztp_r_duration_alloc(n));
+    ztp_unit largest_unit, smallest_unit;
+    int64_t inc;
+    ztp_rounding_mode rmode;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_arg(x2, CPLXSXP, n, "other");
+    ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
+                        &inc, &rmode);
+    out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_internal_duration diff;
         ztp_duration result;
         size_t idx = (size_t)i + 1;
+        int32_t day1, day2;
+        int64_t ns1, ns2;
+        bool has1 = ztp_r_date_time_get(p1, i, &day1, &ns1),
+             has2 = ztp_r_date_time_get(p2, i, &day2, &ns2);
 
-        if (ISNAN(p1[i].r) || ISNAN(p2[i].r)) {
+        if (!has1 || !has2) {
             ztp_r_duration_put_na(out, i);
             continue;
         }
-        if (ztp_difference_plain_date_time_rounded(&ctx, idx, (int32_t)p1[i].r, (int64_t)p1[i].i,
-                                                   (int32_t)p2[i].r, (int64_t)p2[i].i,
+        if (ztp_difference_plain_date_time_rounded(&ctx, idx, day1, ns1, day2, ns2,
                                                    largest_unit, inc, smallest_unit, rmode,
                                                    &diff) != ZTP_OK)
             ztp_r_raise(&ctx);
@@ -712,32 +781,37 @@ SEXP ztp_r_plain_date_time_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
     return out;
 }
 
-/* The first day of a year-month code. */
-static int32_t ztp_r_year_month_first_day(int code)
+/* The first day of a year-month. */
+static int32_t ztp_r_year_month_first_day(int32_t year, uint32_t month)
 {
-    int q = code >= 0 ? code / 12 : -((-code + 11) / 12);
-    ztp_iso_date d = {(int32_t)(1970 + q), (uint32_t)(code - q * 12 + 1), 1};
+    ztp_iso_date d = {year, month, 1};
     return ztp_epoch_day_from_iso_date(&d);
 }
 
 SEXP ztp_r_plain_year_month_add(SEXP ym, SEXP dur, SEXP overflow)
 {
-    R_xlen_t n = Rf_xlength(ym);
+    R_xlen_t n = ztp_r_arg(ym, INTSXP, -1, "x");
     const int *p = INTEGER(ym);
-    ztp_overflow ov = (ztp_overflow)ztp_r_int(overflow);
-    SEXP out = PROTECT(Rf_allocVector(INTSXP, n));
-    int *po = INTEGER(out);
+    ztp_overflow ov;
+    SEXP out;
+    int *po;
     ztp_ctx ctx;
 
+    ztp_r_duration_arg(dur, n, "duration");
+    ztp_r_scalar(overflow, "overflow");
+    ov = (ztp_overflow)ztp_r_int(overflow);
+    out = PROTECT(Rf_allocVector(INTSXP, n));
+    po = INTEGER(out);
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_duration d;
         ztp_internal_duration internal;
-        int32_t added;
+        int32_t added, year;
+        uint32_t month;
         ztp_iso_date date;
         size_t idx = (size_t)i + 1;
 
-        if (p[i] == NA_INTEGER || !ztp_r_duration_get(dur, i, &d)) {
+        if (!ztp_r_year_month_get(p, i, &year, &month) || !ztp_r_duration_get(dur, i, &d)) {
             po[i] = NA_INTEGER;
             continue;
         }
@@ -748,10 +822,14 @@ SEXP ztp_r_plain_year_month_add(SEXP ym, SEXP dur, SEXP overflow)
                      "only years and months can be added to a PlainYearMonth");
             ztp_r_raise(&ctx);
         }
-        if (ztp_calendar_date_add(&ctx, idx, ztp_r_year_month_first_day(p[i]), &internal.date,
+        if (ztp_calendar_date_add(&ctx, idx, ztp_r_year_month_first_day(year, month), &internal.date,
                                   ov, &added) != ZTP_OK)
             ztp_r_raise(&ctx);
         ztp_iso_date_from_epoch_day(added, &date);
+        /* Unreachable from R: ztp_calendar_date_add() only returns dates
+           within ISODateWithinLimits, and the year-month of every such date
+           is within ISOYearMonthWithinLimits. Kept as the specification's
+           step. */
         if (!ztp_iso_year_month_within_limits(date.year, date.month)) {
             ztp_fail(&ctx, ZTP_ERR_RANGE, idx,
                      "the result is outside the range of a PlainYearMonth");
@@ -766,28 +844,34 @@ SEXP ztp_r_plain_year_month_add(SEXP ym, SEXP dur, SEXP overflow)
 SEXP ztp_r_plain_year_month_until(SEXP ym1, SEXP ym2, SEXP largest, SEXP smallest,
                                   SEXP increment, SEXP mode)
 {
-    R_xlen_t n = Rf_xlength(ym1);
+    R_xlen_t n = ztp_r_arg(ym1, INTSXP, -1, "x");
     const int *p1 = INTEGER(ym1), *p2 = INTEGER(ym2);
-    ztp_unit largest_unit = (ztp_unit)ztp_r_int(largest);
-    ztp_unit smallest_unit = (ztp_unit)ztp_r_int(smallest);
-    int64_t inc = (int64_t)Rf_asReal(increment);
-    ztp_rounding_mode rmode = (ztp_rounding_mode)ztp_r_int(mode);
-    SEXP out = PROTECT(ztp_r_duration_alloc(n));
+    ztp_unit largest_unit, smallest_unit;
+    int64_t inc;
+    ztp_rounding_mode rmode;
+    SEXP out;
     ztp_ctx ctx;
 
+    ztp_r_arg(ym2, INTSXP, n, "other");
+    ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
+                        &inc, &rmode);
+    out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         ztp_internal_duration diff, rounded;
         ztp_duration result;
-        int32_t this_day, other_day;
+        int32_t this_day, other_day, y1, y2;
+        uint32_t m1, m2;
         size_t idx = (size_t)i + 1;
+        bool has1 = ztp_r_year_month_get(p1, i, &y1, &m1),
+             has2 = ztp_r_year_month_get(p2, i, &y2, &m2);
 
-        if (p1[i] == NA_INTEGER || p2[i] == NA_INTEGER) {
+        if (!has1 || !has2) {
             ztp_r_duration_put_na(out, i);
             continue;
         }
-        this_day = ztp_r_year_month_first_day(p1[i]);
-        other_day = ztp_r_year_month_first_day(p2[i]);
+        this_day = ztp_r_year_month_first_day(y1, m1);
+        other_day = ztp_r_year_month_first_day(y2, m2);
         /* CalendarDateFromFields throws when the first of either month is
            outside the dates' limits (-271821-04 is a year-month, but its
            first day is not a date); equal year-months return zero first. */

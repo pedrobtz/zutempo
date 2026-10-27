@@ -16,6 +16,9 @@
 
 #include "ztp.h"
 #include "ztp_instant.h"
+#include "ztp_iso.h"
+
+#include <math.h>
 
 /* Raise the condition that ctx describes. Never returns. */
 #if defined(__GNUC__) || defined(__clang__)
@@ -27,6 +30,151 @@ void ztp_r_raise(const ztp_ctx *ctx);
 static inline void ztp_r_check(const ztp_ctx *ctx)
 {
     if (ctx->status != ZTP_OK) ztp_r_raise(ctx);
+}
+
+/* --- checks at the .Call entries (design 4) -----------------------------
+
+   The R layer recycles, types and validates every argument, so these
+   checks fail only for a caller that bypasses it (an internal refactor,
+   or the C table after v0.1.0) or for a value no constructor makes. Each
+   raises a zutempo_type_error. */
+
+/* Raise a zutempo_type_error with a printf-style message; index is the
+   1-based element, 0 for none. Never returns. */
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((noreturn, format(printf, 2, 3)))
+#endif
+void ztp_r_type_error(R_xlen_t index, const char *fmt, ...);
+
+/* x must have the given type and, unless n is negative, length n. Returns
+   the length. */
+R_xlen_t ztp_r_arg(SEXP x, SEXPTYPE type, R_xlen_t n, const char *name);
+
+/* As ztp_r_arg, with NULL also allowed. */
+void ztp_r_arg_or_null(SEXP x, SEXPTYPE type, R_xlen_t n, const char *name);
+
+/* A scalar option: length 1 and logical, integer or double, which is what
+   Rf_asInteger(), Rf_asLogical() and Rf_asReal() read. */
+void ztp_r_scalar(SEXP x, const char *name);
+
+/* ztp_r_scalar(), then the value as Rf_asInteger() or Rf_asReal() reads
+   it. */
+int ztp_r_option_int(SEXP x, const char *name);
+double ztp_r_option_real(SEXP x, const char *name);
+
+/* A duration list: ten REALSXP fields of one length, n unless n is
+   negative. Returns the length. */
+R_xlen_t ztp_r_duration_arg(SEXP list, R_xlen_t n, const char *name);
+
+/* A zoned value's parts: x a complex vector of length n (any length when
+   n is negative), codes an integer vector of x's length whose every
+   non-NA code indexes zones, zones a character vector without NA.
+   Returns the length. */
+R_xlen_t ztp_r_zoned_arg(SEXP x, SEXP codes, SEXP zones, R_xlen_t n);
+
+/* The codes and table alone, for n elements. */
+void ztp_r_zone_codes_arg(SEXP codes, SEXP zones, R_xlen_t n);
+
+/* --- stored values (design 4.1) -----------------------------------------
+
+   Each getter reads element i of a vector in a type's stored form: false
+   for NA; the value through the pointers when a constructor could have
+   made it; a zutempo_type_error naming the type otherwise. The checks are
+   a few comparisons per element, small next to the work each element
+   costs afterwards, and they keep a crafted object from reaching the
+   engine, whose functions assume valid input. */
+
+static inline bool ztp_r_date_get(const int *p, R_xlen_t i, int32_t *out)
+{
+    int v = p[i];
+    if (v == NA_INTEGER) return false;
+    if (v < ZTP_MIN_EPOCH_DAY || v > ZTP_MAX_EPOCH_DAY)
+        ztp_r_type_error(i + 1, "the value is not a valid %s", "plain_date()");
+    *out = (int32_t)v;
+    return true;
+}
+
+static inline bool ztp_r_ns_of_day_ok(double v)
+{
+    return v >= 0 && v < (double)ZTP_NS_PER_DAY && v == (double)(int64_t)v;
+}
+
+static inline bool ztp_r_time_get(const double *p, R_xlen_t i, int64_t *out)
+{
+    double v = p[i];
+    if (ISNAN(v)) return false;
+    if (!ztp_r_ns_of_day_ok(v))
+        ztp_r_type_error(i + 1, "the value is not a valid %s", "plain_time()");
+    *out = (int64_t)v;
+    return true;
+}
+
+static inline bool ztp_r_date_time_get(const Rcomplex *p, R_xlen_t i, int32_t *day,
+                                       int64_t *ns)
+{
+    double r = p[i].r, v = p[i].i;
+    if (ISNAN(r)) return false;
+    if (!(r >= ZTP_MIN_EPOCH_DAY && r <= ZTP_MAX_EPOCH_DAY && r == (double)(int32_t)r) ||
+        !ztp_r_ns_of_day_ok(v) || !ztp_iso_date_time_within_limits((int64_t)r, (int64_t)v))
+        ztp_r_type_error(i + 1, "the value is not a valid %s", "plain_date_time()");
+    *day = (int32_t)r;
+    *ns = (int64_t)v;
+    return true;
+}
+
+/* A year-month is stored as months since 1970-01. */
+static inline bool ztp_r_year_month_get(const int *p, R_xlen_t i, int32_t *year,
+                                        uint32_t *month)
+{
+    int code = p[i], q;
+    if (code == NA_INTEGER) return false;
+    q = code >= 0 ? code / 12 : -((-code + 11) / 12);   /* floor */
+    if (!ztp_iso_year_month_within_limits((int64_t)1970 + q, code - q * 12 + 1))
+        ztp_r_type_error(i + 1, "the value is not a valid %s", "plain_year_month()");
+    *year = (int32_t)(1970 + q);
+    *month = (uint32_t)(code - q * 12 + 1);
+    return true;
+}
+
+/* A month-day is stored as month * 32 + day, a valid date in 1972. */
+static inline bool ztp_r_month_day_get(const int *p, R_xlen_t i, uint32_t *month,
+                                       uint32_t *day)
+{
+    int code = p[i];
+    if (code == NA_INTEGER) return false;
+    if (code < 33 || code > 12 * 32 + 31 || code % 32 < 1 ||
+        (uint32_t)(code % 32) > ztp_iso_days_in_month(1972, (uint32_t)(code / 32)))
+        ztp_r_type_error(i + 1, "the value is not a valid %s", "plain_month_day()");
+    *month = (uint32_t)(code / 32);
+    *day = (uint32_t)(code % 32);
+    return true;
+}
+
+/* An instant is stored as integral epoch seconds and nanoseconds in
+   [0, 10^9), and so are a zoned value's instants; `what` names the type. */
+static inline bool ztp_r_epoch_get(const Rcomplex *p, R_xlen_t i, zuf_i128 *ns,
+                                   const char *what)
+{
+    if (ISNAN(p[i].r)) return false;
+    if (!ztp_epoch_ns_join(p[i].r, p[i].i, ns))
+        ztp_r_type_error(i + 1, "the value is not a valid %s", what);
+    return true;
+}
+
+/* A duration is ten doubles: NA when any is NA, else integral and valid
+   (IsValidDuration). Every double of 2^52 or more is an integer. */
+static inline bool ztp_r_duration_get(SEXP list, R_xlen_t i, ztp_duration *d)
+{
+    bool integral = true;
+    for (int f = 0; f < ZTP_DURATION_FIELDS; f++) {
+        double v = REAL(VECTOR_ELT(list, f))[i];
+        if (ISNAN(v)) return false;
+        if (fabs(v) < 4503599627370496.0 && v != trunc(v)) integral = false;
+        ztp_duration_set_field(d, f, v);
+    }
+    if (!integral || !ztp_duration_is_valid(d))
+        ztp_r_type_error(i + 1, "the value is not a valid %s", "duration()");
+    return true;
 }
 
 /* .Call entry points, registered in init.c. */
