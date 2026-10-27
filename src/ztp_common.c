@@ -61,10 +61,10 @@ size_t ztp_utf8_prefix(const char *s, size_t n, size_t max)
 /* Drop every byte that is not part of a valid UTF-8 sequence, in place:
    the message reaches R marked as UTF-8 (ztp_r_raise), so it must be
    valid even when vsnprintf or a "%.*s" cut a character in two. */
-static void ztp_utf8_clean(char *msg)
+static void ztp_utf8_clean(char *msg, size_t n)
 {
     unsigned char *u = (unsigned char *)msg;
-    size_t n = strlen(msg), from = 0, to = 0;
+    size_t from = 0, to = 0;
 
     while (from < n) {
         size_t len = ztp_utf8_seq(u + from, n - from);
@@ -83,13 +83,16 @@ ztp_status ztp_fail(ztp_ctx *ctx, ztp_status status, size_t index,
                     const char *fmt, ...)
 {
     va_list ap;
+    int len;
 
     ctx->status = status;
     ctx->index = index;
     ctx->position = 0;
     va_start(ap, fmt);
-    vsnprintf(ctx->msg, sizeof ctx->msg, fmt, ap);
+    len = vsnprintf(ctx->msg, sizeof ctx->msg, fmt, ap);
     va_end(ap);
-    ztp_utf8_clean(ctx->msg);
+    if (len < 0) len = 0;
+    if ((size_t)len >= sizeof ctx->msg) len = (int)(sizeof ctx->msg - 1);
+    ztp_utf8_clean(ctx->msg, (size_t)len);
     return status;
 }
