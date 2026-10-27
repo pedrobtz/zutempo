@@ -37,16 +37,11 @@ typedef enum {
 /* "Length in nanoseconds" for day and the time units. */
 int64_t ztp_unit_length_ns(ztp_unit unit);
 
-/* "Maximum duration rounding increment" for the time units, 0 for the
-   date units (~unset~). */
-int64_t ztp_unit_max_increment(ztp_unit unit);
-
-/* RoundNumberToIncrement and RoundNumberToIncrementAsIfPositive over
-   int64_t. increment > 0, and |x| + increment must fit. */
+/* RoundNumberToIncrement over int64_t. increment > 0, and |x| + increment
+   must fit. (The as-if-positive variant over int64_t had no caller and was
+   removed; instants round through ztp_round_i128_to_increment().) */
 int64_t ztp_round_to_increment(int64_t x, int64_t increment,
                                ztp_rounding_mode mode);
-int64_t ztp_round_to_increment_as_if_positive(int64_t x, int64_t increment,
-                                              ztp_rounding_mode mode);
 
 /* RoundTime: rounds a time of day to `increment` units; the result is a
    time of day plus the days it carried (0 or 1). unit is day or a time

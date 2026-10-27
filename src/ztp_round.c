@@ -16,19 +16,6 @@ int64_t ztp_unit_length_ns(ztp_unit unit)
     }
 }
 
-int64_t ztp_unit_max_increment(ztp_unit unit)
-{
-    switch (unit) {
-    case ZTP_UNIT_HOUR:        return 24;
-    case ZTP_UNIT_MINUTE:      return 60;
-    case ZTP_UNIT_SECOND:      return 60;
-    case ZTP_UNIT_MILLISECOND: return 1000;
-    case ZTP_UNIT_MICROSECOND: return 1000;
-    case ZTP_UNIT_NANOSECOND:  return 1000;
-    default:                   return 0;
-    }
-}
-
 /* The "Unsigned Rounding Mode" column of Table 29. */
 typedef enum {
     ZTP_UNSIGNED_ZERO,
@@ -97,12 +84,6 @@ int64_t ztp_round_to_increment(int64_t x, int64_t increment,
                                ztp_rounding_mode mode)
 {
     return ztp_round_core(x, increment, mode, false);
-}
-
-int64_t ztp_round_to_increment_as_if_positive(int64_t x, int64_t increment,
-                                              ztp_rounding_mode mode)
-{
-    return ztp_round_core(x, increment, mode, true);
 }
 
 void ztp_round_time(int64_t ns_of_day, int64_t increment, ztp_unit unit,

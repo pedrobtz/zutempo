@@ -121,7 +121,6 @@ const ztp_tz_entry *ztp_tz_cache_find(const char *id);
 ztp_status ztp_tz_cache_put(ztp_ctx *ctx, size_t index, const char *id,
                             const unsigned char *bytes, size_t n);
 void ztp_tz_cache_reset(void);
-size_t ztp_tz_cache_size(void);
 
 /* The primary identifier of a named zone: its link target, or itself. */
 const char *ztp_tz_primary(const char *id);

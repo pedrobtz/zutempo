@@ -37,7 +37,8 @@ ztp_status ztp_tz_cache_put(ztp_ctx *ctx, size_t index, const char *id,
     ztp_tz_entry *slot = NULL;
 
     if (strlen(id) + 1 > ZTP_ZONE_ID_CAP)
-        return ztp_fail(ctx, ZTP_ERR_TZ, index, "time zone identifier \"%.40s...\" is too long", id);
+        return ztp_fail(ctx, ZTP_ERR_TZ, index, "time zone identifier \"%.*s...\" is too long",
+                         (int)ztp_utf8_prefix(id, strlen(id), 40), id);
     if (ztp_tzif_parse(ctx, index, bytes, n, &data) != ZTP_OK) return ctx->status;
     ztp_tz_fold(id, key);
     for (size_t i = 0; i < ztp_tz_n; i++)
@@ -46,7 +47,7 @@ ztp_status ztp_tz_cache_put(ztp_ctx *ctx, size_t index, const char *id,
         if (ztp_tz_n == ztp_tz_cap) {
             size_t cap = ztp_tz_cap ? ztp_tz_cap * 2 : 16;
             ztp_tz_entry *grown = realloc(ztp_tz_entries, cap * sizeof *grown);
-            if (grown == NULL) {
+            if (grown == NULL) {   /* unreachable in the tests: out of memory */
                 ztp_tz_data_free(&data);
                 return ztp_fail(ctx, ZTP_ERR_TZ, index, "out of memory caching a time zone");
             }
@@ -73,7 +74,3 @@ void ztp_tz_cache_reset(void)
     ztp_tz_cap = 0;
 }
 
-size_t ztp_tz_cache_size(void)
-{
-    return ztp_tz_n;
-}
