@@ -109,13 +109,24 @@ What each conversion loses:
 - [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
   to `POSIXct`: as
   [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md),
-  with the zone as `tzone`. A vector mixing zones gets `"UTC"`, and so
-  does a fixed offset that is not a whole number of hours, which base R
-  cannot name; a whole-hour offset becomes its `Etc/GMT` zone.
+  with the zone as `tzone`. Zones that are equal under Temporal's
+  `TimeZoneEquals`, such as `Asia/Calcutta` and `Asia/Kolkata`, count as
+  one, and the first one names the `tzone`. A vector mixing other zones
+  gets `"UTC"`. A whole-hour offset becomes its `Etc/GMT` zone, from
+  `+14:00` (`Etc/GMT-14`) to `-12:00` (`Etc/GMT+12`); any other offset
+  gets `"UTC"`, since base R cannot name it. The instant is kept either
+  way.
 
 - [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
   to `POSIXlt`: the fields in each element's own zone, with its offset
-  in `gmtoff`; the seconds lose precision as above.
+  in `gmtoff`; the seconds lose precision as above. The `tzone` is
+  chosen as for `POSIXct`, so a vector mixing zones gets `"UTC"` with
+  fields that are not in UTC. Such a `POSIXlt` does not round-trip: base
+  R reads the fields in its `tzone`, so
+  [`as.POSIXct()`](https://rdrr.io/r/base/as.POSIXlt.html) of it can
+  move each element by its offset. Convert with
+  [`as.POSIXct()`](https://rdrr.io/r/base/as.POSIXlt.html) instead, or
+  give `tz` to put every element in one zone.
 
 - [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md)
   to `POSIXct` or `POSIXlt`: needs `tz`, and resolves a wall-clock time

@@ -1,8 +1,7 @@
 # The current time in a time zone
 
-Temporal's `Temporal.Now` functions: the system time zone as base R
-reads it ([`Sys.timezone()`](https://rdrr.io/r/base/timezones.html),
-falling back to `"UTC"`), and the current time as a
+Temporal's `Temporal.Now` functions: the system time zone, and the
+current time as a
 [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md),
 [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
 [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md)
@@ -34,6 +33,18 @@ now_plain_time_iso(time_zone = NULL)
 
 `now_time_zone_id()` returns a string; the others the value named.
 
+## Details
+
+The system time zone is read as the C library that base R formats with
+reads it. The `TZ` environment variable comes first, without a leading
+`:`; a path under a zone directory, such as
+`/usr/share/zoneinfo/Europe/Berlin`, names the zone at that path.
+Without `TZ` it is
+[`Sys.timezone()`](https://rdrr.io/r/base/timezones.html), and without
+either it is `"UTC"`. A zone that is set but cannot be read, such as a
+POSIX TZ string or a zone the database lacks, gives `"UTC"` with a
+warning of class `zutempo_tz_warning`.
+
 ## Members
 
 Every member of `Temporal.Now` in the pinned specification
@@ -56,14 +67,14 @@ now_time_zone_id()
 #> [1] "UTC"
 now_zoned_date_time_iso()
 #> <zutempo_zoned_date_time[1]>
-#> [1] 2026-10-27T17:50:39.250129938+00:00[UTC]
+#> [1] 2026-10-27T17:57:03.862026215+00:00[UTC]
 now_plain_date_time_iso("Asia/Tokyo")
 #> <zutempo_plain_date_time[1]>
-#> [1] 2026-10-28T02:50:39.255968809
+#> [1] 2026-10-28T02:57:03.863201141
 now_plain_date_iso("Pacific/Auckland")
 #> <zutempo_plain_date[1]>
 #> [1] 2026-10-28
 now_plain_time_iso("UTC")
 #> <zutempo_plain_time[1]>
-#> [1] 17:50:39.263164759
+#> [1] 17:57:03.864965677
 ```

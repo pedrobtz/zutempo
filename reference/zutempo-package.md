@@ -28,11 +28,27 @@ in the ISO 8601 calendar. It does not include:
 - custom time zones, or POSIX TZ strings as zone identifiers;
 
 - arithmetic and comparison operators on dates and times (`x + d`,
-  `x < y`): use the functions, such as
-  [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md)
+  `x < y`, `x == y`): they raise a `zutempo_type_error`. Use the
+  functions, such as
+  [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
+  [`temporal_equals()`](https://pedrobtz.github.io/zutempo/reference/temporal_equals.md)
   and
   [`plain_date_compare()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md).
   Durations do compare with `==` and `<`.
+
+[`sort()`](https://rdrr.io/r/base/sort.html),
+[`order()`](https://rdrr.io/r/base/order.html),
+[`min()`](https://rdrr.io/r/base/Extremes.html),
+[`max()`](https://rdrr.io/r/base/Extremes.html) and
+[`range()`](https://rdrr.io/r/base/range.html) use each type's
+`compare()` order; a zoned value sorts by its instant. A
+[`plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/plain_month_day.md)
+has no `compare()` in Temporal: it sorts by month and day, but has no
+[`min()`](https://rdrr.io/r/base/Extremes.html),
+[`max()`](https://rdrr.io/r/base/Extremes.html) or
+[`range()`](https://rdrr.io/r/base/range.html).
+[`rank()`](https://rdrr.io/r/base/rank.html) compares with operators, so
+use `rank(xtfrm(x))`.
 
 ## See also
 

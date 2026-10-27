@@ -59,9 +59,15 @@ from ECMA-402, with CLDR data);</p></li>
 base R's <code><a href="https://rdrr.io/r/base/format.html" class="external-link">format()</a></code>;</p></li>
 <li><p>custom time zones, or POSIX TZ strings as zone identifiers;</p></li>
 <li><p>arithmetic and comparison operators on dates and times (<code>x + d</code>,
-<code>x &lt; y</code>): use the functions, such as <code><a href="temporal_add.html">temporal_add()</a></code> and
+<code>x &lt; y</code>, <code>x == y</code>): they raise a <code>zutempo_type_error</code>. Use the
+functions, such as <code><a href="temporal_add.html">temporal_add()</a></code>, <code><a href="temporal_equals.html">temporal_equals()</a></code> and
 <code><a href="plain_date.html">plain_date_compare()</a></code>. Durations do compare with <code>==</code> and <code>&lt;</code>.</p></li>
-</ul></div>
+</ul><p><code><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort()</a></code>, <code><a href="https://rdrr.io/r/base/order.html" class="external-link">order()</a></code>, <code><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min()</a></code>, <code><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max()</a></code> and <code><a href="https://rdrr.io/r/base/range.html" class="external-link">range()</a></code> use each type's
+<code>compare()</code> order; a zoned value sorts by its instant. A
+<code><a href="plain_month_day.html">plain_month_day()</a></code> has no <code>compare()</code> in Temporal: it sorts by month and
+day, but has no <code><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min()</a></code>, <code><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max()</a></code> or <code><a href="https://rdrr.io/r/base/range.html" class="external-link">range()</a></code>.
+<code><a href="https://rdrr.io/r/base/rank.html" class="external-link">rank()</a></code> compares with operators, so use <code>rank(xtfrm(x))</code>.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Useful links:</p><ul><li><p><a href="https://pedrobtz.github.io/zutempo/">https://pedrobtz.github.io/zutempo/</a></p></li>
