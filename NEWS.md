@@ -1,5 +1,8 @@
 # zutempo 0.0.0.9000
 
+* An error about an option argument has a field `option` with the
+  argument's name, so code can tell which option was wrong without reading
+  the message: `tryCatch(..., zutempo_error = function(e) e[["option"]])`.
 * Documentation: a README from Temporal to R, a table of every Temporal
   member and its R function on each type's help page, `?zutempo_options`
   for the options the functions share, and articles on the package website:

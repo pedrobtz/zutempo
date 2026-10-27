@@ -206,7 +206,7 @@ temporal_round.zutempo_plain_date_time <- function(
 ) {
   ztp_check_dots_empty(...)
   if (is.null(smallest_unit)) {
-    stop_zutempo("`smallest_unit` is required", kind = "type")
+    ztp_option_required("smallest_unit")
   }
   opts <- ztp_round_options(
     smallest_unit,

@@ -1022,7 +1022,7 @@ temporal_round.zutempo_zoned_date_time <- function(
 ) {
   ztp_check_dots_empty(...)
   if (is.null(smallest_unit)) {
-    stop_zutempo("`smallest_unit` is required", kind = "type")
+    ztp_option_required("smallest_unit")
   }
   opts <- ztp_round_options(
     smallest_unit,
@@ -1068,7 +1068,7 @@ temporal_get_time_zone_transition.zutempo_zoned_date_time <- function(
   direction
 ) {
   if (missing(direction)) {
-    stop_zutempo("`direction` is required", kind = "type")
+    ztp_option_required("direction")
   }
   dir <- ztp_match_option(direction, c("next", "previous"), "direction")
   z <- .Call(

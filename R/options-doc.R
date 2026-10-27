@@ -8,8 +8,10 @@
 #' An option that is not a single string, or a string the option does not
 #' know, is a `zutempo_type_error`. A value of the right kind that fails a
 #' range check, such as an increment that does not divide its unit, is a
-#' `zutempo_range_error` (design 10). An `NA` option is an error, not a
-#' missing result (design 6.8).
+#' `zutempo_range_error` (design 10). Either condition has a field `option`
+#' naming the option, as does the error for a required option left out
+#' (`smallest_unit` of `temporal_round()`). An `NA` option is an error, not
+#' a missing result (design 6.8).
 #'
 #' @section `overflow`:
 #' What to do with a field out of its range, such as 31 February:

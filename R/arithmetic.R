@@ -107,7 +107,8 @@ ztp_difference_settings <- function(
   if (!is.null(largest) && ztp_units[largest + 1L] %in% disallowed) {
     stop_zutempo(
       sprintf("`largest_unit` cannot be \"%s\" here", ztp_units[largest + 1L]),
-      kind = "range"
+      kind = "range",
+      option = "largest_unit"
     )
   }
   smallest <- if (is.null(smallest_unit)) {
@@ -121,7 +122,8 @@ ztp_difference_settings <- function(
         "`smallest_unit` cannot be \"%s\" here",
         ztp_units[smallest + 1L]
       ),
-      kind = "range"
+      kind = "range",
+      option = "smallest_unit"
     )
   }
   default <- min(match(default_largest, ztp_units) - 1L, smallest)
@@ -131,7 +133,8 @@ ztp_difference_settings <- function(
   if (largest > smallest) {
     stop_zutempo(
       "`largest_unit` must not be smaller than `smallest_unit`",
-      kind = "range"
+      kind = "range",
+      option = "largest_unit"
     )
   }
   maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
