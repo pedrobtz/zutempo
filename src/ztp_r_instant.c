@@ -235,7 +235,7 @@ SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
                          SEXP increment, SEXP mode)
 {
     R_xlen_t n = ztp_r_arg(x1, CPLXSXP, -1, "x");
-    const Rcomplex *p1 = COMPLEX(x1), *p2 = COMPLEX(x2);
+    const Rcomplex *p1 = COMPLEX(x1), *p2;
     ztp_unit largest_unit, smallest_unit;
     int64_t inc;
     ztp_rounding_mode rmode;
@@ -243,14 +243,15 @@ SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
     ztp_ctx ctx;
 
     ztp_r_arg(x2, CPLXSXP, n, "other");
+    p2 = COMPLEX(x2);
     ztp_r_scalar(largest, "largest_unit");
     ztp_r_scalar(smallest, "smallest_unit");
     ztp_r_scalar(increment, "increment");
     ztp_r_scalar(mode, "mode");
-    largest_unit = (ztp_unit)Rf_asInteger(largest);
-    smallest_unit = (ztp_unit)Rf_asInteger(smallest);
-    inc = (int64_t)Rf_asReal(increment);
-    rmode = (ztp_rounding_mode)Rf_asInteger(mode);
+    largest_unit = ztp_r_option_unit(largest, "largest_unit");
+    smallest_unit = ztp_r_option_unit(smallest, "smallest_unit");
+    inc = ztp_r_option_increment(increment, "increment");
+    rmode = ztp_r_option_mode(mode, "mode");
     out = PROTECT(ztp_r_dur_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
@@ -291,9 +292,9 @@ SEXP ztp_r_instant_round(SEXP x, SEXP increment, SEXP unit, SEXP mode)
     ztp_r_scalar(increment, "increment");
     ztp_r_scalar(unit, "unit");
     ztp_r_scalar(mode, "mode");
-    inc = (int64_t)Rf_asReal(increment);
-    u = (ztp_unit)Rf_asInteger(unit);
-    m = (ztp_rounding_mode)Rf_asInteger(mode);
+    inc = ztp_r_option_increment(increment, "increment");
+    u = ztp_r_option_unit(unit, "unit");
+    m = ztp_r_option_mode(mode, "mode");
     out = PROTECT(Rf_allocVector(CPLXSXP, n));
     po = COMPLEX(out);
     ztp_ctx_init(&ctx);
@@ -324,7 +325,7 @@ SEXP ztp_r_instant_format(SEXP x, SEXP zone, SEXP precision)
 
     ztp_r_arg_or_null(zone, STRSXP, 1, "time_zone");
     ztp_r_scalar(precision, "precision");
-    prec = Rf_asInteger(precision);
+    prec = ztp_r_option_precision(precision);
     out = PROTECT(Rf_allocVector(STRSXP, n));
     ztp_ctx_init(&ctx);
     if (zone != R_NilValue) {

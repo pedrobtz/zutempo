@@ -58,8 +58,6 @@ static bool ztp_r_duration_fields(ztp_ctx *ctx, SEXP list, R_xlen_t i,
     return true;
 }
 
-static int ztp_r_int(SEXP x) { return Rf_asInteger(x); }
-
 /* The scalar options of until() and since(), checked and read. */
 static void ztp_r_until_options(SEXP largest, SEXP smallest, SEXP increment, SEXP mode,
                                 ztp_unit *largest_unit, ztp_unit *smallest_unit,
@@ -69,10 +67,10 @@ static void ztp_r_until_options(SEXP largest, SEXP smallest, SEXP increment, SEX
     ztp_r_scalar(smallest, "smallest_unit");
     ztp_r_scalar(increment, "increment");
     ztp_r_scalar(mode, "mode");
-    *largest_unit = (ztp_unit)ztp_r_int(largest);
-    *smallest_unit = (ztp_unit)ztp_r_int(smallest);
-    *inc = (int64_t)Rf_asReal(increment);
-    *rmode = (ztp_rounding_mode)ztp_r_int(mode);
+    *largest_unit = ztp_r_option_unit(largest, "largest_unit");
+    *smallest_unit = ztp_r_option_unit(smallest, "smallest_unit");
+    *inc = ztp_r_option_increment(increment, "increment");
+    *rmode = ztp_r_option_mode(mode, "mode");
 }
 
 /* --- Duration itself ---------------------------------------------------- */
@@ -139,10 +137,10 @@ SEXP ztp_r_duration_format(SEXP dur, SEXP precision, SEXP increment, SEXP unit,
     ztp_r_scalar(increment, "increment");
     ztp_r_scalar(unit, "unit");
     ztp_r_scalar(mode, "mode");
-    prec = ztp_r_int(precision);
-    inc = (int64_t)Rf_asReal(increment);
-    u = (ztp_unit)ztp_r_int(unit);
-    m = (ztp_rounding_mode)ztp_r_int(mode);
+    prec = ztp_r_option_precision(precision);
+    inc = ztp_r_option_increment(increment, "increment");
+    u = ztp_r_option_unit(unit, "unit");
+    m = ztp_r_option_mode(mode, "mode");
     out = PROTECT(Rf_allocVector(STRSXP, n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
@@ -279,10 +277,10 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
     ztp_r_scalar(increment, "increment");
     ztp_r_scalar(mode, "mode");
     ztp_r_scalar(smallest_present, "smallest_present");
-    largest_code = ztp_r_int(largest);
-    smallest_unit = (ztp_unit)ztp_r_int(smallest);
-    inc = (int64_t)Rf_asReal(increment);
-    rmode = (ztp_rounding_mode)ztp_r_int(mode);
+    largest_code = ztp_r_option_code(largest, "largest_unit", -2, ZTP_UNIT_NANOSECOND);
+    smallest_unit = ztp_r_option_unit(smallest, "smallest_unit");
+    inc = ztp_r_option_increment(increment, "increment");
+    rmode = ztp_r_option_mode(mode, "mode");
     smallest_given = Rf_asLogical(smallest_present) == TRUE;
     out = PROTECT(ztp_r_duration_alloc(n));
     ztp_ctx_init(&ctx);
@@ -398,7 +396,7 @@ SEXP ztp_r_duration_total(SEXP dur, SEXP unit, SEXP relative_days, SEXP relative
     ztp_ctx ctx;
 
     ztp_r_scalar(unit, "unit");
-    u = (ztp_unit)ztp_r_int(unit);
+    u = ztp_r_option_unit(unit, "unit");
     out = PROTECT(Rf_allocVector(REALSXP, n));
     po = REAL(out);
     ztp_ctx_init(&ctx);
@@ -554,7 +552,7 @@ SEXP ztp_r_plain_date_add(SEXP days, SEXP dur, SEXP overflow)
 
     ztp_r_duration_arg(dur, n, "duration");
     ztp_r_scalar(overflow, "overflow");
-    ov = (ztp_overflow)ztp_r_int(overflow);
+    ov = ztp_r_option_overflow(overflow);
     out = PROTECT(Rf_allocVector(INTSXP, n));
     po = INTEGER(out);
     ztp_ctx_init(&ctx);
@@ -588,7 +586,7 @@ SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
                             SEXP increment, SEXP mode)
 {
     R_xlen_t n = ztp_r_arg(d1, INTSXP, -1, "x");
-    const int *p1 = INTEGER(d1), *p2 = INTEGER(d2);
+    const int *p1 = INTEGER(d1), *p2;
     ztp_unit largest_unit, smallest_unit;
     int64_t inc;
     ztp_rounding_mode rmode;
@@ -596,6 +594,7 @@ SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
     ztp_ctx ctx;
 
     ztp_r_arg(d2, INTSXP, n, "other");
+    p2 = INTEGER(d2);
     ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
                         &inc, &rmode);
     out = PROTECT(ztp_r_duration_alloc(n));
@@ -659,7 +658,7 @@ SEXP ztp_r_plain_time_until(SEXP t1, SEXP t2, SEXP largest, SEXP smallest,
                             SEXP increment, SEXP mode)
 {
     R_xlen_t n = ztp_r_arg(t1, REALSXP, -1, "x");
-    const double *p1 = REAL(t1), *p2 = REAL(t2);
+    const double *p1 = REAL(t1), *p2;
     ztp_unit largest_unit, smallest_unit;
     int64_t inc;
     ztp_rounding_mode rmode;
@@ -667,6 +666,7 @@ SEXP ztp_r_plain_time_until(SEXP t1, SEXP t2, SEXP largest, SEXP smallest,
     ztp_ctx ctx;
 
     ztp_r_arg(t2, REALSXP, n, "other");
+    p2 = REAL(t2);
     ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
                         &inc, &rmode);
     out = PROTECT(ztp_r_duration_alloc(n));
@@ -705,7 +705,7 @@ SEXP ztp_r_plain_date_time_add(SEXP x, SEXP dur, SEXP overflow)
 
     ztp_r_duration_arg(dur, n, "duration");
     ztp_r_scalar(overflow, "overflow");
-    ov = (ztp_overflow)ztp_r_int(overflow);
+    ov = ztp_r_option_overflow(overflow);
     out = PROTECT(Rf_allocVector(CPLXSXP, n));
     po = COMPLEX(out);
     ztp_ctx_init(&ctx);
@@ -744,7 +744,7 @@ SEXP ztp_r_plain_date_time_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
                                  SEXP increment, SEXP mode)
 {
     R_xlen_t n = ztp_r_arg(x1, CPLXSXP, -1, "x");
-    const Rcomplex *p1 = COMPLEX(x1), *p2 = COMPLEX(x2);
+    const Rcomplex *p1 = COMPLEX(x1), *p2;
     ztp_unit largest_unit, smallest_unit;
     int64_t inc;
     ztp_rounding_mode rmode;
@@ -752,6 +752,7 @@ SEXP ztp_r_plain_date_time_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
     ztp_ctx ctx;
 
     ztp_r_arg(x2, CPLXSXP, n, "other");
+    p2 = COMPLEX(x2);
     ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
                         &inc, &rmode);
     out = PROTECT(ztp_r_duration_alloc(n));
@@ -799,7 +800,7 @@ SEXP ztp_r_plain_year_month_add(SEXP ym, SEXP dur, SEXP overflow)
 
     ztp_r_duration_arg(dur, n, "duration");
     ztp_r_scalar(overflow, "overflow");
-    ov = (ztp_overflow)ztp_r_int(overflow);
+    ov = ztp_r_option_overflow(overflow);
     out = PROTECT(Rf_allocVector(INTSXP, n));
     po = INTEGER(out);
     ztp_ctx_init(&ctx);
@@ -845,7 +846,7 @@ SEXP ztp_r_plain_year_month_until(SEXP ym1, SEXP ym2, SEXP largest, SEXP smalles
                                   SEXP increment, SEXP mode)
 {
     R_xlen_t n = ztp_r_arg(ym1, INTSXP, -1, "x");
-    const int *p1 = INTEGER(ym1), *p2 = INTEGER(ym2);
+    const int *p1 = INTEGER(ym1), *p2;
     ztp_unit largest_unit, smallest_unit;
     int64_t inc;
     ztp_rounding_mode rmode;
@@ -853,6 +854,7 @@ SEXP ztp_r_plain_year_month_until(SEXP ym1, SEXP ym2, SEXP largest, SEXP smalles
     ztp_ctx ctx;
 
     ztp_r_arg(ym2, INTSXP, n, "other");
+    p2 = INTEGER(ym2);
     ztp_r_until_options(largest, smallest, increment, mode, &largest_unit, &smallest_unit,
                         &inc, &rmode);
     out = PROTECT(ztp_r_duration_alloc(n));

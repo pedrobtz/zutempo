@@ -95,3 +95,80 @@ test_that("a time zone identifier too long for the cache is a tz error", {
     class = "zutempo_tz_error"
   )
 })
+
+test_that("the second operand of until() is type-checked for C callers", {
+  until <- function(f, x) .Call(f, x, "a", 3L, 9L, 1, 6L)
+  expect_error(
+    until(zutempo:::C_ztp_r_plain_date_until, 0L),
+    class = "zutempo_type_error"
+  )
+  expect_error(
+    until(zutempo:::C_ztp_r_plain_time_until, 0),
+    class = "zutempo_type_error"
+  )
+  expect_error(
+    until(zutempo:::C_ztp_r_plain_date_time_until, 0i),
+    class = "zutempo_type_error"
+  )
+  expect_error(
+    until(zutempo:::C_ztp_r_plain_year_month_until, 0L),
+    class = "zutempo_type_error"
+  )
+  expect_error(
+    until(zutempo:::C_ztp_r_instant_until, 0i),
+    class = "zutempo_type_error"
+  )
+})
+
+test_that("a year-month code near the integer limit is a type error", {
+  x <- structure(-2147483647L, class = "zutempo_plain_year_month")
+  expect_error(format(x), class = "zutempo_type_error")
+})
+
+test_that("option codes out of range are type errors for C callers", {
+  round <- function(increment, unit, mode) {
+    .Call(zutempo:::C_ztp_r_plain_time_round, 0, increment, unit, mode)
+  }
+  expect_identical(round(1, 9L, 6L), 0)
+  expect_error(round(0, 9L, 6L), class = "zutempo_type_error")
+  expect_error(round(1e10, 9L, 6L), class = "zutempo_type_error")
+  expect_error(round(1.5, 9L, 6L), class = "zutempo_type_error")
+  expect_error(round(NaN, 9L, 6L), class = "zutempo_type_error")
+  expect_error(round(1, 10L, 6L), class = "zutempo_type_error")
+  expect_error(round(1, -1L, 6L), class = "zutempo_type_error")
+  expect_error(round(1, 9L, 9L), class = "zutempo_type_error")
+  expect_error(round(1, 9L, NA_integer_), class = "zutempo_type_error")
+  expect_error(
+    .Call(zutempo:::C_ztp_r_plain_time_format, 0, 10L),
+    class = "zutempo_type_error"
+  )
+  expect_error(
+    .Call(zutempo:::C_ztp_r_plain_date_format, 0L, 4L),
+    class = "zutempo_type_error"
+  )
+  dur <- unclass(duration(days = 1))
+  expect_error(
+    .Call(zutempo:::C_ztp_r_plain_date_add, 0L, dur, 2L),
+    class = "zutempo_type_error"
+  )
+})
+
+test_that("the zone test helpers reject seconds outside int64_t", {
+  for (x in c(Inf, -Inf, 1e19)) {
+    expect_error(
+      .Call(zutempo:::C_ztp_r_tz_rule_utoff, "UTC0", x),
+      class = "zutempo_type_error",
+      info = x
+    )
+  }
+  expect_identical(.Call(zutempo:::C_ztp_r_tz_rule_utoff, "UTC0", 0), 0L)
+})
+
+test_that("an unloaded zone in a zone table carries no element index", {
+  x <- complex(real = c(0, 0), imaginary = c(0, 0))
+  e <- expect_error(
+    .Call(zutempo:::C_ztp_r_zoned_offset, x, 1:2, c("UTC", "Not/Loaded")),
+    class = "zutempo_tz_error"
+  )
+  expect_null(e[["index"]])
+})

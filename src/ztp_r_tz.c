@@ -33,6 +33,25 @@ SEXP ztp_r_tz_loaded(SEXP id)
     return Rf_ScalarLogical(ztp_tz_cache_find(Rf_translateCharUTF8(STRING_ELT(id, 0))) != NULL);
 }
 
+/* Epoch seconds or nanoseconds from a double, for the test-only entries
+   below: they take any double, and casting one outside int64_t's range is
+   undefined behaviour. */
+static int64_t ztp_r_tz_int64(double v, R_xlen_t i, const char *name)
+{
+    if (!(v > -9.2e18 && v < 9.2e18))
+        ztp_r_type_error(i + 1, "internal: `%s` must be a finite number", name);
+    return (int64_t)v;
+}
+
+/* A TZif abbreviation: the file's bytes, which the reader does not check.
+   Only ASCII is marked as UTF-8; anything else is kept as bytes. */
+static SEXP ztp_r_tz_abbr(const char *a)
+{
+    for (const char *s = a; *s; s++)
+        if ((unsigned char)*s >= 0x80) return Rf_mkCharCE(a, CE_BYTES);
+    return Rf_mkCharCE(a, CE_UTF8);
+}
+
 static const ztp_tz_entry *ztp_r_tz_entry(SEXP id)
 {
     const ztp_tz_entry *e;
@@ -68,9 +87,10 @@ SEXP ztp_r_tz_utoff(SEXP id, SEXP seconds)
             SET_STRING_ELT(abbr, i, NA_STRING);
             continue;
         }
-        INTEGER(utoff)[i] = ztp_tz_utoff_at(&e->data, (int64_t)p[i], &dst, &a);
+        int64_t t = ztp_r_tz_int64(p[i], i, "seconds");
+        INTEGER(utoff)[i] = ztp_tz_utoff_at(&e->data, t, &dst, &a);
         LOGICAL(isdst)[i] = dst;
-        SET_STRING_ELT(abbr, i, Rf_mkCharCE(a, CE_UTF8));
+        SET_STRING_ELT(abbr, i, ztp_r_tz_abbr(a));
     }
     UNPROTECT(1);
     return out;
@@ -89,7 +109,8 @@ SEXP ztp_r_tz_possible(SEXP id, SEXP days, SEXP ns)
 
     for (R_xlen_t i = 0; i < n; i++) {
         zuf_i128 cands[2];
-        int k = ztp_tz_possible_epoch_ns(&e->data, INTEGER(days)[i], (int64_t)REAL(ns)[i], cands);
+        int k = ztp_tz_possible_epoch_ns(&e->data, INTEGER(days)[i],
+                                         ztp_r_tz_int64(REAL(ns)[i], i, "ns"), cands);
         SEXP v = PROTECT(Rf_allocVector(CPLXSXP, k));
         for (int j = 0; j < k; j++) ztp_epoch_ns_split(cands[j], &COMPLEX(v)[j].r, &COMPLEX(v)[j].i);
         SET_VECTOR_ELT(out, i, v);
@@ -119,7 +140,7 @@ SEXP ztp_r_tz_transition(SEXP id, SEXP x, SEXP direction)
         }
         /* A transition is a whole second; the instant's nanoseconds decide
            which side of a transition at that second it is on. */
-        t = (int64_t)p[i].r;
+        t = ztp_r_tz_int64(p[i].r, i, "x");
         ok = dir > 0 ? ztp_tz_next_transition(&e->data, t, limit, &found)
                      : ztp_tz_previous_transition(&e->data, p[i].i > 0 ? t + 1 : t, limit, &found);
         if (!ok) {
@@ -178,8 +199,10 @@ SEXP ztp_r_tz_rule_utoff(SEXP rule, SEXP seconds)
     memset(&data, 0, sizeof data);
     if (ztp_tz_posix_parse(&ctx, 0, s, strlen(s), &data.footer) != ZTP_OK) ztp_r_raise(&ctx);
     data.has_footer = true;
-    for (R_xlen_t i = 0; i < n; i++)
-        INTEGER(out)[i] = ztp_tz_utoff_at(&data, (int64_t)REAL(seconds)[i], NULL, NULL);
+    for (R_xlen_t i = 0; i < n; i++) {
+        int64_t t = ztp_r_tz_int64(REAL(seconds)[i], i, "seconds");
+        INTEGER(out)[i] = ztp_tz_utoff_at(&data, t, NULL, NULL);
+    }
     UNPROTECT(1);
     return out;
 }

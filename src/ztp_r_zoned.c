@@ -18,9 +18,11 @@
    entry point takes two tables, readying the second can reset the cache
    (a change of TZDIR or of the zutempo.tzdir option between the calls,
    seen by ztp_tz_current()) and evict the first table's zones. It is then
-   a zutempo_tz_error like any zone the cache does not hold, with the
-   index of the identifier in its table. The caller has checked that
-   `zones` is a character vector without NA (ztp_r_zoned_arg()). */
+   a zutempo_tz_error like any zone the cache does not hold, with no
+   element index: the identifier's place in its table is not an element,
+   and zutempo_parse() would turn the wrong element to NA. The caller has
+   checked that `zones` is a character vector without NA
+   (ztp_r_zoned_arg()). */
 ztp_zone *ztp_r_zones_open(SEXP zones)
 {
     R_xlen_t n = Rf_xlength(zones);
@@ -30,7 +32,7 @@ ztp_zone *ztp_r_zones_open(SEXP zones)
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
         const char *s = Rf_translateCharUTF8(STRING_ELT(zones, i));
-        if (ztp_zone_parse(&ctx, (size_t)i + 1, s, strlen(s), &out[i]) != ZTP_OK) ztp_r_raise(&ctx);
+        if (ztp_zone_parse(&ctx, 0, s, strlen(s), &out[i]) != ZTP_OK) ztp_r_raise(&ctx);
     }
     return out;
 }
@@ -87,8 +89,11 @@ SEXP ztp_r_zoned_interpret(SEXP days, SEXP ns, SEXP codes, SEXP zones, SEXP beha
     po = REAL(offset_ns);
     pb = INTEGER(behaviour);
     pm = LOGICAL(match_minutes);
-    dis = (ztp_disambiguation)Rf_asInteger(disambiguation);
-    opt = (ztp_offset_option)Rf_asInteger(offset_option);
+    dis = (ztp_disambiguation)ztp_r_option_code(
+        disambiguation, "disambiguation", ZTP_DISAMBIGUATION_COMPATIBLE,
+        ZTP_DISAMBIGUATION_REJECT);
+    opt = (ztp_offset_option)ztp_r_option_code(offset_option, "offset",
+                                                 ZTP_OFFSET_PREFER, ZTP_OFFSET_REJECT);
     out = PROTECT(Rf_allocVector(CPLXSXP, n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
@@ -256,11 +261,11 @@ SEXP ztp_r_zoned_format(SEXP x, SEXP codes, SEXP zones, SEXP precision, SEXP sho
 {
     R_xlen_t n = ztp_r_zoned_arg(x, codes, zones, -1);
     const ztp_zone *tz = ztp_r_zones_open(zones);
-    int prec = ztp_r_option_int(precision, "precision");
+    int prec = ztp_r_option_precision(precision);
     bool offset = ztp_r_option_int(show_offset, "show_offset") == TRUE;
-    ztp_show_zone zone_mode = (ztp_show_zone)ztp_r_option_int(show_zone, "show_zone");
-    ztp_show_calendar calendar_mode =
-        (ztp_show_calendar)ztp_r_option_int(show_calendar, "show_calendar");
+    ztp_show_zone zone_mode = (ztp_show_zone)ztp_r_option_code(
+        show_zone, "show_zone", ZTP_SHOW_ZONE_AUTO, ZTP_SHOW_ZONE_CRITICAL);
+    ztp_show_calendar calendar_mode = ztp_r_option_show_calendar(show_calendar);
     SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
 
     for (R_xlen_t i = 0; i < n; i++) {
@@ -395,7 +400,7 @@ SEXP ztp_r_zoned_add(SEXP x, SEXP codes, SEXP zones, SEXP dur, SEXP overflow)
 {
     R_xlen_t n = ztp_r_zoned_arg(x, codes, zones, -1);
     const ztp_zone *tz = ztp_r_zones_open(zones);
-    ztp_overflow ov = (ztp_overflow)ztp_r_option_int(overflow, "overflow");
+    ztp_overflow ov = ztp_r_option_overflow(overflow);
     SEXP out;
     ztp_ctx ctx;
 
@@ -441,10 +446,10 @@ SEXP ztp_r_zoned_until(SEXP x1, SEXP codes1, SEXP zones1, SEXP x2, SEXP codes2, 
     ztp_r_scalar(mode, "mode");
     tz1 = ztp_r_zones_open(zones1);
     tz2 = ztp_r_zones_open(zones2);
-    largest_unit = (ztp_unit)Rf_asInteger(largest);
-    smallest_unit = (ztp_unit)Rf_asInteger(smallest);
-    inc = (int64_t)Rf_asReal(increment);
-    rmode = (ztp_rounding_mode)Rf_asInteger(mode);
+    largest_unit = ztp_r_option_unit(largest, "largest_unit");
+    smallest_unit = ztp_r_option_unit(smallest, "smallest_unit");
+    inc = ztp_r_option_increment(increment, "increment");
+    rmode = ztp_r_option_mode(mode, "mode");
     out = PROTECT(ztp_r_zoned_dur_alloc(n));
     ztp_ctx_init(&ctx);
     for (R_xlen_t i = 0; i < n; i++) {
@@ -481,9 +486,9 @@ SEXP ztp_r_zoned_round(SEXP x, SEXP codes, SEXP zones, SEXP increment, SEXP unit
 {
     R_xlen_t n = ztp_r_zoned_arg(x, codes, zones, -1);
     const ztp_zone *tz = ztp_r_zones_open(zones);
-    int64_t inc = (int64_t)ztp_r_option_real(increment, "increment");
-    ztp_unit u = (ztp_unit)ztp_r_option_int(unit, "unit");
-    ztp_rounding_mode m = (ztp_rounding_mode)ztp_r_option_int(mode, "mode");
+    int64_t inc = ztp_r_option_increment(increment, "increment");
+    ztp_unit u = ztp_r_option_unit(unit, "unit");
+    ztp_rounding_mode m = ztp_r_option_mode(mode, "mode");
     SEXP out = PROTECT(Rf_allocVector(CPLXSXP, n));
     ztp_ctx ctx;
 

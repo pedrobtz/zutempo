@@ -81,6 +81,22 @@ double ztp_r_option_real(SEXP x, const char *name)
     return Rf_asReal(x);
 }
 
+int ztp_r_option_code(SEXP x, const char *name, int lo, int hi)
+{
+    int v = ztp_r_option_int(x, name);
+    if (v == NA_INTEGER || v < lo || v > hi)
+        ztp_r_type_error(0, "internal: `%s` must be a code from %d to %d", name, lo, hi);
+    return v;
+}
+
+int64_t ztp_r_option_increment(SEXP x, const char *name)
+{
+    double v = ztp_r_option_real(x, name);
+    if (!(v >= 1 && v <= 1e9) || v != trunc(v))
+        ztp_r_type_error(0, "internal: `%s` must be a whole number from 1 to 1e9", name);
+    return (int64_t)v;
+}
+
 R_xlen_t ztp_r_duration_arg(SEXP list, R_xlen_t n, const char *name)
 {
     if (TYPEOF(list) != VECSXP || XLENGTH(list) != ZTP_DURATION_FIELDS)
