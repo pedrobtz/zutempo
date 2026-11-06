@@ -91,6 +91,8 @@ zuf_i128 ztp_round_i128_to_increment(zuf_i128 x, zuf_i128 increment,
 /* Exact or nearest conversions. */
 bool ztp_i128_from_double(double x, zuf_i128 *out);
 double ztp_i128_to_double(zuf_i128 v);
+/* 𝔽(num / den), den > 0, correctly rounded. */
+double ztp_ratio_to_double(zuf_i128 num, zuf_u128 den);
 zuf_i128 ztp_i128_abs(zuf_i128 v);
 
 /* ParseTemporalDurationString: ZTP_ERR_PARSE with the position of the

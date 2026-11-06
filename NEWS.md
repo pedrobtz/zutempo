@@ -1,5 +1,10 @@
 # zutempo 0.0.0.9000
 
+* `temporal_total()` is the nearest double to the exact quotient, with or
+  without `relative_to`, as the specification requires. It added the
+  fraction to the whole units in doubles, which rounded twice: `temporal_total(duration("PT3.581337223S"),
+  "seconds")` was `3.5813372230000002`, and totals above 2^53 could be off
+  by 2.
 * The help pages now say what every accessor returns, that
   `duration_compare()` takes a zoned `relative_to`, and which base R
   classes each constructor converts. They no longer cite sections of the

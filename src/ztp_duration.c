@@ -445,17 +445,46 @@ ztp_status ztp_time_duration_round(ztp_ctx *ctx, size_t index, zuf_i128 t,
     return ZTP_OK;
 }
 
+/* 𝔽(num / den) for den > 0, rounded once from the exact quotient, ties
+   to even. Adding the remainder's fraction to the integer part as doubles
+   would round twice. */
+double ztp_ratio_to_double(zuf_i128 num, zuf_u128 den)
+{
+    zuf_u128 n = zuf_u128_from_i128(ztp_i128_abs(num)), q, r;
+    uint64_t m, sticky;
+    int scale = 0;
+    double out;
+
+    zuf_u128_divmod(n, den, &q, &r);
+    sticky = (zuf_u128_high(r) | zuf_u128_low(r)) != 0;
+    if (zuf_u128_high(q) || zuf_u128_low(q) >= ((uint64_t)1 << 53)) {
+        /* At least 54 bits: doubles are 2 or more apart, so the fraction
+           can only break a tie, as a sticky bit below the integer. */
+        zuf_u128 twice = zuf_u128_add_wrap(zuf_u128_add_wrap(q, q), zuf_u128_from_u64(sticky));
+        out = ztp_i128_to_double(zuf_i128_from_u128(twice)) / 2;
+    } else {
+        /* Long division to 56 significant bits, the rest as a sticky bit;
+           converting a 64-bit integer to double rounds once. r < den, and
+           every caller's den is far below 2^127, so 2r cannot wrap. */
+        m = zuf_u128_low(q);
+        while (m < ((uint64_t)1 << 55) && (m != 0 || sticky)) {
+            r = zuf_u128_add_wrap(r, r);
+            m *= 2;
+            if (zuf_u128_cmp(r, den) >= 0) {
+                r = zuf_u128_sub_wrap(r, den);
+                m |= 1u;
+            }
+            sticky = (zuf_u128_high(r) | zuf_u128_low(r)) != 0;
+            scale++;
+        }
+        out = ldexp((double)(m | sticky), -scale);
+    }
+    return zuf_i128_is_neg(num) ? -out : out;
+}
+
 double ztp_time_duration_total(zuf_i128 t, ztp_unit unit)
 {
-    int64_t divisor = ztp_unit_length_ns(unit);
-    zuf_i128 q;
-    int64_t r;
-
-    /* Integer part exactly, then the remainder as a fraction: the sum is
-       one rounding away from the exact quotient when the integer part is
-       a safe integer. */
-    zuf_i128_divmod_trunc_i64(t, divisor, &q, &r);
-    return ztp_i128_to_double(q) + (double)r / (double)divisor;
+    return ztp_ratio_to_double(t, zuf_u128_from_u64((uint64_t)ztp_unit_length_ns(unit)));
 }
 
 /* --- strings ------------------------------------------------------------ */
