@@ -720,6 +720,11 @@ static char *ztp_put_decimal(char *dst, double v)
     char *end;
 
     if (!ztp_i128_from_double(fabs(v), &w)) {
+        /* Unreachable from R: only the years to minutes fields come here,
+           and a valid duration holds them as integers below 2^53 (the
+           calendar fields below 2^32, the time fields bounded by the
+           2^53-second time duration), which always convert. A guard for a
+           future C caller with an unchecked record. */
         int k = snprintf(dst, 32, "%.0f", fabs(v));
         return dst + k;
     }

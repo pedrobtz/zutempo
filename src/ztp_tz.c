@@ -566,6 +566,9 @@ int ztp_tz_possible_epoch_ns(const ztp_tz_data *d, int32_t day, int64_t ns_of_da
             if (!dup) out[n_out++] = candidate;
         }
     }
+    /* The probes come in time order, so an ordinary overlap gives the
+       candidates in order too. Three changes of offset within about a day
+       can give them reversed, as the crafted zone of test-tz.R does. */
     if (n_out == 2 && zuf_i128_cmp(out[0], out[1]) > 0) {
         zuf_i128 t = out[0];
         out[0] = out[1];

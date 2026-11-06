@@ -81,3 +81,48 @@ tzif_layout <- function(bytes) {
     )
   )
 }
+
+# The fixture Asia/Tokyo damaged in each way the TZif reader checks, by
+# name, for tests of the reader's errors.
+tzif_damaged <- function() {
+  path <- file.path(tz_fixture_dir("slim"), "Asia/Tokyo")
+  bytes <- readBin(path, "raw", n = file.size(path))
+  at <- tzif_layout(bytes)
+  patch <- function(offset, value) {
+    b <- bytes
+    b[offset + seq_along(value) - 1L] <- as.raw(value)
+    b
+  }
+  # The second transition equal to the first.
+  repeated <- patch(at$times + 8L, as.integer(bytes[at$times + 0:7]))
+  list(
+    "too short for a header" = bytes[1:20],
+    "a header with a bad version" = as.raw(c(
+      0x54,
+      0x5a,
+      0x69,
+      0x66,
+      0x32,
+      rep(0xff, 60)
+    )),
+    "empty" = raw(0),
+    "truncated in the 32-bit block" = bytes[seq_len(at$header2 + 10L)],
+    "a second header without its magic" = patch(at$header2 + 3L, 0x58),
+    "truncated in the 64-bit block" = bytes[seq_len(length(bytes) - 40L)],
+    "transitions not ascending" = repeated,
+    "a transition type past the types" = patch(at$idx, 3L),
+    "an abbreviation index past the characters" = patch(at$types + 5L, 12L),
+    "a footer without its closing newline" = bytes[-length(bytes)],
+    "a footer that is not a TZ rule" = c(
+      bytes[seq_len(at$footer)],
+      charToRaw("nonsense,,\n")
+    )
+  )
+}
+
+# Load one of tzif_damaged()'s files as the zone "Fuzz/Zone".
+tzif_load_damaged <- function(what) {
+  damaged <- tzif_damaged()
+  stopifnot(what %in% names(damaged))
+  .Call(zutempo:::C_ztp_r_tz_load, "Fuzz/Zone", damaged[[what]])
+}
