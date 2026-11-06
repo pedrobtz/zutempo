@@ -319,3 +319,10 @@ test_that("total() rounds the exact quotient once", {
     -42 / 31
   )
 })
+
+test_that("$<- on a duration is a type error whatever the value", {
+  d <- duration(days = 1:3)
+  expect_error(d$hours <- duration(hours = 5), class = "zutempo_type_error")
+  expect_error(d$hours <- NA, class = "zutempo_type_error")
+  expect_identical(format(d), c("P1D", "P2D", "P3D"))
+})

@@ -42,7 +42,8 @@
   `data.table::rbindlist()` or `diff()` can leave them), an instant with a
   fractional part, a plain value outside its type's range, and a duration
   whose fields are not ten doubles of one length or not a valid duration.
-  `d$hours <- 5` on a duration is a type error, as `d[["hours"]] <- 5` was.
+  `d$hours <- value` on a duration is always a type error. With a duration
+  as the value it used to append an element.
   The native routines also check the type and length of every argument.
 * Condition messages are marked as UTF-8, and an excerpt of the input that
   they quote is never cut inside a character.
