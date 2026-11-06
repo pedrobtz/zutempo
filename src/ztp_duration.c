@@ -281,6 +281,8 @@ ztp_status ztp_time_duration_add_days(ztp_ctx *ctx, size_t index, zuf_i128 t,
 {
     zuf_i128 d, term;
 
+    /* The first two checks are unreachable from R: a valid duration's
+       days are an integer below 2^53, whose nanoseconds fit in 128 bits. */
     if (!ztp_i128_from_double(days, &d) ||
         !zuf_i128_mul(d, zuf_i128_from_i64(ZTP_NS_PER_DAY), &term))
         return ztp_fail(ctx, ZTP_ERR_RANGE, index,

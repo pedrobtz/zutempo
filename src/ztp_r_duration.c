@@ -337,7 +337,7 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
             if (ztp_duration_from_internal(&ctx, idx, &rounded,
                                            largest_unit <= ZTP_UNIT_DAY ? ZTP_UNIT_HOUR : largest_unit,
                                            &result) != ZTP_OK)
-                ztp_r_raise(&ctx);
+                ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         } else if (ztp_r_relative(relative_days, i, &rel)) {
             ztp_internal_duration internal = ztp_duration_to_internal_24h(&d), rounded;
             int64_t target_ns, target_days;
@@ -354,7 +354,7 @@ SEXP ztp_r_duration_round(SEXP dur, SEXP largest, SEXP smallest, SEXP increment,
                                                        &rounded) != ZTP_OK)
                 ztp_r_raise(&ctx);
             if (ztp_duration_from_internal(&ctx, idx, &rounded, largest_unit, &result) != ZTP_OK)
-                ztp_r_raise(&ctx);
+                ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         } else {
             ztp_internal_duration internal, rounded;
 
@@ -534,7 +534,7 @@ SEXP ztp_r_duration_compare(SEXP a, SEXP b, SEXP relative_days, SEXP relative_zo
         }
         if (ztp_time_duration_add_days(&ctx, idx, d1.time, days1, &t1) != ZTP_OK ||
             ztp_time_duration_add_days(&ctx, idx, d2.time, days2, &t2) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: a valid duration's days and time stay below 2^53 seconds */
         po[i] = zuf_i128_cmp(t1, t2);
     }
     UNPROTECT(1);
@@ -621,7 +621,7 @@ SEXP ztp_r_plain_date_until(SEXP d1, SEXP d2, SEXP largest, SEXP smallest,
             diff = rounded;
         }
         if (ztp_duration_from_internal(&ctx, idx, &diff, ZTP_UNIT_DAY, &result) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         ztp_r_duration_put(out, i, &result);
     }
     UNPROTECT(1);
@@ -685,9 +685,9 @@ SEXP ztp_r_plain_time_until(SEXP t1, SEXP t2, SEXP largest, SEXP smallest,
         memset(&diff.date, 0, sizeof diff.date);
         if (ztp_time_duration_round(&ctx, idx, zuf_i128_from_i64(b - a),
                                     inc, smallest_unit, rmode, &diff.time) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: rounding a day or less stays far inside the range */
         if (ztp_duration_from_internal(&ctx, idx, &diff, largest_unit, &result) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         ztp_r_duration_put(out, i, &result);
     }
     UNPROTECT(1);
@@ -774,7 +774,7 @@ SEXP ztp_r_plain_date_time_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
                                                    &diff) != ZTP_OK)
             ztp_r_raise(&ctx);
         if (ztp_duration_from_internal(&ctx, idx, &diff, largest_unit, &result) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         ztp_r_duration_put(out, i, &result);
     }
     UNPROTECT(1);
@@ -895,7 +895,7 @@ SEXP ztp_r_plain_year_month_until(SEXP ym1, SEXP ym2, SEXP largest, SEXP smalles
             diff = rounded;
         }
         if (ztp_duration_from_internal(&ctx, idx, &diff, ZTP_UNIT_DAY, &result) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         ztp_r_duration_put(out, i, &result);
     }
     UNPROTECT(1);

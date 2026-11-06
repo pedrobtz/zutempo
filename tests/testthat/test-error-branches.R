@@ -61,6 +61,20 @@ test_that("the duration rounding checks hold for C callers", {
   expect_error(round(9L, 4L, TRUE), class = "zutempo_range_error")
 })
 
+test_that("comparing durations past the end of the range is a range error", {
+  # Days are compared by adding them to a zoned relative_to, which fails
+  # within a day of the last instant.
+  end <- zoned_date_time("+275760-09-12T00:00[UTC]")
+  expect_error(
+    duration_compare("P1D", "P2D", relative_to = end),
+    class = "zutempo_range_error"
+  )
+  expect_identical(
+    duration_compare("PT1H", "PT2H", relative_to = end),
+    -1L
+  )
+})
+
 test_that("a difftime too large for a duration is a range error", {
   expect_error(
     duration(as.difftime(Inf, units = "secs")),

@@ -467,7 +467,7 @@ SEXP ztp_r_zoned_until(SEXP x1, SEXP codes1, SEXP zones1, SEXP x2, SEXP codes2, 
                                          smallest_unit, rmode, &internal) != ZTP_OK)
             ztp_r_raise(&ctx);
         if (ztp_duration_from_internal(&ctx, (size_t)i + 1, &internal, result_largest, &result) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         ztp_r_zoned_dur_put(out, i, &result);
     }
     UNPROTECT(1);
