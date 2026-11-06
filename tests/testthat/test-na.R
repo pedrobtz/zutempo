@@ -27,6 +27,9 @@ test_that("every glue entry point propagates NA in the first argument", {
     },
     "Instant round" = function(x) temporal_round(x$instant, "hour"),
     "ZonedDateTime start of day" = function(x) temporal_start_of_day(x$zoned),
+    "PlainMonthDay from fields" = function(x) {
+      plain_month_day(month = c(1, NA), day = 5)
+    },
     "PlainDate to PlainDateTime" = function(x) {
       temporal_to_plain_date_time(x$date, plain_time("12:00"))
     },
@@ -136,4 +139,18 @@ test_that("a bare NA stands for a missing Temporal value", {
   )
   expect_identical(plain_date(NA), plain_date(NA_character_))
   expect_identical(zoned_date_time(NA), zoned_date_time(NA_character_))
+})
+
+test_that("an NA offset_string means no offset", {
+  expect_identical(
+    zoned_date_time(
+      2026,
+      3,
+      7,
+      12,
+      time_zone = "+01:00",
+      offset_string = c("+01:00", NA)
+    ),
+    rep(zoned_date_time(2026, 3, 7, 12, time_zone = "+01:00"), 2L)
+  )
 })
