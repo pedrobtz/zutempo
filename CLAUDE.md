@@ -254,8 +254,8 @@ Design §4 is the reference. The layers, top down:
 - **Tests that need the machine's database skip when it is missing.**
 - **Helpers live in `tests/testthat/helper-*.R`.** `helper-oracle.R` reads
   an oracle JSON file (`oracle_cases()`) and holds one checker per type
-  (`oracle_check_plain_date()`, ...), which skips until that type's
-  constructor exists. `test-oracle-<type>.R` loops the cases through it.
+  (`oracle_check_plain_date()`, ...), which compares results exactly.
+  `test-oracle-<type>.R` loops the cases through it.
 - **`test-members.R` is the member ledger.** When a stage exports a member,
   remove its name from `pending` there; the test fails otherwise.
 - **Keep the long gctorture run inside its 120-minute budget.** Its cost
