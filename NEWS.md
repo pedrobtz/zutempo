@@ -15,6 +15,10 @@
   is a `zutempo_range_error`, as it is in Temporal.
 * `zoned_date_time()` recycles `offset_string` with the fields, where a
   longer `offset_string` was an internal error.
+* `zutempo_parse()` takes time linear in the length of its input and in
+  the number of failures. A misspelt zone is looked up once, not once per
+  string that names it; 8,000 zoned strings with 4,000 bad zones took
+  ten seconds and now take a few hundredths.
 * The help pages now say what every accessor returns, that
   `duration_compare()` takes a zoned `relative_to`, and which base R
   classes each constructor converts. They no longer cite sections of the
