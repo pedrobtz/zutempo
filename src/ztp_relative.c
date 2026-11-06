@@ -239,9 +239,9 @@ static ztp_status ztp_check_date_duration(ztp_ctx *ctx, size_t index,
                                           const ztp_date_duration *dd)
 {
     ztp_duration d = {dd->years, dd->months, dd->weeks, dd->days, 0, 0, 0, 0, 0, 0};
-    /* Unreachable from R: the window's units are a difference between
-       in-range dates plus an increment of at most 10^9, far below 2^32
-       years or months and 2^53 seconds of weeks or days. */
+    /* Unreachable from R: the callers' units are a difference between
+       in-range dates plus one or an increment of at most 10^9, far below
+       2^32 years or months and 2^53 seconds of weeks or days. */
     if (!ztp_duration_is_valid(&d))
         return ztp_fail(ctx, ZTP_ERR_RANGE, index,
                         "the duration exceeds the representable range");
