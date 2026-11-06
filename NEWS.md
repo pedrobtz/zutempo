@@ -11,6 +11,8 @@
 * `duration_compare()` recycles `relative_to` with `x` and `y`, so a
   `relative_to` of length 3 gives three results instead of one. A length
   that does not recycle is a `zutempo_type_error`.
+* An `offset_string` with an annotation, such as `"+01:00[u-ca=iso8601]"`,
+  is a `zutempo_range_error`, as it is in Temporal.
 * The help pages now say what every accessor returns, that
   `duration_compare()` takes a zoned `relative_to`, and which base R
   classes each constructor converts. They no longer cite sections of the

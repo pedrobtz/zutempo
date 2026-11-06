@@ -268,6 +268,16 @@ test_that("constructor arguments are checked", {
       zoned_date_time(2026, 3, 7, time_zone = "UTC", offset_string = "noon"),
       class = "zutempo_range_error"
     )
+    z <- zoned_date_time(2026, 3, 7, 12, time_zone = "+01:00")
+    # ParseDateTimeUTCOffset: the whole string is a UTCOffset, with no
+    # annotation.
+    for (s in c("+01:00[u-ca=iso8601]", "+01:00[foo=bar]", "+01:00[UTC]")) {
+      expect_error(
+        temporal_with(z, offset_string = s),
+        class = "zutempo_range_error",
+        info = s
+      )
+    }
     expect_error(zoned_date_time(Sys.Date()), class = "zutempo_type_error")
     expect_error(
       zoned_date_time("2026-03-07T12:00[Mars/Olympus_Mons]"),
