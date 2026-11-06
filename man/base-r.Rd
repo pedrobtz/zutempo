@@ -50,8 +50,9 @@ temporal_to_difftime(x, ...)
 
 \item{tz}{A time zone: for an \code{instant()}, the zone to show it in (the
 default is \code{"UTC"}); for a \code{plain_date_time()}, the zone its wall-clock
-time is in, which has no default (\code{""} is the system zone); for a
-\code{zoned_date_time()}, a zone to show it in instead of its own.}
+time is in, which has no default; for a \code{zoned_date_time()}, a zone to
+show it in instead of its own. \code{""} is the system zone, as in base R
+(\code{\link[=now_time_zone_id]{now_time_zone_id()}}).}
 
 \item{disambiguation}{For a \code{plain_date_time()}: how to resolve a time a
 zone skips or repeats, as in \code{\link[=temporal_to_zoned_date_time]{temporal_to_zoned_date_time()}}.}

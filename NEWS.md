@@ -1,5 +1,9 @@
 # zutempo 0.0.0.9000
 
+* `tz = ""` is the system time zone in `as.Date()` and `as.POSIXlt()` of an
+  `instant()` or a `zoned_date_time()`, as it is in base R. It was a
+  `zutempo_parse_error`.
+
 * An ill-formed time zone identifier, such as `"Europe/Par is"`, is
   reported as one. The message said what an ISO string would have needed
   instead: "expected a four-digit year".
