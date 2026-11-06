@@ -717,14 +717,16 @@ temporal_to_string.zutempo_zoned_date_time <- function(
 #' current time as a `zoned_date_time()`, `plain_date_time()`,
 #' `plain_date()` or `plain_time()` in that zone or in `time_zone`.
 #'
-#' The system time zone is read as the C library that base R formats with
-#' reads it. The `TZ` environment variable comes first, without a leading
-#' `:`; a path under a zone directory, such as
-#' `/usr/share/zoneinfo/Europe/Berlin`, names the zone at that path.
+#' Base R formats times with the C library. zutempo reads the system time
+#' zone the same way the C library does. The `TZ` environment variable
+#' comes first, without a leading `:`; a path under a zone directory, such
+#' as `/usr/share/zoneinfo/Europe/Berlin`, names the zone at that path.
 #' Without `TZ` it is `Sys.timezone()`, and without either it is `"UTC"`.
 #' A zone that is set but cannot be read, such as a POSIX TZ string or a
 #' zone the database lacks, gives `"UTC"` with a warning of class
-#' `zutempo_tz_warning`.
+#' `zutempo_tz_warning`. So does a `Sys.timezone()` that fails with an
+#' error or a warning. On macOS, `Sys.timezone()` can also change the
+#' database zutempo reads (see [zutempo_tz_reset()]).
 #'
 #' @param time_zone A time zone identifier, or `NULL` for the system zone.
 #' @return `now_time_zone_id()` returns a string; the others the value named.
@@ -742,13 +744,21 @@ now_time_zone_id <- function() {
   id <- Sys.getenv("TZ")
   from <- "TZ"
   if (!nzchar(id)) {
-    id <- tryCatch(
-      Sys.timezone(),
-      error = function(e) NA_character_,
-      warning = function(w) NA_character_
-    )
     from <- "Sys.timezone()"
+    id <- tryCatch(
+      ztp_sys_timezone(),
+      error = identity,
+      warning = identity
+    )
+    if (inherits(id, "condition")) {
+      warn_zutempo(sprintf(
+        "`Sys.timezone()` failed (%s); using \"UTC\"",
+        conditionMessage(id)
+      ))
+      return("UTC")
+    }
   }
+  # No zone set is not a failure: UTC without a warning.
   if (is.na(id) || !nzchar(id)) {
     return("UTC")
   }
@@ -765,6 +775,12 @@ now_time_zone_id <- function() {
     return("UTC")
   }
   out
+}
+
+# Base R's Sys.timezone(), behind a binding of the package's own so that
+# the tests can mock a failure.
+ztp_sys_timezone <- function() {
+  Sys.timezone()
 }
 
 # The identifier in a system zone setting: TZ's leading ":" dropped, and

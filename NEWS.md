@@ -1,5 +1,14 @@
 # zutempo 0.0.0.9000
 
+* `now_time_zone_id()` warns with a `zutempo_tz_warning` when
+  `Sys.timezone()` fails with an error or a warning, and falls back to
+  `"UTC"` as it does for a zone it cannot read. It used to fall back
+  silently.
+* `?zutempo_tz_reset` documents that on macOS the first read of the
+  system zone can move zutempo from R's copy of the database to the
+  system's: base R's `Sys.timezone()` sets `TZDIR`, and zutempo follows
+  it.
+
 * `tz = ""` is the system time zone in `as.Date()` and `as.POSIXlt()` of an
   `instant()` or a `zoned_date_time()`, as it is in base R. It was a
   `zutempo_parse_error`.

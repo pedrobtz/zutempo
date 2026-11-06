@@ -143,8 +143,12 @@ ztp_tz_index <- function(dir) {
 
 # The current state, rebuilt when the option or TZDIR makes the lookup
 # land on another directory (design 8.4). The key is the directory found,
-# not the settings: base R's Sys.timezone() sets TZDIR as a side effect,
-# which must not throw away a cache that still reads the same files.
+# not the settings, so a TZDIR that names the directory already in use
+# keeps the cache. A TZDIR that names another one does clear it, on
+# purpose: on macOS, base R's Sys.timezone() sets TZDIR to
+# /var/db/timezone/zoneinfo as a side effect, and zutempo follows it to
+# stay on the database base R formats with (documented in
+# ?zutempo_tz_reset).
 ztp_tz_current <- function() {
   found <- ztp_tz_candidates()
   key <- if (is.na(found[["dir"]])) "" else found[["dir"]]
@@ -176,6 +180,13 @@ ztp_tz_reset_state <- function() {
 #' itself when the option `zutempo.tzdir` or the `TZDIR` variable changes;
 #' `zutempo_tz_reset()` clears it on demand, and looks for the database
 #' again, for a database that appeared or changed under a running session.
+#'
+#' On macOS, base R's `Sys.timezone()` sets `TZDIR` to the system's
+#' database the first time it runs. zutempo follows `TZDIR`, so that it
+#' reads the database base R formats with. The first call that reads the
+#' system zone, such as `now_time_zone_id()` or a conversion with
+#' `tz = ""`, can therefore move zutempo from R's own copy to the system's
+#' and clear the cache. [zutempo_info()] shows the database in use.
 #'
 #' @return `NULL`, invisibly.
 #' @examples

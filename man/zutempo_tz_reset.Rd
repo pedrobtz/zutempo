@@ -16,6 +16,14 @@ itself when the option \code{zutempo.tzdir} or the \code{TZDIR} variable changes
 \code{zutempo_tz_reset()} clears it on demand, and looks for the database
 again, for a database that appeared or changed under a running session.
 }
+\details{
+On macOS, base R's \code{Sys.timezone()} sets \code{TZDIR} to the system's
+database the first time it runs. zutempo follows \code{TZDIR}, so that it
+reads the database base R formats with. The first call that reads the
+system zone, such as \code{now_time_zone_id()} or a conversion with
+\code{tz = ""}, can therefore move zutempo from R's own copy to the system's
+and clear the cache. \code{\link[=zutempo_info]{zutempo_info()}} shows the database in use.
+}
 \examples{
 zutempo_tz_reset()
 }
