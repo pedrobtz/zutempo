@@ -30,6 +30,14 @@
       Error:
       ! cannot parse "2026-01-31[!foo=bar]" as a date or date-time: an unknown annotation is marked critical with '!' at byte 11 (element 1)
 
+---
+
+    Code
+      zoned_date_time("2026-03-07T12:00+01:00:5[+01:00]")
+    Condition
+      Error:
+      ! cannot parse "2026-03-07T12:00+01:00:5[+01:00]" as a zoned date-time: expected two offset second digits at byte 25 (element 1)
+
 # a type error names the option and its choices
 
     Code
@@ -61,6 +69,102 @@
     Condition
       Error:
       ! cannot parse the TZ rule "nonsense,,"
+
+# a damaged TZif file's tz error says what is wrong with it
+
+    Code
+      tzif_load_damaged("too short for a header")
+    Condition
+      Error:
+      ! not a TZif file
+
+---
+
+    Code
+      tzif_load_damaged("a header with a bad version")
+    Condition
+      Error:
+      ! not a TZif file
+
+---
+
+    Code
+      tzif_load_damaged("empty")
+    Condition
+      Error:
+      ! not a TZif file
+
+---
+
+    Code
+      tzif_load_damaged("truncated in the 32-bit block")
+    Condition
+      Error:
+      ! TZif file is truncated
+
+---
+
+    Code
+      tzif_load_damaged("a second header without its magic")
+    Condition
+      Error:
+      ! TZif second header is invalid
+
+---
+
+    Code
+      tzif_load_damaged("truncated in the 64-bit block")
+    Condition
+      Error:
+      ! TZif file is truncated
+
+---
+
+    Code
+      tzif_load_damaged("transitions not ascending")
+    Condition
+      Error:
+      ! TZif transitions are not ascending
+
+---
+
+    Code
+      tzif_load_damaged("a transition type past the types")
+    Condition
+      Error:
+      ! TZif transition type out of range
+
+---
+
+    Code
+      tzif_load_damaged("an abbreviation index past the characters")
+    Condition
+      Error:
+      ! TZif abbreviation index out of range
+
+---
+
+    Code
+      tzif_load_damaged("a footer without its closing newline")
+    Condition
+      Error:
+      ! TZif footer is not terminated
+
+---
+
+    Code
+      tzif_load_damaged("a footer that is not a TZ rule")
+    Condition
+      Error:
+      ! cannot parse the TZ rule "nonsense,,"
+
+# a mismatched offset is shown with its fraction of a second
+
+    Code
+      zoned_date_time("2026-03-07T12:00+00:00:00.120[Europe/Dublin]")
+    Condition
+      Error:
+      ! the UTC offset +00:00:00.12 does not match the time zone "Europe/Dublin" at that local time (element 1)
 
 # with no database, the tz error lists every directory tried
 
