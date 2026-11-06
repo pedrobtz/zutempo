@@ -90,3 +90,13 @@ test_that("ordering, unique and rank go through xtfrm()", {
     expect_identical(df[order(df[["v"]]), "i"], c(2L, 1L, 3L))
   }
 })
+
+test_that("the Math and Complex groups are type errors", {
+  for (x in ops_values()) {
+    for (f in list(abs, cummax, sqrt, function(x) round(x, -12))) {
+      expect_error(f(x), class = "zutempo_type_error")
+    }
+    expect_error(signif(x, 2), class = "zutempo_type_error")
+    expect_error(Re(x), class = "zutempo_type_error")
+  }
+})

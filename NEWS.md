@@ -1,5 +1,10 @@
 # zutempo 0.0.0.9000
 
+* `abs()`, `round()`, `signif()`, `cummax()` and the rest of the `Math`
+  group, and `Re()` and the rest of the `Complex` group, are a
+  `zutempo_type_error` on dates and times. Before, they ran on the stored
+  numbers and gave wrong values: `abs(plain_date("1960-01-01"))` was
+  `1980-01-02`.
 * The help pages now say what every accessor returns, that
   `duration_compare()` takes a zoned `relative_to`, and which base R
   classes each constructor converts. They no longer cite sections of the
