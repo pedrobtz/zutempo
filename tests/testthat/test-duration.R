@@ -279,3 +279,43 @@ test_that("fields from a 128-bit total are the nearest double, ties to even", {
   # C runtime does not print every digit of one.
   expect_identical(microseconds(r), 8289612454858323 * 2^20)
 })
+
+test_that("total() rounds the exact quotient once", {
+  # One IEEE division of two exact integers is the correctly rounded
+  # quotient. The integer part plus the remainder's fraction, both as
+  # doubles, gives 3.5813372230000002 here.
+  expect_identical(
+    temporal_total(duration("PT3.581337223S"), "seconds"),
+    3581337223 / 1e9
+  )
+  expect_identical(
+    temporal_total(duration(nanoseconds = 1072346211473754), "days"),
+    1072346211473754 / 864e11
+  )
+  # Above 2^53 the fraction only breaks a tie: 2^53 + 1.999 is nearer
+  # 2^53 + 2 than 2^53.
+  expect_identical(
+    temporal_total(
+      duration(milliseconds = 2^53, microseconds = 1999),
+      "milliseconds"
+    ),
+    2^53 + 2
+  )
+  expect_identical(
+    temporal_total(
+      duration(milliseconds = -2^53, microseconds = -1999),
+      "milliseconds"
+    ),
+    -2^53 - 2
+  )
+  # Calendar units: 40 days from 1 February 2020 are 42/31 months, not
+  # the twice-rounded 1 + 11/31.
+  expect_identical(
+    temporal_total(duration("P40D"), "months", relative_to = "2020-02-01"),
+    42 / 31
+  )
+  expect_identical(
+    temporal_total(duration("-P40D"), "months", relative_to = "2020-03-01"),
+    -42 / 31
+  )
+})

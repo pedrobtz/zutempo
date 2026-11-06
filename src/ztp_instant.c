@@ -296,70 +296,23 @@ bool ztp_epoch_ns_from_seconds(double x, zuf_i128 *out)
     return true;
 }
 
-/* Whether a double's last significand bit is 0: the tie rule. */
-static bool ztp_double_is_even(double x)
-{
-    uint64_t m;
-    int k;
-    ztp_double_decompose(x, &m, &k);
-    return (m & 1u) == 0;
-}
-
-/* |candidate * 10^9 * 2^s - ns * 2^s| for a common scale 2^s, as the
-   distance between a double and the exact value ns / 10^9. */
-static zuf_i128 ztp_seconds_distance(double candidate, zuf_i128 ns, unsigned s)
-{
-    uint64_t m;
-    int k;
-    zuf_i128 a, b, d;
-
-    ztp_double_decompose(candidate, &m, &k);
-    a = zuf_i128_from_u128(zuf_u128_mul_wrap(zuf_u128_mul_u64_u64(m, 1000000000u),
-                                             ztp_u128_pow2((unsigned)(k + (int)s))));
-    if (candidate < 0) zuf_i128_neg(a, &a);
-    b = zuf_i128_mul_wrap(ns, zuf_i128_from_u128(ztp_u128_pow2(s)));
-    d = zuf_i128_sub_wrap(a, b);
-    if (zuf_i128_is_neg(d)) zuf_i128_neg(d, &d);
-    return d;
-}
-
 double ztp_seconds_from_epoch_ns(zuf_i128 ns)
 {
-    double approx, best;
-    zuf_i128 best_d;
+    double seconds, nanoseconds;
     int64_t small;
-    unsigned s = 0;
 
     /* Below 2^53 nanoseconds (about 104 days) ns is exact as a double and
        one division rounds correctly. */
     if (zuf_i128_to_i64(ns, &small) && small > -((int64_t)1 << 53) && small < ((int64_t)1 << 53))
         return (double)small / 1e9;
-    /* Further out the result is at least 2^23 s, so its neighbours are the
-       only other candidates, and a scale of 2^29 makes all three integers
-       times 10^-9 without leaving 128 bits. */
-    {
-        double seconds, nanoseconds;
-        ztp_epoch_ns_split(ns, &seconds, &nanoseconds);
-        approx = seconds + nanoseconds / 1e9;   /* within one ulp */
-    }
-    {
-        double cand[3] = {nextafter(approx, -INFINITY), approx, nextafter(approx, INFINITY)};
-        for (int i = 0; i < 3; i++) {
-            uint64_t m;
-            int k;
-            ztp_double_decompose(cand[i], &m, &k);
-            if (k < 0 && (unsigned)-k > s) s = (unsigned)-k;
-        }
-        best = cand[1];
-        best_d = ztp_seconds_distance(cand[1], ns, s);
-        for (int i = 0; i < 3; i += 2) {
-            zuf_i128 d = ztp_seconds_distance(cand[i], ns, s);
-            int c = zuf_i128_cmp(d, best_d);
-            if (c < 0 || (c == 0 && ztp_double_is_even(cand[i]))) {
-                best = cand[i];
-                best_d = d;
-            }
-        }
-    }
-    return best;
+    /* Further out the whole seconds s are exact and |s| >= 2^23, so the
+       result's spacing is 2^-e with e <= 29. The sum s + fl(r / 10^9) rounds
+       like the exact s + r / 10^9 unless fl(r / 10^9) crosses a midpoint
+       s + (2j + 1) 2^-(e+1). It cannot: r / 10^9 differs from one by
+       |r 2^(e+1) - (2j + 1) 10^9| / (10^9 2^(e+1)), whose numerator is a
+       nonzero multiple of 2^9, so at least 2^(8-e) / 10^9 >= 4.7e-16,
+       while fl(r / 10^9), below 1, is within 2^-54 = 5.6e-17 of it. For
+       the same reason no instant is a tie between two doubles. */
+    ztp_epoch_ns_split(ns, &seconds, &nanoseconds);
+    return seconds + nanoseconds / 1e9;
 }

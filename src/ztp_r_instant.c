@@ -267,9 +267,9 @@ SEXP ztp_r_instant_until(SEXP x1, SEXP x2, SEXP largest, SEXP smallest,
         memset(&diff.date, 0, sizeof diff.date);
         if (ztp_time_duration_round(&ctx, idx, zuf_i128_sub_wrap(b, a), inc, smallest_unit,
                                     rmode, &diff.time) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: |b - a| is below 2^75 ns, far inside the range */
         if (ztp_duration_from_internal(&ctx, idx, &diff, largest_unit, &result) != ZTP_OK)
-            ztp_r_raise(&ctx);
+            ztp_r_raise(&ctx);   /* unreachable from R: a difference of in-range values is a valid duration */
         for (int f = 0; f < ZTP_DURATION_FIELDS; f++)
             REAL(VECTOR_ELT(out, f))[i] = ztp_duration_field(&result, f);
     }

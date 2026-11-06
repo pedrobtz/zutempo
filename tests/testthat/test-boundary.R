@@ -27,7 +27,16 @@ test_that("a zoned value with corrupt zone codes is a type error", {
   no_table <- z
   attr(no_table, "zones") <- 1L
   expect_error(format(no_table), class = "zutempo_type_error")
-  # The C glue checks the codes as well as the R side.
+  # The R side refuses these first; the C glue checks them too, for
+  # callers that bypass it.
+  expect_error(
+    .Call(zutempo:::C_ztp_r_zoned_offset, unclass(z)[1], 1L, 1L),
+    class = "zutempo_type_error"
+  )
+  expect_error(
+    .Call(zutempo:::C_ztp_r_zoned_offset, 0, 1L, "UTC"),
+    class = "zutempo_type_error"
+  )
   expect_error(
     .Call(zutempo:::C_ztp_r_zoned_offset, unclass(z)[1], 2L, "UTC"),
     class = "zutempo_type_error"
@@ -151,6 +160,46 @@ test_that("condition messages are UTF-8 and never cut a character", {
   expect_s3_class(e, "zutempo_range_error")
   expect_true(validUTF8(conditionMessage(e)))
   expect_identical(Encoding(conditionMessage(e)), "UTF-8")
+  # Invalid bytes are dropped from the quoted input: a byte that cannot
+  # start a character, a lone continuation byte and a truncated sequence.
+  for (bytes in list(
+    c(0x32, 0xff, 0x33),
+    c(0x32, 0x80, 0x33),
+    c(0x32, 0xe2, 0x82, 0x33)
+  )) {
+    input <- rawToChar(as.raw(bytes))
+    e <- tryCatch(plain_date(input), error = identity)
+    expect_s3_class(e, "zutempo_parse_error")
+    # What is left is ASCII, which R never marks as UTF-8.
+    expect_true(validUTF8(conditionMessage(e)))
+    expect_false(any(charToRaw(conditionMessage(e)) >= as.raw(0x80)))
+    expect_match(conditionMessage(e), "\"23\"", fixed = TRUE)
+  }
+  # A four-byte character across the excerpt's end is left out whole, and
+  # one inside it is kept.
+  e <- tryCatch(
+    plain_date(paste0(strrep("a", 37), "\U0001F600\U0001F600")),
+    error = identity
+  )
+  expect_true(validUTF8(conditionMessage(e)))
+  expect_false(any(charToRaw(conditionMessage(e)) >= as.raw(0x80)))
+  expect_match(
+    conditionMessage(e),
+    paste0(strrep("a", 37), "..."),
+    fixed = TRUE
+  )
+  e <- tryCatch(
+    plain_date(paste0(strrep("a", 35), "\u00e9\U0001F600x")),
+    error = identity
+  )
+  expect_true(validUTF8(conditionMessage(e)))
+  expect_identical(Encoding(conditionMessage(e)), "UTF-8")
+  expect_match(conditionMessage(e), "\u00e9...", fixed = TRUE)
+  expect_false(grepl("\U0001F600", conditionMessage(e), fixed = TRUE))
+  e <- tryCatch(plain_date("2026\U0001F600"), error = identity)
+  expect_true(validUTF8(conditionMessage(e)))
+  expect_identical(Encoding(conditionMessage(e)), "UTF-8")
+  expect_match(conditionMessage(e), "2026\U0001F600", fixed = TRUE)
 })
 
 test_that("plain values outside their type's range are type errors", {
@@ -251,6 +300,31 @@ test_that("the glue checks the type and length of each argument", {
     .Call(zutempo:::C_ztp_r_tz_utoff, "UTC", 1L),
     class = "zutempo_type_error"
   )
+  # A scalar option of length two.
+  expect_error(
+    .Call(
+      zutempo:::C_ztp_r_instant_round,
+      unclass(instant("2024-01-01T00:00Z")),
+      c(1, 1),
+      0L,
+      0L
+    ),
+    class = "zutempo_type_error"
+  )
+  # A zone the R side would have loaded first.
+  expect_error(
+    .Call(zutempo:::C_ztp_r_tz_utoff, "Not/Loaded", 0),
+    class = "zutempo_tz_error"
+  )
+  expect_error(
+    .Call(zutempo:::C_ztp_r_zone_equals, "UTC", "Not/Loaded"),
+    class = "zutempo_tz_error"
+  )
+  e <- expect_error(
+    .Call(zutempo:::C_ztp_r_zone_equals, "?", "UTC"),
+    class = "zutempo_range_error"
+  )
+  expect_false(inherits(e, "zutempo_tz_error"))
 })
 
 test_that("loading the package again does not pile up hooks", {

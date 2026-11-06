@@ -13,11 +13,28 @@ test_that("an ill-formed time zone identifier is a range error", {
       "+05:30"
     )
   )
-  for (bad in c("+24", "+2", "+05:60", "+05:", "+05:3", "+05:30x", "?")) {
-    expect_error(normalise(bad), class = "zutempo_range_error", info = bad)
+  # A tz error is a range error too, so each is also checked not to be
+  # one: an ill-formed identifier must fail the syntax check, not the
+  # cache lookup.
+  bad <- c(
+    "+24",
+    "+2",
+    "+05:60",
+    "+05:",
+    "+05:3",
+    "+05:30x",
+    "+05:30:15",
+    "+0530:15",
+    "?",
+    "Ab$c",
+    "Europe/Par is",
+    "Europe//Paris",
+    "Europe/-Paris"
+  )
+  for (x in bad) {
+    e <- expect_error(normalise(x), class = "zutempo_range_error", info = x)
+    expect_false(inherits(e, "zutempo_tz_error"), info = x)
   }
-  expect_error(normalise("+05:30:15"), class = "zutempo_range_error")
-  expect_error(normalise("+0530:15"), class = "zutempo_range_error")
   # A well-formed name the cache does not hold.
   expect_error(normalise("Not/Loaded"), class = "zutempo_tz_error")
 })
@@ -42,6 +59,20 @@ test_that("the duration rounding checks hold for C callers", {
   expect_error(round(-2L, 9L, FALSE), class = "zutempo_range_error")
   # Nanoseconds (9) as the largest unit and hours (4) as the smallest.
   expect_error(round(9L, 4L, TRUE), class = "zutempo_range_error")
+})
+
+test_that("comparing durations past the end of the range is a range error", {
+  # Days are compared by adding them to a zoned relative_to, which fails
+  # within a day of the last instant.
+  end <- zoned_date_time("+275760-09-12T00:00[UTC]")
+  expect_error(
+    duration_compare("P1D", "P2D", relative_to = end),
+    class = "zutempo_range_error"
+  )
+  expect_identical(
+    duration_compare("PT1H", "PT2H", relative_to = end),
+    -1L
+  )
 })
 
 test_that("a difftime too large for a duration is a range error", {

@@ -239,6 +239,9 @@ static ztp_status ztp_check_date_duration(ztp_ctx *ctx, size_t index,
                                           const ztp_date_duration *dd)
 {
     ztp_duration d = {dd->years, dd->months, dd->weeks, dd->days, 0, 0, 0, 0, 0, 0};
+    /* Unreachable from R: the callers' units are a difference between
+       in-range dates plus one or an increment of at most 10^9, far below
+       2^32 years or months and 2^53 seconds of weeks or days. */
     if (!ztp_duration_is_valid(&d))
         return ztp_fail(ctx, ZTP_ERR_RANGE, index,
                         "the duration exceeds the representable range");
@@ -363,9 +366,18 @@ static ztp_status ztp_nudge_to_calendar_unit(ztp_ctx *ctx, size_t index, int sig
     /* |dest - start| and |end - dest|: progress is d1 / (d1 + d2). */
     d1 = ztp_i128_abs(zuf_i128_sub_wrap(dest_ns, w.start_ns));
     d2 = ztp_i128_abs(zuf_i128_sub_wrap(w.end_ns, dest_ns));
-    res->total = w.r1 + ztp_i128_to_double(d1) /
-                            ztp_i128_to_double(zuf_i128_add_wrap(d1, d2)) *
-                            (double)increment * sign;
+    /* total = r1 + progress * increment * sign, as the exact fraction
+       (r1 * (d1 + d2) + d1 * increment * sign) / (d1 + d2) rounded once. */
+    {
+        zuf_i128 width = zuf_i128_add_wrap(d1, d2), r1, num;
+        if ((width.low == 0 && width.high == 0) || !ztp_i128_from_double(w.r1, &r1)) {
+            res->total = w.r1;
+        } else {
+            num = zuf_i128_add_wrap(zuf_i128_mul_wrap(r1, width),
+                                    zuf_i128_mul_wrap(d1, zuf_i128_from_i64(increment * sign)));
+            res->total = ztp_ratio_to_double(num, zuf_u128_from_i128(width));
+        }
+    }
     if (d2.low == 0 && d2.high == 0) {
         round_up = true;              /* progress = 1 */
     } else if (d1.low == 0 && d1.high == 0) {

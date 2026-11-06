@@ -1,6 +1,8 @@
-# One vector of each plain class, with an NA, for the plumbing tests.
+# One vector of each plain class and of instants, with an NA, for the
+# plumbing tests.
 plain_values <- function() {
   list(
+    instant(c("2026-01-31T12:30Z", "1969-12-31T23:59:59.999999999Z", NA)),
     plain_date(c("2026-01-31", "2026-02-01", NA)),
     plain_time(c("12:30", "00:00:00.000000001", NA)),
     plain_date_time(c("2026-01-31T12:30", "2026-02-01", NA)),

@@ -339,7 +339,7 @@ test262_problem <- function(type, case) {
   }
   if (!is.list(result)) {
     same <- if (is.numeric(result)) {
-      isTRUE(all.equal(as.numeric(value), result))
+      identical(as.numeric(value), as.numeric(result))
     } else {
       identical(value, result)
     }

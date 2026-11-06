@@ -376,10 +376,14 @@ test_that("identifiers match case-insensitively and come back in the database's 
       zutempo:::ztp_tz_ensure("Europe/Atlantis"),
       class = "zutempo_tz_error"
     )
-    expect_error(
-      zutempo:::ztp_tz_ensure("+05:30:15"),
-      class = "zutempo_range_error"
-    )
+    for (x in c("+05:30:15", "Ab$c", "Europe/Par is")) {
+      e <- expect_error(
+        zutempo:::ztp_tz_ensure(x),
+        class = "zutempo_range_error",
+        info = x
+      )
+      expect_false(inherits(e, "zutempo_tz_error"), info = x)
+    }
     expect_identical(
       temporal_to_string(
         instant("2026-07-01T16:00Z"),

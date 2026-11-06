@@ -153,7 +153,9 @@ oracle_expect_result <- function(value, result, id) {
   if (!is.list(result)) {
     # A number, string or boolean.
     if (is.numeric(result)) {
-      expect_equal(as.numeric(value), result, info = id)
+      # Exactly: a tolerance would hide an epoch off by seconds or a
+      # duration field computed in doubles near 2^53.
+      expect_identical(as.numeric(value), as.numeric(result), info = id)
     } else {
       expect_identical(value, result, info = id)
     }
@@ -180,7 +182,8 @@ oracle_expect_result <- function(value, result, id) {
       lapply(actual[!undefined], as.vector),
       fields[!undefined],
       info = id,
-      ignore_attr = TRUE
+      ignore_attr = TRUE,
+      tolerance = 0
     )
   }
   invisible()
