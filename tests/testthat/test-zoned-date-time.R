@@ -268,7 +268,30 @@ test_that("constructor arguments are checked", {
       zoned_date_time(2026, 3, 7, time_zone = "UTC", offset_string = "noon"),
       class = "zutempo_range_error"
     )
+    # offset_string recycles with the fields, longer or shorter.
     z <- zoned_date_time(2026, 3, 7, 12, time_zone = "+01:00")
+    expect_identical(
+      zoned_date_time(
+        2026,
+        3,
+        7,
+        12,
+        time_zone = "+01:00",
+        offset_string = c("+01:00", "+01:00")
+      ),
+      rep(z, 2L)
+    )
+    expect_identical(
+      zoned_date_time(
+        2026,
+        3,
+        c(7, 7),
+        12,
+        time_zone = "+01:00",
+        offset_string = "+01:00"
+      ),
+      rep(z, 2L)
+    )
     # ParseDateTimeUTCOffset: the whole string is a UTCOffset, with no
     # annotation.
     for (s in c("+01:00[u-ca=iso8601]", "+01:00[foo=bar]", "+01:00[UTC]")) {
