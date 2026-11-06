@@ -49,9 +49,13 @@ test_that("min(), max() and range() agree with sort()", {
     expect_identical(max(x[1:2], x[0]), s[2], info = nm)
     expect_identical(min(x), x[3], info = nm)
     expect_identical(range(x), x[c(3, 3)], info = nm)
-    expect_error(min(x[3], na.rm = TRUE), class = "zutempo_range_error")
-    expect_error(max(x[0]), class = "zutempo_range_error")
-    expect_error(min(x, 1), class = "zutempo_type_error")
+    expect_error(
+      min(x[3], na.rm = TRUE),
+      class = "zutempo_range_error",
+      info = nm
+    )
+    expect_error(max(x[0]), class = "zutempo_range_error", info = nm)
+    expect_error(min(x, 1), class = "zutempo_type_error", info = nm)
   }
 })
 

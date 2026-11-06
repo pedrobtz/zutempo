@@ -64,28 +64,6 @@ oracle_options <- function(case) {
   opts
 }
 
-# Skip a case whose type a later stage builds.
-oracle_skip_until_built <- function(type) {
-  constructor <- oracle_snake(type)
-  stage <- c(
-    plain_date = 2L,
-    plain_time = 2L,
-    plain_date_time = 2L,
-    plain_year_month = 3L,
-    plain_month_day = 3L,
-    duration = 4L,
-    instant = 5L,
-    zoned_date_time = 7L
-  )[[constructor]]
-  if (!exists(constructor, envir = asNamespace("zutempo"), inherits = FALSE)) {
-    skip(sprintf(
-      "%s() arrives in stage %d of .agents/roadmap.md",
-      constructor,
-      stage
-    ))
-  }
-}
-
 # Run the member of a case and return its value, or raise its condition.
 # A field bag among the arguments becomes named arguments; a string that
 # names a unit (round()) becomes `smallest_unit`.
@@ -167,7 +145,11 @@ oracle_expect_result <- function(value, result, id) {
     info = id
   )
   if (!is.null(result[["type"]])) {
-    expect_s3_class(value, paste0("zutempo_", oracle_snake(result[["type"]])))
+    # expect_s3_class() takes no `info`.
+    expect_true(
+      inherits(value, paste0("zutempo_", oracle_snake(result[["type"]]))),
+      info = id
+    )
   }
   fields <- result[["fields"]]
   if (length(fields)) {
@@ -208,7 +190,6 @@ oracle_check <- function(type, case) {
 # forces a collection every few allocations. An error in a case becomes
 # a failure naming it, and the rest of the file still runs.
 oracle_run_cases <- function(type) {
-  oracle_skip_until_built(type)
   cases <- oracle_gctorture_sample(oracle_cases(type))
   for (case in cases) {
     tryCatch(
