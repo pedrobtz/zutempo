@@ -56,6 +56,14 @@ plain_month_day <- function(
       ov
     ))
   }
+  if (
+    ztp_is_bare_na(month) &&
+      is.null(day) &&
+      is.null(month_code) &&
+      is.null(year)
+  ) {
+    return(plain_month_day(rep(NA_character_, length(month))))
+  }
   if (is.character(month)) {
     ztp_check_no_month_day_fields(day, month_code, year)
     return(new_plain_month_day(.Call(C_ztp_r_plain_month_day_parse, month)))

@@ -95,6 +95,14 @@ zoned_date_time <- function(
     ztp_check_no_fields(month, day, month_code)
     return(ztp_zoned_from_posix(year, time_zone))
   }
+  if (
+    ztp_is_bare_na(year) &&
+      is.null(month) &&
+      is.null(day) &&
+      is.null(month_code)
+  ) {
+    return(zoned_date_time(rep(NA_character_, length(year))))
+  }
   if (is.character(year)) {
     ztp_check_no_fields(month, day, month_code)
     if (!is.null(time_zone)) {
@@ -132,13 +140,14 @@ zoned_date_time <- function(
   fields <- ztp_recycle(c(
     date,
     time,
-    list(time_zone = ztp_zone_ids(time_zone))
+    list(time_zone = ztp_zone_ids(time_zone)),
+    if (!is.null(offset_string)) list(offset_string = offset_string)
   ))
   local <- ztp_date_time_from_fields(fields, ov)
   ztp_zoned_resolve(
     local,
     fields[["time_zone"]],
-    offset_string,
+    fields[["offset_string"]],
     dis,
     off,
     behaviour_default = ztp_offset_behaviour_wall

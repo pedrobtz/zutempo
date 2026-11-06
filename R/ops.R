@@ -1,12 +1,14 @@
-# Operators and the Summary group for the seven value classes other than
-# duration(), which has its own (design 6.5).
+# Operators and the Math, Complex and Summary groups for the seven value
+# classes other than duration(), which has its own (design 6.5).
 #
 # 0.1.0 has no arithmetic or comparison operators (design 2): each would
 # be shorthand for a Temporal operation, and they are for a later
 # version. Without these methods base R's would run on the storage and
 # keep the class, building values that break design 4.1, or compare the
 # storage where temporal_equals() compares the value. So every operator
-# is a zutempo_type_error that names the function to use.
+# is a zutempo_type_error that names the function to use. The Math and
+# Complex groups (abs(), round(), cummax(), Re(), ...) are refused for
+# the same reason: they would run on the storage and keep the class.
 #
 # min(), max() and range() are not operators: they take the order sort()
 # already uses (xtfrm(), design 4.1), which is the type's compare()
@@ -68,6 +70,63 @@ Ops.zutempo_plain_month_day <- function(e1, e2) ztp_ops(.Generic, e1, e2)
 Ops.zutempo_instant <- function(e1, e2) ztp_ops(.Generic, e1, e2)
 #' @export
 Ops.zutempo_zoned_date_time <- function(e1, e2) ztp_ops(.Generic, e1, e2)
+
+# The Math and Complex groups. round() and its kin name temporal_round()
+# where the type has one.
+ztp_math <- function(generic, x) {
+  type <- ztp_type_name(x)
+  rounds <- inherits(
+    x,
+    c(
+      "zutempo_plain_time",
+      "zutempo_plain_date_time",
+      "zutempo_instant",
+      "zutempo_zoned_date_time"
+    )
+  )
+  hint <- if (
+    rounds && generic %in% c("round", "signif", "trunc", "floor", "ceiling")
+  ) {
+    "use temporal_round()"
+  }
+  stop_zutempo(
+    paste0(
+      sprintf("`%s()` is not defined for a %s", generic, type),
+      if (!is.null(hint)) paste0("; ", hint)
+    ),
+    kind = "type"
+  )
+}
+
+#' @export
+Math.zutempo_plain_date <- function(x, ...) ztp_math(.Generic, x)
+#' @export
+Math.zutempo_plain_time <- function(x, ...) ztp_math(.Generic, x)
+#' @export
+Math.zutempo_plain_date_time <- function(x, ...) ztp_math(.Generic, x)
+#' @export
+Math.zutempo_plain_year_month <- function(x, ...) ztp_math(.Generic, x)
+#' @export
+Math.zutempo_plain_month_day <- function(x, ...) ztp_math(.Generic, x)
+#' @export
+Math.zutempo_instant <- function(x, ...) ztp_math(.Generic, x)
+#' @export
+Math.zutempo_zoned_date_time <- function(x, ...) ztp_math(.Generic, x)
+
+#' @export
+Complex.zutempo_plain_date <- function(z) ztp_math(.Generic, z)
+#' @export
+Complex.zutempo_plain_time <- function(z) ztp_math(.Generic, z)
+#' @export
+Complex.zutempo_plain_date_time <- function(z) ztp_math(.Generic, z)
+#' @export
+Complex.zutempo_plain_year_month <- function(z) ztp_math(.Generic, z)
+#' @export
+Complex.zutempo_plain_month_day <- function(z) ztp_math(.Generic, z)
+#' @export
+Complex.zutempo_instant <- function(z) ztp_math(.Generic, z)
+#' @export
+Complex.zutempo_zoned_date_time <- function(z) ztp_math(.Generic, z)
 
 # With R 4.3 or later, an operator between a zutempo value and a value of
 # another class with its own Ops method (a Date, a duration()) asks

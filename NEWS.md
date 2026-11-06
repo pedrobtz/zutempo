@@ -1,5 +1,29 @@
 # zutempo 0.0.0.9000
 
+* `abs()`, `round()`, `signif()`, `cummax()` and the rest of the `Math`
+  group, and `Re()` and the rest of the `Complex` group, are a
+  `zutempo_type_error` on dates and times. Before, they ran on the stored
+  numbers and gave wrong values: `abs(plain_date("1960-01-01"))` was
+  `1980-01-02`.
+* An accessor such as `year()` no longer recurses when zutempo's own
+  generic is found again on the search path, as after
+  `year <- zutempo::year`.
+* `duration_compare()` recycles `relative_to` with `x` and `y`, so a
+  `relative_to` of length 3 gives three results instead of one. A length
+  that does not recycle is a `zutempo_type_error`.
+* An `offset_string` with an annotation, such as `"+01:00[u-ca=iso8601]"`,
+  is a `zutempo_range_error`, as it is in Temporal.
+* `zoned_date_time()` recycles `offset_string` with the fields, where a
+  longer `offset_string` was an internal error.
+* `zutempo_parse()` takes time linear in the length of its input and in
+  the number of failures. A misspelt zone is looked up once, not once per
+  string that names it; 8,000 zoned strings with 4,000 bad zones took
+  ten seconds and now take a few hundredths.
+* A bare `NA` stands for a missing value wherever a date, time or duration
+  is accepted: `plain_date(NA)`, `instant(NA)` and `zoned_date_time(NA)`
+  are `NA`, and so are `temporal_until(d, NA)`, `temporal_add(d, NA)` and
+  `instant_compare(i, NA)`. They were type errors.
+
 * The help pages now say what every accessor returns, that
   `duration_compare()` takes a zoned `relative_to`, and which base R
   classes each constructor converts. They no longer cite sections of the

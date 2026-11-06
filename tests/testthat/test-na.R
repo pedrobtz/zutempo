@@ -27,6 +27,9 @@ test_that("every glue entry point propagates NA in the first argument", {
     },
     "Instant round" = function(x) temporal_round(x$instant, "hour"),
     "ZonedDateTime start of day" = function(x) temporal_start_of_day(x$zoned),
+    "PlainMonthDay from fields" = function(x) {
+      plain_month_day(month = c(1, NA), day = 5)
+    },
     "PlainDate to PlainDateTime" = function(x) {
       temporal_to_plain_date_time(x$date, plain_time("12:00"))
     },
@@ -107,5 +110,47 @@ test_that("every glue entry point propagates NA in the second argument", {
   expect_identical(
     got,
     rep("FALSE TRUE", length(calls)) |> stats::setNames(names(calls))
+  )
+})
+
+test_that("a bare NA stands for a missing Temporal value", {
+  d <- plain_date("2026-01-31")
+  i <- instant("2026-01-31T00:00Z")
+  z <- zoned_date_time("2026-01-31T00:00[+01:00]")
+  got <- list(
+    plain_date = plain_date(NA),
+    plain_time = plain_time(NA),
+    plain_date_time = plain_date_time(NA),
+    plain_year_month = plain_year_month(NA),
+    plain_month_day = plain_month_day(c(NA, NA)),
+    instant = instant(NA),
+    zoned_date_time = zoned_date_time(NA, time_zone = "UTC"),
+    until = temporal_until(d, NA),
+    add = temporal_add(d, NA),
+    instant_compare = instant_compare(i, NA),
+    plain_date_compare = plain_date_compare(d, NA),
+    zoned_equals = temporal_equals(z, NA),
+    total = temporal_total(duration("P1M"), "day", relative_to = NA)
+  )
+  expect_identical(
+    vapply(got, function(x) paste(is.na(x), collapse = " "), ""),
+    c(rep("TRUE", 4L), "TRUE TRUE", rep("TRUE", 8L)) |>
+      stats::setNames(names(got))
+  )
+  expect_identical(plain_date(NA), plain_date(NA_character_))
+  expect_identical(zoned_date_time(NA), zoned_date_time(NA_character_))
+})
+
+test_that("an NA offset_string means no offset", {
+  expect_identical(
+    zoned_date_time(
+      2026,
+      3,
+      7,
+      12,
+      time_zone = "+01:00",
+      offset_string = c("+01:00", NA)
+    ),
+    rep(zoned_date_time(2026, 3, 7, 12, time_zone = "+01:00"), 2L)
   )
 })

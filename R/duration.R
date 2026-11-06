@@ -111,6 +111,9 @@ ztp_as_duration <- function(x) {
   if (inherits(x, "zutempo_duration")) {
     return(x)
   }
+  if (ztp_is_bare_na(x)) {
+    x <- rep(NA_character_, length(x))
+  }
   if (!is.character(x)) {
     stop_zutempo(
       sprintf(
@@ -155,6 +158,19 @@ ztp_relative_to <- function(relative_to, n) {
   none <- list(days = NULL, zoned = NULL, codes = NULL, zones = NULL)
   if (is.null(relative_to)) {
     return(none)
+  }
+  if (n > 0L && !length(relative_to) %in% c(1L, n)) {
+    stop_zutempo(
+      sprintf(
+        "`relative_to` has length %d, which cannot be recycled to %d",
+        length(relative_to),
+        n
+      ),
+      kind = "type"
+    )
+  }
+  if (ztp_is_bare_na(relative_to)) {
+    relative_to <- plain_date(relative_to)
   }
   if (is.character(relative_to)) {
     check <- .Call(
@@ -211,7 +227,7 @@ ztp_relative_to <- function(relative_to, n) {
 duration_compare <- function(x, y, relative_to = NULL) {
   x <- ztp_as_duration(x)
   y <- ztp_as_duration(y)
-  n <- ztp_common_length(x, y)
+  n <- ztp_relative_length(seq_len(ztp_common_length(x, y)), relative_to)
   rel <- ztp_relative_to(relative_to, n)
   .Call(
     C_ztp_r_duration_compare,
