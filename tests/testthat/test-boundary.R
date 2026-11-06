@@ -183,7 +183,11 @@ test_that("condition messages are UTF-8 and never cut a character", {
   )
   expect_true(validUTF8(conditionMessage(e)))
   expect_false(any(charToRaw(conditionMessage(e)) >= as.raw(0x80)))
-  expect_match(conditionMessage(e), paste0(strrep("a", 37), "..."), fixed = TRUE)
+  expect_match(
+    conditionMessage(e),
+    paste0(strrep("a", 37), "..."),
+    fixed = TRUE
+  )
   e <- tryCatch(
     plain_date(paste0(strrep("a", 35), "\u00e9\U0001F600x")),
     error = identity
