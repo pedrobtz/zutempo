@@ -30,14 +30,16 @@ current time as a \code{zoned_date_time()}, \code{plain_date_time()},
 \code{plain_date()} or \code{plain_time()} in that zone or in \code{time_zone}.
 }
 \details{
-The system time zone is read as the C library that base R formats with
-reads it. The \code{TZ} environment variable comes first, without a leading
-\code{:}; a path under a zone directory, such as
-\verb{/usr/share/zoneinfo/Europe/Berlin}, names the zone at that path.
+Base R formats times with the C library. zutempo reads the system time
+zone the same way the C library does. The \code{TZ} environment variable
+comes first, without a leading \code{:}; a path under a zone directory, such
+as \verb{/usr/share/zoneinfo/Europe/Berlin}, names the zone at that path.
 Without \code{TZ} it is \code{Sys.timezone()}, and without either it is \code{"UTC"}.
 A zone that is set but cannot be read, such as a POSIX TZ string or a
 zone the database lacks, gives \code{"UTC"} with a warning of class
-\code{zutempo_tz_warning}.
+\code{zutempo_tz_warning}. So does a \code{Sys.timezone()} that fails with an
+error or a warning. On macOS, \code{Sys.timezone()} can also change the
+database zutempo reads (see \code{\link[=zutempo_tz_reset]{zutempo_tz_reset()}}).
 }
 \section{Members}{
 

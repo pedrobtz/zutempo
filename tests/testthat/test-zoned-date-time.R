@@ -803,3 +803,16 @@ test_that("the constructors read a zoned value as ToTemporal* does", {
     expect_identical(instant(z), instant("2026-03-07T17:30:45.5Z"))
   })
 })
+
+test_that("an ill-formed zone identifier is reported as one", {
+  z <- zoned_date_time("2026-03-07T12:00[UTC]")
+  expect_error(
+    temporal_with_time_zone(z, "Europe/Par$is"),
+    class = "zutempo_parse_error"
+  )
+  expect_snapshot(error = TRUE, {
+    temporal_with_time_zone(z, "Europe/Par$is")
+    temporal_with_time_zone(z, "Europe/Par is")
+    temporal_with_time_zone(z, "2026-13-01")
+  })
+})

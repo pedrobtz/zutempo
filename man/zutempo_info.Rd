@@ -26,7 +26,9 @@ exists), \code{tz_version}, the tzdata release it declares, \code{tz_form},
 whether its files carry explicit transitions far into the future
 (\code{"fat"}) or stop at the last rule change (\code{"slim"}), and
 \code{tz_links_version}, the tzdata release the built-in link table comes
-from.
+from. The directory follows \code{TZDIR}, which base R's \code{Sys.timezone()}
+sets on macOS, so it can change once the system zone has been read (see
+\code{\link[=zutempo_tz_reset]{zutempo_tz_reset()}}).
 }
 \examples{
 zutempo_info()

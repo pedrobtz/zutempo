@@ -497,12 +497,7 @@ temporal_round.zutempo_duration <- function(
     ztp_unit_auto
   }
   mode <- ztp_rounding_mode_code(rounding_mode)
-  maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
-  increment <- if (is.na(maximum)) {
-    ztp_increment_value(rounding_increment)
-  } else {
-    ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
-  }
+  increment <- ztp_unit_increment(rounding_increment, smallest)
   if (largest != ztp_unit_auto && largest > smallest) {
     stop_zutempo(
       "`largest_unit` must not be smaller than `smallest_unit`",
@@ -639,11 +634,16 @@ names.zutempo_duration <- function(x) NULL
 }
 #' @export
 `[[<-.zutempo_duration` <- function(x, i, value) `[<-`(x, i, value)
-# The fields are not settable one by one: `$<-` goes through the same
-# check as `[[<-`, so `d$hours <- 5` is a type error rather than a
-# duration whose fields have different lengths.
+# The fields are not settable one by one, so `$<-` is always a type
+# error. Passing it on to `[[<-` would read the name as an element index,
+# and `d$hours <- duration(hours = 5)` would append an element.
 #' @export
-`$<-.zutempo_duration` <- function(x, name, value) `[[<-`(x, name, value)
+`$<-.zutempo_duration` <- function(x, name, value) {
+  stop_zutempo(
+    "the fields of a duration() cannot be set one by one; use temporal_with()",
+    kind = "type"
+  )
+}
 #' @export
 c.zutempo_duration <- function(...) {
   dots <- list(...)

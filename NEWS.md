@@ -1,5 +1,22 @@
 # zutempo 0.0.0.9000
 
+* `now_time_zone_id()` warns with a `zutempo_tz_warning` when
+  `Sys.timezone()` fails with an error or a warning, and falls back to
+  `"UTC"` as it does for a zone it cannot read. It used to fall back
+  silently.
+* `?zutempo_tz_reset` documents that on macOS the first read of the
+  system zone can move zutempo from R's copy of the database to the
+  system's: base R's `Sys.timezone()` sets `TZDIR`, and zutempo follows
+  it.
+
+* `tz = ""` is the system time zone in `as.Date()` and `as.POSIXlt()` of an
+  `instant()` or a `zoned_date_time()`, as it is in base R. It was a
+  `zutempo_parse_error`.
+
+* An ill-formed time zone identifier, such as `"Europe/Par is"`, is
+  reported as one. The message said what an ISO string would have needed
+  instead: "expected a four-digit year".
+
 * `temporal_total()` is the nearest double to the exact quotient, with or
   without `relative_to`, as the specification requires. It added the
   fraction to the whole units in doubles, which rounded twice:
@@ -38,8 +55,11 @@
   `data.table::rbindlist()` or `diff()` can leave them), an instant with a
   fractional part, a plain value outside its type's range, and a duration
   whose fields are not ten doubles of one length or not a valid duration.
-  `d$hours <- 5` on a duration is a type error, as `d[["hours"]] <- 5` was.
-  The native routines also check the type and length of every argument.
+  `d$hours <- value` on a duration is always a type error. With a duration
+  as the value it used to append an element.
+  The native routines also check the type and length of every argument,
+  before they read it, and the range of every option code and rounding
+  increment.
 * Condition messages are marked as UTF-8, and an excerpt of the input that
   they quote is never cut inside a character.
 * The time zone file reader refuses an abbreviation index past the

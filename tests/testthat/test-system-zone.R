@@ -50,3 +50,36 @@ test_that("the fallback warning is a zutempo warning", {
     expect_s3_class(cnd, c("zutempo_tz_warning", "zutempo_warning", "warning"))
   })
 })
+
+test_that("a failing Sys.timezone() falls back to UTC with a warning", {
+  withr::local_envvar(TZ = NA)
+  local_mocked_bindings(ztp_sys_timezone = function() stop("no zone"))
+  expect_warning(
+    expect_identical(now_time_zone_id(), "UTC"),
+    class = "zutempo_tz_warning"
+  )
+  local_mocked_bindings(ztp_sys_timezone = function() {
+    warning("odd zone")
+    "Europe/Lisbon"
+  })
+  expect_warning(
+    expect_identical(now_time_zone_id(), "UTC"),
+    class = "zutempo_tz_warning"
+  )
+  # No zone set is not a failure.
+  local_mocked_bindings(ztp_sys_timezone = function() NA_character_)
+  expect_no_warning(expect_identical(now_time_zone_id(), "UTC"))
+})
+
+test_that("tz = \"\" is the system zone in every conversion to base R", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    withr::local_envvar(TZ = "Asia/Tokyo")
+    i <- instant("2026-03-07T20:00:00Z")
+    z <- zoned_date_time("2026-03-07T20:00[UTC]")
+    expect_identical(as.Date(i, tz = ""), as.Date("2026-03-08"))
+    expect_identical(as.Date(z, tz = ""), as.Date("2026-03-08"))
+    expect_identical(as.POSIXlt(i, tz = "")$hour, 5L)
+    expect_identical(as.POSIXlt(z, tz = "")$hour, 5L)
+    expect_identical(attr(as.POSIXlt(z, tz = ""), "tzone")[[1L]], "Asia/Tokyo")
+  })
+})

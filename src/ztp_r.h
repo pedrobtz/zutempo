@@ -15,8 +15,10 @@
 #include <Rinternals.h>
 
 #include "ztp.h"
+#include "ztp_format.h"
 #include "ztp_instant.h"
 #include "ztp_iso.h"
+#include "ztp_round.h"
 
 #include <math.h>
 
@@ -61,6 +63,43 @@ void ztp_r_scalar(SEXP x, const char *name);
    it. */
 int ztp_r_option_int(SEXP x, const char *name);
 double ztp_r_option_real(SEXP x, const char *name);
+
+/* ztp_r_option_int(), then a code from lo to hi: the R layer passes only
+   the codes of an enumeration, and the engine trusts them. */
+int ztp_r_option_code(SEXP x, const char *name, int lo, int hi);
+
+/* A rounding increment: ztp_r_scalar(), then a whole number from 1 to
+   1e9, the range R/options.R enforces. */
+int64_t ztp_r_option_increment(SEXP x, const char *name);
+
+static inline ztp_unit ztp_r_option_unit(SEXP x, const char *name)
+{
+    return (ztp_unit)ztp_r_option_code(x, name, ZTP_UNIT_YEAR, ZTP_UNIT_NANOSECOND);
+}
+
+static inline ztp_rounding_mode ztp_r_option_mode(SEXP x, const char *name)
+{
+    return (ztp_rounding_mode)ztp_r_option_code(x, name, ZTP_ROUND_CEIL,
+                                                ZTP_ROUND_HALF_EVEN);
+}
+
+static inline ztp_overflow ztp_r_option_overflow(SEXP x)
+{
+    return (ztp_overflow)ztp_r_option_code(x, "overflow", ZTP_OVERFLOW_CONSTRAIN,
+                                           ZTP_OVERFLOW_REJECT);
+}
+
+static inline ztp_show_calendar ztp_r_option_show_calendar(SEXP x)
+{
+    return (ztp_show_calendar)ztp_r_option_code(x, "show_calendar", ZTP_SHOW_CALENDAR_AUTO,
+                                                ZTP_SHOW_CALENDAR_CRITICAL);
+}
+
+/* A precision: ZTP_PRECISION_MINUTE, ZTP_PRECISION_AUTO or 0 to 9 digits. */
+static inline int ztp_r_option_precision(SEXP x)
+{
+    return ztp_r_option_code(x, "precision", ZTP_PRECISION_MINUTE, 9);
+}
 
 /* A duration list: ten REALSXP fields of one length, n unless n is
    negative. Returns the length. */
@@ -126,10 +165,12 @@ static inline bool ztp_r_date_time_get(const Rcomplex *p, R_xlen_t i, int32_t *d
 static inline bool ztp_r_year_month_get(const int *p, R_xlen_t i, int32_t *year,
                                         uint32_t *month)
 {
-    int code = p[i], q;
-    if (code == NA_INTEGER) return false;
+    int64_t code, q;
+    if (p[i] == NA_INTEGER) return false;
+    /* In 64 bits: -code + 11 overflows an int near INT_MIN. */
+    code = p[i];
     q = code >= 0 ? code / 12 : -((-code + 11) / 12);   /* floor */
-    if (!ztp_iso_year_month_within_limits((int64_t)1970 + q, code - q * 12 + 1))
+    if (!ztp_iso_year_month_within_limits(1970 + q, code - q * 12 + 1))
         ztp_r_type_error(i + 1, "the value is not a valid %s", "plain_year_month()");
     *year = (int32_t)(1970 + q);
     *month = (uint32_t)(code - q * 12 + 1);

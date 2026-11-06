@@ -143,18 +143,22 @@ ztp_tz_index <- function(dir) {
 
 # The current state, rebuilt when the option or TZDIR makes the lookup
 # land on another directory (design 8.4). The key is the directory found,
-# not the settings: base R's Sys.timezone() sets TZDIR as a side effect,
-# which must not throw away a cache that still reads the same files.
+# not the settings, so a TZDIR that names the directory already in use
+# keeps the cache. A TZDIR that names another one does clear it, on
+# purpose: on macOS, base R's Sys.timezone() sets TZDIR to
+# /var/db/timezone/zoneinfo as a side effect, and zutempo follows it to
+# stay on the database base R formats with (documented in
+# ?zutempo_tz_reset).
 ztp_tz_current <- function() {
   found <- ztp_tz_candidates()
   key <- if (is.na(found[["dir"]])) "" else found[["dir"]]
-  if (!identical(ztp_tz_state$key, key)) {
+  if (!identical(ztp_tz_state[["key"]], key)) {
     ztp_tz_reset_state()
-    ztp_tz_state$key <- key
-    ztp_tz_state$dir <- found[["dir"]]
-    ztp_tz_state$tried <- found[["tried"]]
-    ztp_tz_state$version <- ztp_tz_version(found[["dir"]])
-    ztp_tz_state$index <- if (is.na(found[["dir"]])) {
+    ztp_tz_state[["key"]] <- key
+    ztp_tz_state[["dir"]] <- found[["dir"]]
+    ztp_tz_state[["tried"]] <- found[["tried"]]
+    ztp_tz_state[["version"]] <- ztp_tz_version(found[["dir"]])
+    ztp_tz_state[["index"]] <- if (is.na(found[["dir"]])) {
       NULL
     } else {
       ztp_tz_index(found[["dir"]])
@@ -176,6 +180,13 @@ ztp_tz_reset_state <- function() {
 #' itself when the option `zutempo.tzdir` or the `TZDIR` variable changes;
 #' `zutempo_tz_reset()` clears it on demand, and looks for the database
 #' again, for a database that appeared or changed under a running session.
+#'
+#' On macOS, base R's `Sys.timezone()` sets `TZDIR` to the system's
+#' database the first time it runs. zutempo follows `TZDIR`, so that it
+#' reads the database base R formats with. The first call that reads the
+#' system zone, such as `now_time_zone_id()` or a conversion with
+#' `tz = ""`, can therefore move zutempo from R's own copy to the system's
+#' and clear the cache. [zutempo_info()] shows the database in use.
 #'
 #' @return `NULL`, invisibly.
 #' @examples
@@ -199,7 +210,7 @@ ztp_tz_ensure <- function(id, index = NULL) {
     return(.Call(C_ztp_r_zone_normalise, id))
   }
   state <- ztp_tz_current()
-  if (is.null(state$index)) {
+  if (is.null(state[["index"]])) {
     stop_zutempo(
       sprintf(
         "no time zone database was found for \"%s\"; looked in %s",
@@ -210,7 +221,7 @@ ztp_tz_ensure <- function(id, index = NULL) {
       index = index
     )
   }
-  hit <- match(tolower(id), state$index[["lower"]])
+  hit <- match(tolower(id), state[["index"]][["lower"]])
   if (is.na(hit)) {
     stop_zutempo(
       sprintf(
@@ -222,7 +233,7 @@ ztp_tz_ensure <- function(id, index = NULL) {
       index = index
     )
   }
-  canonical <- state$index[["id"]][hit]
+  canonical <- state[["index"]][["id"]][hit]
   if (!.Call(C_ztp_r_tz_loaded, canonical)) {
     path <- file.path(state[["dir"]], canonical)
     bytes <- readBin(path, "raw", n = file.size(path))
@@ -258,11 +269,11 @@ ztp_tz_ensure_all <- function(ids) {
 # off a zone with DST rules; NA without a database or such a zone.
 ztp_tz_form <- function() {
   state <- ztp_tz_current()
-  if (is.null(state$index)) {
+  if (is.null(state[["index"]])) {
     return(NA_character_)
   }
   for (zone in c("America/New_York", "Europe/London", "Australia/Sydney")) {
-    if (tolower(zone) %in% state$index[["lower"]]) {
+    if (tolower(zone) %in% state[["index"]][["lower"]]) {
       id <- ztp_tz_ensure(zone)
       last <- .Call(C_ztp_r_tz_last_explicit, id)
       if (is.na(last)) {

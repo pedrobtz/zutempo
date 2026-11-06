@@ -50,8 +50,9 @@
 #' @param x A zutempo value.
 #' @param tz A time zone: for an `instant()`, the zone to show it in (the
 #'   default is `"UTC"`); for a `plain_date_time()`, the zone its wall-clock
-#'   time is in, which has no default (`""` is the system zone); for a
-#'   `zoned_date_time()`, a zone to show it in instead of its own.
+#'   time is in, which has no default; for a `zoned_date_time()`, a zone to
+#'   show it in instead of its own. `""` is the system zone, as in base R
+#'   ([now_time_zone_id()]).
 #' @param disambiguation For a `plain_date_time()`: how to resolve a time a
 #'   zone skips or repeats, as in [temporal_to_zoned_date_time()].
 #' @param relative_to For a `duration()` with years, months or weeks: the
@@ -94,7 +95,7 @@ as.Date.zutempo_plain_date_time <- function(x, ...) {
 as.Date.zutempo_zoned_date_time <- function(x, tz = NULL, ...) {
   ztp_check_dots_empty(...)
   if (!is.null(tz)) {
-    x <- temporal_with_time_zone(x, tz)
+    x <- temporal_with_time_zone(x, ztp_system_tz(tz))
   }
   as.Date(temporal_to_plain_date(x))
 }
@@ -103,7 +104,8 @@ as.Date.zutempo_zoned_date_time <- function(x, tz = NULL, ...) {
 #' @export
 as.Date.zutempo_instant <- function(x, tz = "UTC", ...) {
   ztp_check_dots_empty(...)
-  as.Date(temporal_to_plain_date(temporal_to_zoned_date_time_iso(x, tz)))
+  z <- temporal_to_zoned_date_time_iso(x, ztp_system_tz(tz))
+  as.Date(temporal_to_plain_date(z))
 }
 
 #' @rdname base-r
@@ -140,7 +142,7 @@ as.POSIXct.zutempo_plain_date_time <- function(
 as.POSIXlt.zutempo_zoned_date_time <- function(x, tz = NULL, ...) {
   ztp_check_dots_empty(...)
   if (!is.null(tz)) {
-    x <- temporal_with_time_zone(x, tz)
+    x <- temporal_with_time_zone(x, ztp_system_tz(tz))
   }
   ztp_posixlt(x)
 }
@@ -149,7 +151,7 @@ as.POSIXlt.zutempo_zoned_date_time <- function(x, tz = NULL, ...) {
 #' @export
 as.POSIXlt.zutempo_instant <- function(x, tz = "UTC", ...) {
   ztp_check_dots_empty(...)
-  ztp_posixlt(temporal_to_zoned_date_time_iso(x, tz))
+  ztp_posixlt(temporal_to_zoned_date_time_iso(x, ztp_system_tz(tz)))
 }
 
 #' @rdname base-r
@@ -231,6 +233,11 @@ ztp_posix_tzone <- function(zones) {
   sprintf("Etc/GMT%s%d", if (east) "-" else "+", hours)
 }
 
+# Base R reads tz = "" as the system zone; so does every conversion here.
+ztp_system_tz <- function(tz) {
+  if (identical(tz, "")) now_time_zone_id() else tz
+}
+
 # A plain date-time placed in `tz` (design 6.10: no default; "" is the
 # system zone).
 ztp_zoned_from_plain <- function(x, tz, disambiguation) {
@@ -240,10 +247,11 @@ ztp_zoned_from_plain <- function(x, tz, disambiguation) {
       kind = "type"
     )
   }
-  if (identical(tz, "")) {
-    tz <- now_time_zone_id()
-  }
-  temporal_to_zoned_date_time(x, tz, disambiguation = disambiguation)
+  temporal_to_zoned_date_time(
+    x,
+    ztp_system_tz(tz),
+    disambiguation = disambiguation
+  )
 }
 
 # POSIXlt from zoned values: the fields in each element's zone, its offset

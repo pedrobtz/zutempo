@@ -188,6 +188,18 @@ ztp_increment_value <- function(rounding_increment) {
   as.double(increment)
 }
 
+# The increment for rounding to the unit with code `smallest`, as since(),
+# until() and a duration's round() check it: below the unit's maximum,
+# which a date unit does not have.
+ztp_unit_increment <- function(rounding_increment, smallest) {
+  maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
+  if (is.na(maximum)) {
+    ztp_increment_value(rounding_increment)
+  } else {
+    ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
+  }
+}
+
 # "Maximum duration rounding increment" of the units table.
 ztp_unit_maximum <- c(
   hour = 24,
@@ -269,14 +281,14 @@ ztp_month_from_code <- function(month_code) {
 ztp_precision_auto <- -1L
 ztp_precision_minute <- -2L
 
-# GetTemporalFractionalSecondDigitsOption: "auto" (-1) or a number floored
-# to 0 to 9. Another string is an invalid value (a type error, design 10);
-# a number out of range or not finite is a range error.
+# GetTemporalFractionalSecondDigitsOption: "auto" (ztp_precision_auto) or
+# a number floored to 0 to 9. Another string is an invalid value (a type
+# error, design 10); a number out of range or not finite is a range error.
 ztp_fractional_digits <- function(fractional_second_digits) {
   x <- fractional_second_digits
   if (is.character(x) && length(x) == 1L && !is.na(x)) {
     if (identical(x, "auto")) {
-      return(-1L)
+      return(ztp_precision_auto)
     }
     stop_zutempo(
       sprintf(
@@ -306,10 +318,10 @@ ztp_fractional_digits <- function(fractional_second_digits) {
 }
 
 # ToSecondsStringPrecisionRecord after the options of toString(): the
-# precision the formatter writes (-1 auto, -2 minute, else digits) and the
-# unit, increment and rounding mode the value is rounded with first. A
-# smallest unit wins over the digits; "hour" is never allowed, "minute"
-# only when `minute` is TRUE (not for a duration).
+# precision the formatter writes (ztp_precision_auto, ztp_precision_minute
+# or a digit count) and the unit, increment and rounding mode the value is
+# rounded with first. A smallest unit wins over the digits; "hour" is never
+# allowed, "minute" only when `minute` is TRUE (not for a duration).
 ztp_precision_record <- function(
   fractional_second_digits = "auto",
   smallest_unit = NULL,

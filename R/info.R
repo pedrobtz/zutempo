@@ -12,7 +12,9 @@
 #' whether its files carry explicit transitions far into the future
 #' (`"fat"`) or stop at the last rule change (`"slim"`), and
 #' `tz_links_version`, the tzdata release the built-in link table comes
-#' from.
+#' from. The directory follows `TZDIR`, which base R's `Sys.timezone()`
+#' sets on macOS, so it can change once the system zone has been read (see
+#' [zutempo_tz_reset()]).
 #'
 #' @return A list of class `zutempo_info` with elements `package`, `zufast`,
 #'   `int128`, `spec_repository`, `spec_commit`, `spec_date`,
