@@ -326,7 +326,7 @@ appear only inside C (§4.3).
 | Class | Temporal type | Storage | Range check |
 | --- | --- | --- | --- |
 | `zutempo_instant` | `Instant` | complex: Re = epoch seconds (integral double), Im = nanoseconds 0–999 999 999 | ±8.64 × 10¹² s |
-| `zutempo_zoned_date_time` | `ZonedDateTime` | record of two fields: `instant` (as `Instant`) and `zone` (integer code into the attribute `zones`, a character vector of identifiers) | as `Instant` |
+| `zutempo_zoned_date_time` | `ZonedDateTime` | complex, as `Instant`, with the attribute `zone` (an integer code per element) into the attribute `zones` (a character vector of identifiers, in order of first use) | as `Instant` |
 | `zutempo_plain_date_time` | `PlainDateTime` | complex: Re = epoch day (integral double), Im = nanoseconds of day | `ISODateTimeWithinLimits` |
 | `zutempo_plain_date` | `PlainDate` | integer: epoch day | `ISODateWithinLimits` |
 | `zutempo_plain_time` | `PlainTime` | double: nanoseconds of day | 0 to 8.64 × 10¹³ − 1 |
@@ -336,9 +336,10 @@ appear only inside C (§4.3).
 
 Why these shapes:
 
-- **One atomic vector per value type wherever possible.** The exceptions
-  are `Duration`, whose ten fields Temporal keeps apart, and
-  `ZonedDateTime`, whose zone is per value (§4.2). `[`, `length()`,
+- **One atomic vector per value type wherever possible.** The exception
+  is `Duration`, whose ten fields Temporal keeps apart. `ZonedDateTime`,
+  whose zone is per value, is the `Instant` vector with its zone codes in
+  attributes (§4.2). `[`, `length()`,
   `rep()`, `rev()`, data-frame columns and `saveRDS()` then work through
   R's own code, and a class-stripping function such as `unclass()` or
   `ifelse()` still yields readable numbers rather than reinterpreted bits.
