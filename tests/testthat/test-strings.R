@@ -465,6 +465,27 @@ test_that("zutempo_parse() reads every type, and passes options on", {
   })
 })
 
+test_that("zutempo_parse() finds every failure in a long vector", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    x <- rep("2026-03-07T12:00[Europe/London]", 300)
+    tz <- c(2, 150, 151, 299)
+    offset <- c(3, 70, 300)
+    x[tz] <- "2026-03-07T12:00[Europe/Londn]"
+    x[offset] <- "2026-03-07T12:00+05:00[Europe/London]"
+    x[200] <- "x"
+    z <- zutempo_parse(x, "zoned_date_time")
+    errors <- zutempo_parse_errors(z)
+    expect_identical(errors[["index"]], as.numeric(sort(c(tz, offset, 200))))
+    expect_identical(
+      errors[["class"]][match(c(2, 3, 200), errors[["index"]])],
+      c("zutempo_tz_error", "zutempo_range_error", "zutempo_parse_error")
+    )
+    good <- setdiff(seq_along(x), errors[["index"]])
+    expect_identical(z[good], zoned_date_time(x[good]))
+    expect_true(all(is.na(z[errors[["index"]]])))
+  })
+})
+
 test_that("relative_to strings are zoned by their time zone annotation", {
   with_tzdir(tz_fixture_dir("slim"), {
     d <- duration(hours = 25)

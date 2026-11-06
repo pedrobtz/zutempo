@@ -68,44 +68,125 @@ zutempo_parse <- function(x, type, ..., na_on_error = TRUE) {
   # The grammar in one pass over the vector.
   check <- .Call(C_ztp_r_parse_check, x, ztp_parse_goals[[type]])
   bad <- which(!is.na(check[["message"]]))
-  errors <- data.frame(
+  position <- check[["position"]][bad]
+  grammar <- list(
     index = as.numeric(bad),
-    position = check[["position"]][bad],
-    class = rep("zutempo_parse_error", length(bad)),
-    message = check[["message"]][bad],
+    position = position,
+    # The class of a failure the grammar finds is the one the constructor
+    # would raise: a calendar other than ISO 8601 is a range error, not a
+    # parse error.
+    class = c(
+      "zutempo_parse_error",
+      "zutempo_range_error"
+    )[is.na(position) + 1L],
+    message = check[["message"]][bad]
+  )
+  x[bad] <- NA_character_
+  zones <- if (type == "zoned_date_time") ztp_parse_zones(x) else NULL
+  if (!is.null(zones)) {
+    x[zones[["index"]]] <- NA_character_
+  }
+  values <- ztp_parse_values(x, constructor, ...)
+  x[values[["index"]]] <- NA_character_
+  # Every failure is NA now, so this pass succeeds.
+  result <- constructor(x, ...)
+  parts <- list(grammar, zones, values)
+  column <- function(f, empty) c(empty, unlist(lapply(parts, `[[`, f)))
+  errors <- data.frame(
+    index = column("index", double()),
+    position = column("position", double()),
+    class = column("class", character()),
+    message = ztp_strip_element(column("message", character())),
     stringsAsFactors = FALSE
   )
-  # The class of a failure the grammar finds is the one the constructor
-  # would raise: a calendar other than ISO 8601 is a range error, not a
-  # parse error.
-  errors[["class"]][is.na(errors[["position"]])] <- "zutempo_range_error"
-  x[bad] <- NA_character_
-  # Then the values: each failure the constructor reports becomes NA and
-  # the rest is read again. This costs one pass per such failure, which
-  # is rare next to grammar failures.
-  repeat {
-    result <- tryCatch(constructor(x, ...), zutempo_error = function(e) e)
-    if (!inherits(result, "zutempo_error")) {
-      break
-    }
-    i <- result[["index"]]
-    if (is.null(i) || is.na(x[i])) {
-      stop(result)
-    }
-    position <- result[["position"]]
-    errors[nrow(errors) + 1L, ] <- list(
-      i,
-      if (is.null(position)) NA_real_ else position,
-      class(result)[1L],
-      ztp_strip_element(conditionMessage(result))
-    )
-    x[i] <- NA_character_
-  }
-  errors[["message"]] <- ztp_strip_element(errors[["message"]])
   errors <- errors[order(errors[["index"]]), , drop = FALSE]
   rownames(errors) <- NULL
   attr(result, "parse_errors") <- errors
   result
+}
+
+# The zone of each zoned string, resolved once per distinct identifier:
+# one misspelt zone fails every element that names it. The grammar has
+# passed, so ztp_r_zoned_parse() does not fail. NULL when every zone is
+# known.
+ztp_parse_zones <- function(x) {
+  ids <- .Call(C_ztp_r_zoned_parse, x)[["tz"]]
+  groups <- split(seq_along(ids), factor(ids, levels = unique(ids)))
+  failed <- lapply(names(groups), function(id) {
+    hit <- groups[[id]]
+    tryCatch(
+      {
+        ztp_tz_ensure(id, index = hit[1L])
+        NULL
+      },
+      zutempo_error = function(e) {
+        list(
+          index = as.numeric(hit),
+          position = rep(NA_real_, length(hit)),
+          class = rep(class(e)[1L], length(hit)),
+          message = rep(conditionMessage(e), length(hit))
+        )
+      }
+    )
+  })
+  failed <- failed[!vapply(failed, is.null, TRUE)]
+  if (!length(failed)) {
+    return(NULL)
+  }
+  lapply(
+    c(
+      index = "index",
+      position = "position",
+      class = "class",
+      message = "message"
+    ),
+    function(f) unlist(lapply(failed, `[[`, f))
+  )
+}
+
+# The failures the constructor reports for strings that follow the
+# grammar: a value out of range, an offset that does not match its zone.
+# The constructor stops at the first, so x is read in chunks: a failure
+# becomes NA and its chunk is read again, and the chunk grows after a
+# success and shrinks after a failure. A chunk is then about as long as
+# the gap between failures, which makes the cost linear in length(x) and
+# in the number of failures.
+ztp_parse_values <- function(x, constructor, ...) {
+  n <- length(x)
+  index <- double()
+  position <- double()
+  class <- character()
+  message <- character()
+  start <- 1L
+  size <- 64L
+  while (start <= n) {
+    end <- min(n, start + size - 1L)
+    chunk <- x[start:end]
+    e <- tryCatch(
+      {
+        constructor(chunk, ...)
+        NULL
+      },
+      zutempo_error = function(e) e
+    )
+    if (is.null(e)) {
+      start <- end + 1L
+      size <- min(2L * size, n)
+      next
+    }
+    i <- e[["index"]]
+    if (is.null(i) || i > length(chunk) || is.na(chunk[i])) {
+      stop(e)
+    }
+    k <- length(index) + 1L
+    index[k] <- start + i - 1
+    position[k] <- if (is.null(e[["position"]])) NA_real_ else e[["position"]]
+    class[k] <- class(e)[1L]
+    message[k] <- conditionMessage(e)
+    x[start + i - 1L] <- NA_character_
+    size <- max(16L, size %/% 2L)
+  }
+  list(index = index, position = position, class = class, message = message)
 }
 
 #' The strings `zutempo_parse()` could not read

@@ -126,6 +126,13 @@ ztp_check_dots_empty <- function(...) {
   }
 }
 
+# R's bare NA: an unclassed logical vector of NAs. Where a Temporal value
+# is accepted it stands for a missing one (design 6.8), as in c() and
+# `[<-`.
+ztp_is_bare_na <- function(x) {
+  is.logical(x) && !is.object(x) && length(x) > 0L && all(is.na(x))
+}
+
 # A field argument: numeric, or a logical vector of NAs (R's bare NA).
 ztp_is_field_like <- function(x) {
   !ztp_is_atomic_class(x) && (is.numeric(x) || (is.logical(x) && all(is.na(x))))

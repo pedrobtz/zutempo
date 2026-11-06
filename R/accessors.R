@@ -63,14 +63,18 @@ ztp_constant_field <- function(x, value) {
 }
 
 # The function this generic masks, if an attached package or the global
-# environment has one; NULL otherwise.
+# environment has one; NULL otherwise. A function defined in zutempo's
+# namespace is zutempo's own, wherever it was found (`year <-
+# zutempo::year` in the global environment, a package that exports it
+# again), and calling it would recurse.
 ztp_find_masked <- function(name) {
+  ns <- topenv()
   for (i in seq_along(search())) {
     if (search()[[i]] == "package:zutempo") {
       next
     }
     fn <- get0(name, envir = pos.to.env(i), mode = "function", inherits = FALSE)
-    if (!is.null(fn)) {
+    if (!is.null(fn) && !identical(environment(fn), ns)) {
       return(fn)
     }
   }

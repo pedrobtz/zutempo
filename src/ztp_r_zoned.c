@@ -346,8 +346,11 @@ SEXP ztp_r_parse_offset_string(SEXP x)
         s = Rf_translateCharUTF8(STRING_ELT(x, i));
         len = strlen(s);
         /* Reuse the time grammar: "00:00" followed by the offset parses as
-           a time with an offset, and nothing else is accepted. */
-        if (len == 0 || len > 40 || (s[0] != '+' && s[0] != '-')) {
+           a time with an offset, and nothing else is accepted. The grammar
+           also reads annotations after the offset, which a UTCOffset does
+           not have, so a '[' is refused first. */
+        if (len == 0 || len > 40 || (s[0] != '+' && s[0] != '-') ||
+            memchr(s, '[', len) != NULL) {
             ztp_fail(&ctx, ZTP_ERR_RANGE, (size_t)i + 1, "\"%.40s\" is not a UTC offset", s);
             ztp_r_raise(&ctx);
         }

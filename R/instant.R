@@ -41,6 +41,9 @@ instant <- function(x) {
       as.double(as.POSIXct(x))
     )))
   }
+  if (ztp_is_bare_na(x)) {
+    x <- rep(NA_character_, length(x))
+  }
   if (!is.character(x)) {
     stop_zutempo(
       sprintf(

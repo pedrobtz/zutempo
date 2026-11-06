@@ -161,6 +161,22 @@ test_that("relative_to drives calendar units (design 6.5)", {
     duration_compare("P1M", "P30D", relative_to = "2026-01-01"),
     1L
   )
+  expect_identical(
+    duration_compare(
+      "P1M",
+      "P30D",
+      relative_to = c("2026-02-01", "2026-03-01", "2026-04-01")
+    ),
+    c(-1L, 1L, 0L)
+  )
+  expect_error(
+    duration_compare(
+      c("P1M", "P2M"),
+      "P30D",
+      relative_to = c("2026-02-01", "2026-03-01", "2026-04-01")
+    ),
+    class = "zutempo_type_error"
+  )
   expect_error(
     temporal_total(duration("P1M"), "day", relative_to = 5),
     class = "zutempo_type_error"
