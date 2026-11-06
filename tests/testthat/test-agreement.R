@@ -18,6 +18,11 @@ test_that("offsets agree with base R at every transition and sampled hours", {
   # alone. TZDIR is what both look at first.
   withr::local_envvar(TZDIR = zutempo_info()[["tzdir"]])
   ids <- agreement_zones()
+  # A walk that dropped most zones would leave little to compare. tzdata
+  # 2026f has 345 zones and 253 links; a database without the backward
+  # links (Debian's tzdata without tzdata-legacy) still has the zones.
+  expect_gt(length(ids), 300)
+  expect_contains(ids, c("America/New_York", "Europe/Dublin"))
   transitions <- agreement_transitions(ids)
   # Both sides of every transition, where offsets change, and every 997th
   # hour between them (a stride prime to the day and the week).

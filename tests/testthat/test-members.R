@@ -1,6 +1,7 @@
 # Every in-scope member of the pinned specification (inst/spec/members.csv,
 # written by tools/spec/members.R) has an exported R function under the
-# names of design 5. Members not yet built are listed in `pending`; each
+# names of design 5, and each method and property has an S3 method for its
+# type's class. Members not yet built are listed in `pending`; each
 # stage removes the members it builds, and stage 13 requires the vector to
 # be empty (design 15, criterion 3).
 
@@ -36,6 +37,36 @@ test_that("every in-scope member has an exported function, or is pending", {
   expect_identical(setdiff(setdiff(in_scope, pending), exports), character())
   # A member that has been built is no longer pending.
   expect_identical(intersect(pending, exports), character())
+})
+
+test_that("every in-scope method and property has a method for its type", {
+  members <- read.csv(
+    system.file("spec", "members.csv", package = "zutempo"),
+    stringsAsFactors = FALSE
+  )
+  members <- members[
+    members$in_scope & members$kind %in% c("method", "property"),
+  ]
+  # The class of a type: PlainDateTime is zutempo_plain_date_time.
+  class <- paste0(
+    "zutempo_",
+    tolower(gsub("([a-z])([A-Z])", "\\1_\\2", members$type))
+  )
+  # sign() reaches durations through the Math group generic, checked above.
+  generic <- ifelse(members$r_name == "sign", "Math", members$r_name)
+  found <- !vapply(
+    seq_len(nrow(members)),
+    function(i) {
+      is.null(getS3method(generic[i], class[i], optional = TRUE))
+    },
+    logical(1)
+  )
+  expect_identical(
+    paste(members$type, members$member)[!found],
+    character()
+  )
+  # The rows cover the eight classes.
+  expect_length(unique(class), 8L)
 })
 
 test_that("the member list covers the eight types and Now", {

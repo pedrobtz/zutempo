@@ -186,6 +186,13 @@ test_that("a parse error carries the position of the first bad byte", {
   )
   expect_s3_class(err, "zutempo_parse_error")
   expect_identical(err[["position"]], 28)
+  # Offset seconds with one digit, where the "[" stands for the second.
+  err <- tryCatch(
+    zoned_date_time("2026-03-07T12:00+01:00:5[+01:00]"),
+    error = identity
+  )
+  expect_s3_class(err, "zutempo_parse_error")
+  expect_identical(err[["position"]], 25)
   # A key annotation whose key stops before the "=".
   err <- tryCatch(plain_date("2026-01-31[u.ca=iso8601]"), error = identity)
   expect_s3_class(err, "zutempo_parse_error")

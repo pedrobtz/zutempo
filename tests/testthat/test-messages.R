@@ -13,6 +13,10 @@ test_that("a parse error names the element and the byte", {
   expect_snapshot(plain_date(c("2026-01-31", "2026-13-01")), error = TRUE)
   expect_snapshot(duration("P1Y1Q"), error = TRUE)
   expect_snapshot(plain_date("2026-01-31[!foo=bar]"), error = TRUE)
+  expect_snapshot(
+    zoned_date_time("2026-03-07T12:00+01:00:5[+01:00]"),
+    error = TRUE
+  )
 })
 
 test_that("a type error names the option and its choices", {
@@ -35,6 +39,54 @@ test_that("tz errors name the zone and where it was looked for", {
     .Call(zutempo:::C_ztp_r_tz_rule_utoff, "nonsense,,", 0),
     error = TRUE
   )
+})
+
+test_that("a damaged TZif file's tz error says what is wrong with it", {
+  withr::defer(zutempo_tz_reset())
+  expect_snapshot(tzif_load_damaged("too short for a header"), error = TRUE)
+  expect_snapshot(
+    tzif_load_damaged("a header with a bad version"),
+    error = TRUE
+  )
+  expect_snapshot(tzif_load_damaged("empty"), error = TRUE)
+  expect_snapshot(
+    tzif_load_damaged("truncated in the 32-bit block"),
+    error = TRUE
+  )
+  expect_snapshot(
+    tzif_load_damaged("a second header without its magic"),
+    error = TRUE
+  )
+  expect_snapshot(
+    tzif_load_damaged("truncated in the 64-bit block"),
+    error = TRUE
+  )
+  expect_snapshot(tzif_load_damaged("transitions not ascending"), error = TRUE)
+  expect_snapshot(
+    tzif_load_damaged("a transition type past the types"),
+    error = TRUE
+  )
+  expect_snapshot(
+    tzif_load_damaged("an abbreviation index past the characters"),
+    error = TRUE
+  )
+  expect_snapshot(
+    tzif_load_damaged("a footer without its closing newline"),
+    error = TRUE
+  )
+  expect_snapshot(
+    tzif_load_damaged("a footer that is not a TZ rule"),
+    error = TRUE
+  )
+})
+
+test_that("a mismatched offset is shown with its fraction of a second", {
+  with_tzdir(tz_fixture_dir("slim"), {
+    expect_snapshot(
+      zoned_date_time("2026-03-07T12:00+00:00:00.120[Europe/Dublin]"),
+      error = TRUE
+    )
+  })
 })
 
 test_that("with no database, the tz error lists every directory tried", {

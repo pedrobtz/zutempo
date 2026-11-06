@@ -22,7 +22,7 @@ test_that("parse and tz errors are range errors; type errors are not", {
 test_that("an index of zero means no element", {
   cond <- tryCatch(ztp_probe_fail("range", 0), error = identity)
   expect_null(cond[["index"]])
-  expect_no_match(conditionMessage(cond), "element")
+  # The message without "(element n)" is in test-messages.R.
 })
 
 test_that("an unknown kind from the engine is a type error", {

@@ -441,7 +441,7 @@ test_that("without a database, UTC and offsets work and named zones are tz error
   })
 })
 
-test_that("zutempo_info() describes the fixture databases and the real one", {
+test_that("zutempo_info() describes the fixture databases", {
   with_tzdir(tz_fixture_dir("slim"), {
     info <- zutempo_info()
     expect_identical(info$tzdir, tz_fixture_dir("slim"))
@@ -450,6 +450,57 @@ test_that("zutempo_info() describes the fixture databases and the real one", {
   })
   with_tzdir(tz_fixture_dir("fat"), {
     expect_identical(zutempo_info()$tz_form, "fat")
+  })
+})
+
+test_that("the tzdata version is read from each file that can give it", {
+  version_of <- function(files) {
+    dir <- withr::local_tempdir()
+    for (f in names(files)) {
+      writeLines(files[[f]], file.path(dir, f))
+    }
+    zutempo:::ztp_tz_version(dir)
+  }
+  # macOS's +VERSION, R's own VERSION, then tzdata.zi (Linux).
+  expect_identical(version_of(list("+VERSION" = "2026f")), "2026f")
+  expect_identical(version_of(list(VERSION = "2026b")), "2026b")
+  expect_identical(
+    version_of(list("tzdata.zi" = c("# version 2026a", "R Barb 1932 o -"))),
+    "2026a"
+  )
+  expect_identical(
+    version_of(list("+VERSION" = "2026f", "tzdata.zi" = "# version 2026a")),
+    "2026f"
+  )
+  # An empty VERSION says nothing, and tzdata.zi is read instead.
+  expect_identical(
+    version_of(list(VERSION = "", "tzdata.zi" = "# version 2026a")),
+    "2026a"
+  )
+  expect_identical(
+    version_of(list("tzdata.zi" = "R Barb 1932 o -")),
+    NA_character_
+  )
+  expect_identical(version_of(list()), NA_character_)
+  expect_identical(zutempo:::ztp_tz_version(NA_character_), NA_character_)
+})
+
+test_that("zutempo_info() reads the version from tzdata.zi", {
+  dir <- file.path(withr::local_tempdir(), "zoneinfo")
+  dir.create(dir)
+  file.copy(
+    list.files(tz_fixture_dir("slim"), full.names = TRUE),
+    dir,
+    recursive = TRUE
+  )
+  writeLines(
+    c("# version 2026a", "R Barb 1932 o -"),
+    file.path(dir, "tzdata.zi")
+  )
+  with_tzdir(dir, {
+    expect_identical(zutempo_info()[["tz_version"]], "2026a")
+    # tzdata.zi is not a zone.
+    expect_false("tzdata.zi" %in% zutempo:::ztp_tz_current()[["index"]][["id"]])
   })
 })
 
@@ -516,36 +567,9 @@ test_that("a damaged TZif file is a tz error, not a crash", {
     c(timecnt = 9, typecnt = 3)
   )
   expect_identical(rawToChar(bytes[at$footer:length(bytes)]), "\nJST-9\n")
-  patch <- function(offset, value) {
-    b <- bytes
-    b[offset + seq_along(value) - 1L] <- as.raw(value)
-    b
-  }
-  # The second transition equal to the first.
-  repeated <- patch(at$times + 8L, as.integer(bytes[at$times + 0:7]))
-  damaged <- list(
-    "too short for a header" = bytes[1:20],
-    "a header with a bad version" = as.raw(c(
-      0x54,
-      0x5a,
-      0x69,
-      0x66,
-      0x32,
-      rep(0xff, 60)
-    )),
-    "empty" = raw(0),
-    "truncated in the 32-bit block" = bytes[seq_len(at$header2 + 10L)],
-    "a second header without its magic" = patch(at$header2 + 3L, 0x58),
-    "truncated in the 64-bit block" = bytes[seq_len(length(bytes) - 40L)],
-    "transitions not ascending" = repeated,
-    "a transition type past the types" = patch(at$idx, 3L),
-    "an abbreviation index past the characters" = patch(at$types + 5L, 12L),
-    "a footer without its closing newline" = bytes[-length(bytes)],
-    "a footer that is not a TZ rule" = c(
-      bytes[seq_len(at$footer)],
-      charToRaw("nonsense,,\n")
-    )
-  )
+  # The messages, which tell the damage apart, are in test-messages.R.
+  damaged <- tzif_damaged()
+  expect_length(damaged, 11L)
   for (what in names(damaged)) {
     expect_error(
       .Call(zutempo:::C_ztp_r_tz_load, "Fuzz/Zone", damaged[[what]]),
@@ -554,6 +578,44 @@ test_that("a damaged TZif file is a tz error, not a crash", {
     )
   }
   expect_silent(.Call(zutempo:::C_ztp_r_tz_load, "Fuzz/Zone", bytes))
+})
+
+test_that("two candidate instants found out of order are sorted", {
+  # A zone that moves to +01:00 two hours before a local noon, back to
+  # +00:00 half an hour before it, and to +01:00 again an hour after. Noon
+  # is then 11:00Z under +01:00 and 12:00Z under +00:00. The offsets
+  # probed a day either side are +00:00 and then +01:00, so the later
+  # instant is found first; "earlier" must still give the earlier one.
+  noon <- as.numeric(as.POSIXct("2026-03-07 12:00:00", tz = "UTC"))
+  dir <- file.path(withr::local_tempdir(), "zoneinfo")
+  dir.create(file.path(dir, "Test"), recursive = TRUE)
+  writeBin(
+    tzif_v1_transitions(
+      times = noon + c(-7200, -1800, 3600),
+      idx = c(1L, 0L, 1L),
+      utoffs = c(0, 3600)
+    ),
+    file.path(dir, "Test", "Zone")
+  )
+  with_tzdir(dir, {
+    p <- plain_date_time("2026-03-07T12:00")
+    expect_identical(
+      format(temporal_to_zoned_date_time(
+        p,
+        "Test/Zone",
+        disambiguation = "earlier"
+      )),
+      "2026-03-07T12:00:00+01:00[Test/Zone]"
+    )
+    expect_identical(
+      format(temporal_to_zoned_date_time(
+        p,
+        "Test/Zone",
+        disambiguation = "later"
+      )),
+      "2026-03-07T12:00:00+00:00[Test/Zone]"
+    )
+  })
 })
 
 test_that("the database is looked up once per setting, and again after a reset", {
