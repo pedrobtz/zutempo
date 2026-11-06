@@ -57,7 +57,9 @@
   whose fields are not ten doubles of one length or not a valid duration.
   `d$hours <- value` on a duration is always a type error. With a duration
   as the value it used to append an element.
-  The native routines also check the type and length of every argument.
+  The native routines also check the type and length of every argument,
+  before they read it, and the range of every option code and rounding
+  increment.
 * Condition messages are marked as UTF-8, and an excerpt of the input that
   they quote is never cut inside a character.
 * The time zone file reader refuses an abbreviation index past the
