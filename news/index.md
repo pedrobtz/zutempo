@@ -2,12 +2,37 @@
 
 ## zutempo 0.0.0.9000
 
+- [`now_time_zone_id()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)
+  warns with a `zutempo_tz_warning` when
+  [`Sys.timezone()`](https://rdrr.io/r/base/timezones.html) fails with
+  an error or a warning, and falls back to `"UTC"` as it does for a zone
+  it cannot read. It used to fall back silently.
+
+- [`?zutempo_tz_reset`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md)
+  documents that on macOS the first read of the system zone can move
+  zutempo from R’s copy of the database to the system’s: base R’s
+  [`Sys.timezone()`](https://rdrr.io/r/base/timezones.html) sets
+  `TZDIR`, and zutempo follows it.
+
+- `tz = ""` is the system time zone in
+  [`as.Date()`](https://rdrr.io/r/base/as.Date.html) and
+  [`as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html) of an
+  [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md)
+  or a
+  [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md),
+  as it is in base R. It was a `zutempo_parse_error`.
+
+- An ill-formed time zone identifier, such as `"Europe/Par is"`, is
+  reported as one. The message said what an ISO string would have needed
+  instead: “expected a four-digit year”.
+
 - [`temporal_total()`](https://pedrobtz.github.io/zutempo/reference/temporal_total.md)
   is the nearest double to the exact quotient, with or without
   `relative_to`, as the specification requires. It added the fraction to
   the whole units in doubles, which rounded twice:
   `temporal_total(duration("PT3.581337223S"), "seconds")` was
   `3.5813372230000002`, and totals above 2^53 could be off by 2.
+
 - [`abs()`](https://rdrr.io/r/base/MathFun.html),
   [`round()`](https://rdrr.io/r/base/Round.html),
   [`signif()`](https://rdrr.io/r/base/Round.html),
@@ -16,35 +41,43 @@
   the rest of the `Complex` group, are a `zutempo_type_error` on dates
   and times. Before, they ran on the stored numbers and gave wrong
   values: `abs(plain_date("1960-01-01"))` was `1980-01-02`.
+
 - An accessor such as
   [`year()`](https://pedrobtz.github.io/zutempo/reference/temporal_fields.md)
   no longer recurses when zutempo’s own generic is found again on the
   search path, as after `year <- zutempo::year`.
+
 - [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
   recycles `relative_to` with `x` and `y`, so a `relative_to` of length
   3 gives three results instead of one. A length that does not recycle
   is a `zutempo_type_error`.
+
 - An `offset_string` with an annotation, such as
   `"+01:00[u-ca=iso8601]"`, is a `zutempo_range_error`, as it is in
   Temporal.
+
 - [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
   recycles `offset_string` with the fields, where a longer
   `offset_string` was an internal error.
+
 - [`zutempo_parse()`](https://pedrobtz.github.io/zutempo/reference/zutempo_parse.md)
   takes time linear in the length of its input and in the number of
   failures. A misspelt zone is looked up once, not once per string that
   names it; 8,000 zoned strings with 4,000 bad zones took ten seconds
   and now take a few hundredths.
+
 - A bare `NA` stands for a missing value wherever a date, time or
   duration is accepted: `plain_date(NA)`, `instant(NA)` and
   `zoned_date_time(NA)` are `NA`, and so are `temporal_until(d, NA)`,
   `temporal_add(d, NA)` and `instant_compare(i, NA)`. They were type
   errors.
+
 - The help pages now say what every accessor returns, that
   [`duration_compare()`](https://pedrobtz.github.io/zutempo/reference/duration.md)
   takes a zoned `relative_to`, and which base R classes each constructor
   converts. They no longer cite sections of the internal design
   document.
+
 - A value that no constructor made is now a `zutempo_type_error` instead
   of a crash or a wrong result: a
   [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
@@ -53,21 +86,28 @@
   [`diff()`](https://rdrr.io/r/base/diff.html) can leave them), an
   instant with a fractional part, a plain value outside its type’s
   range, and a duration whose fields are not ten doubles of one length
-  or not a valid duration. `d$hours <- 5` on a duration is a type error,
-  as `d[["hours"]] <- 5` was. The native routines also check the type
-  and length of every argument.
+  or not a valid duration. `d$hours <- value` on a duration is always a
+  type error. With a duration as the value it used to append an element.
+  The native routines also check the type and length of every argument,
+  before they read it, and the range of every option code and rounding
+  increment.
+
 - Condition messages are marked as UTF-8, and an excerpt of the input
   that they quote is never cut inside a character.
+
 - The time zone file reader refuses an abbreviation index past the
   abbreviations, a UTC offset of a day or more, and a TZ rule
   abbreviation with characters other than letters, digits, `+` and `-`.
+
 - The zone cache is freed when the package’s DLL unloads, and loading
   the package again no longer adds a second copy of its `vctrs` and
   `pillar` hooks.
+
 - An error about an option argument has a field `option` with the
   argument’s name, so code can tell which option was wrong without
   reading the message:
   `tryCatch(..., zutempo_error = function(e) e[["option"]])`.
+
 - Operators on dates and times are a `zutempo_type_error` that names the
   function to use, such as
   [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md)
@@ -85,10 +125,12 @@
   has no order, so they are errors there, as
   [`sum()`](https://rdrr.io/r/base/sum.html) and the others are on every
   type.
+
 - The system time zone reads `TZ` in the forms the C library accepts: a
   leading `:` is dropped, and a path under a zone directory names its
   zone. A zone that is set but cannot be read gives `"UTC"` with a
   `zutempo_tz_warning`, where before it gave `"UTC"` silently.
+
 - [`as.POSIXct()`](https://rdrr.io/r/base/as.POSIXlt.html) and
   [`as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html) of a zoned
   value give an offset of `-13:00` or `-14:00` the `tzone` `"UTC"`
@@ -97,6 +139,7 @@
   and `Asia/Kolkata`. The help page says that
   [`as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html) of mixed
   zones does not round-trip.
+
 - Documentation: a README from Temporal to R, a table of every Temporal
   member and its R function on each type’s help page,
   [`?zutempo_options`](https://pedrobtz.github.io/zutempo/reference/zutempo_options.md)
@@ -104,6 +147,7 @@
   website: “Get started”, following one zoned value from construction to
   base R, and articles on plain dates and times, durations, instants and
   time zones, strings and formatting, and base R and data frames.
+
 - Checked against test262’s Temporal tests (39,263 cases from 2,715
   files) and against base R’s offsets for every zone. Fixes from that:
   the constructors read a
@@ -117,14 +161,17 @@
   valid date; a time zone string whose offset has seconds is an error
   even when they are zero; and a duration field computed from a large
   total is the nearest double.
+
 - On macOS the time zone database is R’s own copy first, then the
   system’s, as base R reads it, so zutempo and `POSIXct` agree;
   `TZDIR = "macOS"` selects the system’s.
+
 - Operations on zoned values no longer look for the time zone database
   on every call: the directory is found once per setting of
   `zutempo.tzdir` and `TZDIR`, and again after
   [`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md).
   Many short calls run several times faster.
+
 - Conversions with base R’s dates and times:
   [`as.Date()`](https://rdrr.io/r/base/as.Date.html),
   [`as.POSIXct()`](https://rdrr.io/r/base/as.POSIXlt.html) and
@@ -141,6 +188,7 @@
   `duration(<difftime>)`. A `POSIXct` is read at its double’s exact
   value, rounded half to even to the nanosecond, and written as the
   nearest double second.
+
 - Strings are read with every RFC 9557 annotation: any number of
   key-value annotations after the time zone, `[u-ca=iso8601]` in any
   case, and the `!` critical flag, which makes an unknown annotation or
@@ -152,6 +200,7 @@
   as in Temporal. A `zutempo_parse_error` carries `position`, the byte
   where the string failed. Time zone and calendar arguments take an ISO
   string that names one (`time_zone = "2026-03-07T12:00+01:00"`).
+
 - [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
   and [`format()`](https://rdrr.io/r/base/format.html) take the options
   of each type’s Temporal
@@ -160,10 +209,12 @@
   types with a time and on durations, `calendar_name` on the types with
   a date, and `time_zone_name` and `offset` on a
   [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md).
+
 - `zutempo_parse(x, type)` reads a character vector as any of the eight
   types, with `NA` for the strings it cannot read, and
   [`zutempo_parse_errors()`](https://pedrobtz.github.io/zutempo/reference/zutempo_parse_errors.md)
   lists them with their index, byte position, class and message.
+
 - Zone-aware arithmetic:
   [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
   [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
@@ -186,6 +237,7 @@
   [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md)
   as `relative_to`, where days follow the zone (`PT25H` rounded to days
   relative to 2026-03-07 in New York is `P1DT2H`).
+
 - [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md):
   Temporal’s `ZonedDateTime` as an R vector with a time zone per
   element, from RFC 9557 strings with the zone in brackets
@@ -225,6 +277,7 @@
   [`now_plain_time_iso()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md).
   Mixed zones combine, subset, sort and sit in data frames; `vctrs` sees
   a record of instant and zone.
+
 - Named IANA time zones resolve from the time zone database base R
   reads, in base R’s lookup order (option `zutempo.tzdir`, `TZDIR`, then
   the platform’s copies), on fat and slim files alike, with
@@ -239,6 +292,7 @@
   reports the database’s directory, tzdata version and form (fat or
   slim) and the link table’s version. A named zone without a database is
   a `zutempo_tz_error` naming the directories tried.
+
 - [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md):
   Temporal’s `Instant` over its full range, from strings with `Z` or an
   offset,
@@ -260,6 +314,7 @@
   [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md)
   with a `time_zone` of `"UTC"` or a fixed offset;
   [`now_instant()`](https://pedrobtz.github.io/zutempo/reference/now_instant.md).
+
 - [`duration()`](https://pedrobtz.github.io/zutempo/reference/duration.md):
   Temporal’s `Duration` as an R vector of ten exact fields, from fields
   or ISO 8601 strings, with
@@ -282,6 +337,7 @@
   calendar units take `relative_to`. `==` compares fields, and `<` and
   [`sort()`](https://rdrr.io/r/base/sort.html) order durations free of
   calendar units.
+
 - [`temporal_add()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
   [`temporal_subtract()`](https://pedrobtz.github.io/zutempo/reference/temporal_add.md),
   [`temporal_since()`](https://pedrobtz.github.io/zutempo/reference/temporal_until.md)
@@ -295,6 +351,7 @@
   [`plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md),
   with `overflow`, `largest_unit`, `smallest_unit`, `rounding_increment`
   and `rounding_mode`.
+
 - [`plain_year_month()`](https://pedrobtz.github.io/zutempo/reference/plain_year_month.md)
   and
   [`plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/plain_month_day.md):
@@ -312,6 +369,7 @@
   [`temporal_to_plain_month_day()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_plain_date.md)
   on a
   [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md).
+
 - [`plain_date()`](https://pedrobtz.github.io/zutempo/reference/plain_date.md),
   [`plain_time()`](https://pedrobtz.github.io/zutempo/reference/plain_time.md)
   and
@@ -338,11 +396,13 @@
   [`temporal_to_string()`](https://pedrobtz.github.io/zutempo/reference/temporal_to_string.md).
   The vectors subset, combine, sort, print and sit in data frames;
   `vctrs` and `pillar` methods register when those packages load.
+
 - [`zutempo_info()`](https://pedrobtz.github.io/zutempo/reference/zutempo_info.md)
   reports the package and `zufast` versions, whether the 128-bit
   arithmetic uses the compiler’s `__int128`, and the pinned commits of
   the Temporal specification and of test262 with the tzdata release the
   fixtures come from.
+
 - The condition classes of the design: `zutempo_error`,
   `zutempo_range_error`, `zutempo_parse_error`, `zutempo_type_error` and
   `zutempo_tz_error`, each carrying the index of the first failing

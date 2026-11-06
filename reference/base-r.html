@@ -117,8 +117,9 @@ constructors: <code>plain_date(&lt;Date&gt;)</code>, <code>instant(&lt;POSIXct&g
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
 <dd><p>A time zone: for an <code><a href="instant.html">instant()</a></code>, the zone to show it in (the
 default is <code>"UTC"</code>); for a <code><a href="plain_date_time.html">plain_date_time()</a></code>, the zone its wall-clock
-time is in, which has no default (<code>""</code> is the system zone); for a
-<code><a href="zoned_date_time.html">zoned_date_time()</a></code>, a zone to show it in instead of its own.</p></dd>
+time is in, which has no default; for a <code><a href="zoned_date_time.html">zoned_date_time()</a></code>, a zone to
+show it in instead of its own. <code>""</code> is the system zone, as in base R
+(<code><a href="now_time_zone_id.html">now_time_zone_id()</a></code>).</p></dd>
 
 
 <dt id="arg-disambiguation">disambiguation<a class="anchor" aria-label="anchor" href="#arg-disambiguation"></a></dt>

@@ -78,7 +78,9 @@ exists), <code>tz_version</code>, the tzdata release it declares, <code>tz_form<
 whether its files carry explicit transitions far into the future
 (<code>"fat"</code>) or stop at the last rule change (<code>"slim"</code>), and
 <code>tz_links_version</code>, the tzdata release the built-in link table comes
-from.</p>
+from. The directory follows <code>TZDIR</code>, which base R's <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">Sys.timezone()</a></code>
+sets on macOS, so it can change once the system zone has been read (see
+<code><a href="zutempo_tz_reset.html">zutempo_tz_reset()</a></code>).</p>
     </div>
 
     <div class="section level2">

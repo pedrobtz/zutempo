@@ -35,15 +35,20 @@ now_plain_time_iso(time_zone = NULL)
 
 ## Details
 
-The system time zone is read as the C library that base R formats with
-reads it. The `TZ` environment variable comes first, without a leading
-`:`; a path under a zone directory, such as
-`/usr/share/zoneinfo/Europe/Berlin`, names the zone at that path.
+Base R formats times with the C library. zutempo reads the system time
+zone the same way the C library does. The `TZ` environment variable
+comes first, without a leading `:`; a path under a zone directory, such
+as `/usr/share/zoneinfo/Europe/Berlin`, names the zone at that path.
 Without `TZ` it is
 [`Sys.timezone()`](https://rdrr.io/r/base/timezones.html), and without
 either it is `"UTC"`. A zone that is set but cannot be read, such as a
 POSIX TZ string or a zone the database lacks, gives `"UTC"` with a
-warning of class `zutempo_tz_warning`.
+warning of class `zutempo_tz_warning`. So does a
+[`Sys.timezone()`](https://rdrr.io/r/base/timezones.html) that fails
+with an error or a warning. On macOS,
+[`Sys.timezone()`](https://rdrr.io/r/base/timezones.html) can also
+change the database zutempo reads (see
+[`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md)).
 
 ## Members
 
@@ -67,14 +72,14 @@ now_time_zone_id()
 #> [1] "UTC"
 now_zoned_date_time_iso()
 #> <zutempo_zoned_date_time[1]>
-#> [1] 2026-11-06T10:52:45.222862244+00:00[UTC]
+#> [1] 2026-11-06T13:47:29.540010214+00:00[UTC]
 now_plain_date_time_iso("Asia/Tokyo")
 #> <zutempo_plain_date_time[1]>
-#> [1] 2026-11-06T19:52:45.228387356
+#> [1] 2026-11-06T22:47:29.566410065
 now_plain_date_iso("Pacific/Auckland")
 #> <zutempo_plain_date[1]>
-#> [1] 2026-11-06
+#> [1] 2026-11-07
 now_plain_time_iso("UTC")
 #> <zutempo_plain_time[1]>
-#> [1] 10:52:45.234561443
+#> [1] 13:47:29.572098732
 ```

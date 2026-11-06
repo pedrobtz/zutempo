@@ -67,6 +67,15 @@ again, for a database that appeared or changed under a running session.</p>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>NULL</code>, invisibly.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>On macOS, base R's <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">Sys.timezone()</a></code> sets <code>TZDIR</code> to the system's
+database the first time it runs. zutempo follows <code>TZDIR</code>, so that it
+reads the database base R formats with. The first call that reads the
+system zone, such as <code><a href="now_time_zone_id.html">now_time_zone_id()</a></code> or a conversion with
+<code>tz = ""</code>, can therefore move zutempo from R's own copy to the system's
+and clear the cache. <code><a href="zutempo_info.html">zutempo_info()</a></code> shows the database in use.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

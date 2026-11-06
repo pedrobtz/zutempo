@@ -173,7 +173,7 @@
 <strong>Borrow a conformance suite before writing one.</strong> The oracle is <code>temporal-polyfill</code> under Node (<code>tools/temporal-oracle/</code>, from stage 1), checked against Node 26’s native Temporal; test262’s result assertions are translated in stage 11. Zone cases run against committed TZif fixtures from a pinned tzdata release, not the machine’s database.</li>
 <li><strong>Tests that need the machine’s database skip when it is missing.</strong></li>
 <li>
-<strong>Helpers live in <code>tests/testthat/helper-*.R</code>.</strong> <code>helper-oracle.R</code> reads an oracle JSON file (<code>oracle_cases()</code>) and holds one checker per type (<code>oracle_check_plain_date()</code>, …), which skips until that type’s constructor exists. <code>test-oracle-&lt;type&gt;.R</code> loops the cases through it.</li>
+<strong>Helpers live in <code>tests/testthat/helper-*.R</code>.</strong> <code>helper-oracle.R</code> reads an oracle JSON file (<code>oracle_cases()</code>) and holds one checker per type (<code>oracle_check_plain_date()</code>, …), which compares results exactly. <code>test-oracle-&lt;type&gt;.R</code> loops the cases through it.</li>
 <li>
 <strong><code>test-members.R</code> is the member ledger.</strong> When a stage exports a member, remove its name from <code>pending</code> there; the test fails otherwise.</li>
 <li>

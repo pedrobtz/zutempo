@@ -26,7 +26,11 @@ directory found by base R's lookup order (`NA` when none exists),
 `tz_version`, the tzdata release it declares, `tz_form`, whether its
 files carry explicit transitions far into the future (`"fat"`) or stop
 at the last rule change (`"slim"`), and `tz_links_version`, the tzdata
-release the built-in link table comes from.
+release the built-in link table comes from. The directory follows
+`TZDIR`, which base R's
+[`Sys.timezone()`](https://rdrr.io/r/base/timezones.html) sets on macOS,
+so it can change once the system zone has been read (see
+[`zutempo_tz_reset()`](https://pedrobtz.github.io/zutempo/reference/zutempo_tz_reset.md)).
 
 ## Examples
 

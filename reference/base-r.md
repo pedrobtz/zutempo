@@ -68,10 +68,11 @@ temporal_to_difftime(x, ..., relative_to = NULL)
   [`instant()`](https://pedrobtz.github.io/zutempo/reference/instant.md),
   the zone to show it in (the default is `"UTC"`); for a
   [`plain_date_time()`](https://pedrobtz.github.io/zutempo/reference/plain_date_time.md),
-  the zone its wall-clock time is in, which has no default (`""` is the
-  system zone); for a
+  the zone its wall-clock time is in, which has no default; for a
   [`zoned_date_time()`](https://pedrobtz.github.io/zutempo/reference/zoned_date_time.md),
-  a zone to show it in instead of its own.
+  a zone to show it in instead of its own. `""` is the system zone, as
+  in base R
+  ([`now_time_zone_id()`](https://pedrobtz.github.io/zutempo/reference/now_time_zone_id.md)).
 
 - disambiguation:
 
