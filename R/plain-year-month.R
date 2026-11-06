@@ -55,6 +55,13 @@ plain_year_month <- function(
       ov
     ))
   }
+  if (
+    ztp_is_bare_na(year) &&
+      is.null(month) &&
+      is.null(month_code)
+  ) {
+    return(plain_year_month(rep(NA_character_, length(year))))
+  }
   if (is.character(year)) {
     ztp_check_no_fields(month, NULL, month_code)
     return(new_plain_year_month(.Call(C_ztp_r_plain_year_month_parse, year)))

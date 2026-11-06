@@ -68,6 +68,14 @@ plain_date_time <- function(
     ztp_check_no_fields(month, day, month_code)
     return(temporal_to_plain_date_time(year))
   }
+  if (
+    ztp_is_bare_na(year) &&
+      is.null(month) &&
+      is.null(day) &&
+      is.null(month_code)
+  ) {
+    return(plain_date_time(rep(NA_character_, length(year))))
+  }
   if (is.character(year)) {
     ztp_check_no_fields(month, day, month_code)
     return(new_plain_date_time(.Call(C_ztp_r_plain_date_time_parse, year)))

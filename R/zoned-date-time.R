@@ -95,6 +95,14 @@ zoned_date_time <- function(
     ztp_check_no_fields(month, day, month_code)
     return(ztp_zoned_from_posix(year, time_zone))
   }
+  if (
+    ztp_is_bare_na(year) &&
+      is.null(month) &&
+      is.null(day) &&
+      is.null(month_code)
+  ) {
+    return(zoned_date_time(rep(NA_character_, length(year))))
+  }
   if (is.character(year)) {
     ztp_check_no_fields(month, day, month_code)
     if (!is.null(time_zone)) {

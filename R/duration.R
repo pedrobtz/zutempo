@@ -111,6 +111,9 @@ ztp_as_duration <- function(x) {
   if (inherits(x, "zutempo_duration")) {
     return(x)
   }
+  if (ztp_is_bare_na(x)) {
+    x <- rep(NA_character_, length(x))
+  }
   if (!is.character(x)) {
     stop_zutempo(
       sprintf(
@@ -165,6 +168,9 @@ ztp_relative_to <- function(relative_to, n) {
       ),
       kind = "type"
     )
+  }
+  if (ztp_is_bare_na(relative_to)) {
+    relative_to <- plain_date(relative_to)
   }
   if (is.character(relative_to)) {
     check <- .Call(
