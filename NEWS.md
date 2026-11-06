@@ -5,6 +5,9 @@
   `zutempo_type_error` on dates and times. Before, they ran on the stored
   numbers and gave wrong values: `abs(plain_date("1960-01-01"))` was
   `1980-01-02`.
+* An accessor such as `year()` no longer recurses when zutempo's own
+  generic is found again on the search path, as after
+  `year <- zutempo::year`.
 * The help pages now say what every accessor returns, that
   `duration_compare()` takes a zoned `relative_to`, and which base R
   classes each constructor converts. They no longer cite sections of the

@@ -143,3 +143,14 @@ test_that("an accessor with nothing to fall back to is a type error", {
     class = "zutempo_type_error"
   )
 })
+
+test_that("an accessor does not fall back to its own generic", {
+  env <- new.env()
+  env$year <- zutempo::year
+  attach(env, name = "local:zutempo_own", warn.conflicts = FALSE)
+  withr::defer(detach("local:zutempo_own"))
+  expect_error(
+    zutempo::year(structure(1, class = "zutempo_nothing")),
+    class = "zutempo_type_error"
+  )
+})
