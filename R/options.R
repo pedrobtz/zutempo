@@ -188,6 +188,18 @@ ztp_increment_value <- function(rounding_increment) {
   as.double(increment)
 }
 
+# The increment for rounding to the unit with code `smallest`, as since(),
+# until() and a duration's round() check it: below the unit's maximum,
+# which a date unit does not have.
+ztp_unit_increment <- function(rounding_increment, smallest) {
+  maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
+  if (is.na(maximum)) {
+    ztp_increment_value(rounding_increment)
+  } else {
+    ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
+  }
+}
+
 # "Maximum duration rounding increment" of the units table.
 ztp_unit_maximum <- c(
   hour = 24,

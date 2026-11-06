@@ -497,12 +497,7 @@ temporal_round.zutempo_duration <- function(
     ztp_unit_auto
   }
   mode <- ztp_rounding_mode_code(rounding_mode)
-  maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
-  increment <- if (is.na(maximum)) {
-    ztp_increment_value(rounding_increment)
-  } else {
-    ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
-  }
+  increment <- ztp_unit_increment(rounding_increment, smallest)
   if (largest != ztp_unit_auto && largest > smallest) {
     stop_zutempo(
       "`largest_unit` must not be smaller than `smallest_unit`",

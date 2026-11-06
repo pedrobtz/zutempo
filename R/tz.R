@@ -152,13 +152,13 @@ ztp_tz_index <- function(dir) {
 ztp_tz_current <- function() {
   found <- ztp_tz_candidates()
   key <- if (is.na(found[["dir"]])) "" else found[["dir"]]
-  if (!identical(ztp_tz_state$key, key)) {
+  if (!identical(ztp_tz_state[["key"]], key)) {
     ztp_tz_reset_state()
-    ztp_tz_state$key <- key
-    ztp_tz_state$dir <- found[["dir"]]
-    ztp_tz_state$tried <- found[["tried"]]
-    ztp_tz_state$version <- ztp_tz_version(found[["dir"]])
-    ztp_tz_state$index <- if (is.na(found[["dir"]])) {
+    ztp_tz_state[["key"]] <- key
+    ztp_tz_state[["dir"]] <- found[["dir"]]
+    ztp_tz_state[["tried"]] <- found[["tried"]]
+    ztp_tz_state[["version"]] <- ztp_tz_version(found[["dir"]])
+    ztp_tz_state[["index"]] <- if (is.na(found[["dir"]])) {
       NULL
     } else {
       ztp_tz_index(found[["dir"]])
@@ -210,7 +210,7 @@ ztp_tz_ensure <- function(id, index = NULL) {
     return(.Call(C_ztp_r_zone_normalise, id))
   }
   state <- ztp_tz_current()
-  if (is.null(state$index)) {
+  if (is.null(state[["index"]])) {
     stop_zutempo(
       sprintf(
         "no time zone database was found for \"%s\"; looked in %s",
@@ -221,7 +221,7 @@ ztp_tz_ensure <- function(id, index = NULL) {
       index = index
     )
   }
-  hit <- match(tolower(id), state$index[["lower"]])
+  hit <- match(tolower(id), state[["index"]][["lower"]])
   if (is.na(hit)) {
     stop_zutempo(
       sprintf(
@@ -233,7 +233,7 @@ ztp_tz_ensure <- function(id, index = NULL) {
       index = index
     )
   }
-  canonical <- state$index[["id"]][hit]
+  canonical <- state[["index"]][["id"]][hit]
   if (!.Call(C_ztp_r_tz_loaded, canonical)) {
     path <- file.path(state[["dir"]], canonical)
     bytes <- readBin(path, "raw", n = file.size(path))
@@ -269,11 +269,11 @@ ztp_tz_ensure_all <- function(ids) {
 # off a zone with DST rules; NA without a database or such a zone.
 ztp_tz_form <- function() {
   state <- ztp_tz_current()
-  if (is.null(state$index)) {
+  if (is.null(state[["index"]])) {
     return(NA_character_)
   }
   for (zone in c("America/New_York", "Europe/London", "Australia/Sydney")) {
-    if (tolower(zone) %in% state$index[["lower"]]) {
+    if (tolower(zone) %in% state[["index"]][["lower"]]) {
       id <- ztp_tz_ensure(zone)
       last <- .Call(C_ztp_r_tz_last_explicit, id)
       if (is.na(last)) {

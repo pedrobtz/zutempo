@@ -25,15 +25,16 @@ ztp_ops_classes <- c(
   "zutempo_zoned_date_time"
 )
 
-# The constructor name of a value's class, for messages.
+# The constructor name of a value's class, for messages: "plain_date" for
+# a plain_date().
 ztp_type_name <- function(x) {
-  cls <- oldClass(x)[1L]
-  paste0(sub("^zutempo_", "", cls), "()")
+  sub("^zutempo_", "", oldClass(x)[1L])
 }
 
 ztp_ops <- function(generic, e1, e2) {
   x <- if (inherits(e1, ztp_ops_classes)) e1 else e2
-  type <- ztp_type_name(x)
+  name <- ztp_type_name(x)
+  type <- paste0(name, "()")
   hint <- if (generic %in% c("+", "-")) {
     "use temporal_add() or temporal_subtract()"
   } else if (generic %in% c("==", "!=")) {
@@ -42,7 +43,7 @@ ztp_ops <- function(generic, e1, e2) {
     if (inherits(x, "zutempo_plain_month_day")) {
       "a plain_month_day() has no order; use temporal_equals()"
     } else {
-      sprintf("use %s_compare()", sub("\\(\\)$", "", type))
+      sprintf("use %s_compare()", name)
     }
   } else {
     NULL
@@ -74,7 +75,7 @@ Ops.zutempo_zoned_date_time <- function(e1, e2) ztp_ops(.Generic, e1, e2)
 # The Math and Complex groups. round() and its kin name temporal_round()
 # where the type has one.
 ztp_math <- function(generic, x) {
-  type <- ztp_type_name(x)
+  type <- paste0(ztp_type_name(x), "()")
   rounds <- inherits(
     x,
     c(
@@ -136,7 +137,7 @@ ztp_choose_ops_method <- function(x, y, mx, my, cl, reverse) TRUE
 
 ztp_summary <- function(generic, args, na.rm) {
   x <- args[[1L]]
-  type <- ztp_type_name(x)
+  type <- paste0(ztp_type_name(x), "()")
   if (!generic %in% c("min", "max", "range")) {
     stop_zutempo(
       sprintf("`%s()` is not defined for a %s", generic, type),
@@ -157,13 +158,13 @@ ztp_summary <- function(generic, args, na.rm) {
     x <- do.call(c, args)
   }
   key <- xtfrm(x)
-  missing <- is.na(key)
-  if (any(missing)) {
+  na <- is.na(key)
+  if (any(na)) {
     if (!na.rm) {
       return(x[rep(NA_integer_, if (generic == "range") 2L else 1L)])
     }
-    x <- x[!missing]
-    key <- key[!missing]
+    x <- x[!na]
+    key <- key[!na]
   }
   if (!length(x)) {
     stop_zutempo(

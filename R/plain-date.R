@@ -194,33 +194,6 @@ temporal_with.zutempo_plain_date <- function(x, ..., overflow = "constrain") {
   ))
 }
 
-# CalendarMergeFields then CalendarResolveFields for the ISO calendar.
-ztp_merge_date_fields <- function(current, fields) {
-  year <- if (!is.null(fields[["year"]])) {
-    ztp_as_field(fields[["year"]], "year")
-  } else {
-    current[["year"]]
-  }
-  day <- if (!is.null(fields[["day"]])) {
-    ztp_as_field(fields[["day"]], "day")
-  } else {
-    current[["day"]]
-  }
-  if (is.null(fields[["month"]]) && is.null(fields[["month_code"]])) {
-    return(ztp_recycle(list(
-      year = year,
-      month = current[["month"]],
-      day = day
-    )))
-  }
-  ztp_date_fields(
-    year,
-    ztp_as_field(fields[["month"]], "month"),
-    day,
-    fields[["month_code"]]
-  )
-}
-
 #' @rdname temporal_with
 #' @export
 temporal_with_calendar.zutempo_plain_date <- function(x, calendar) {

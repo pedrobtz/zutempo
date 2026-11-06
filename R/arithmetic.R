@@ -143,12 +143,7 @@ ztp_difference_settings <- function(
       option = "largest_unit"
     )
   }
-  maximum <- ztp_unit_maximum[ztp_units[smallest + 1L]]
-  increment <- if (is.na(maximum)) {
-    ztp_increment_value(rounding_increment)
-  } else {
-    ztp_increment(rounding_increment, maximum[[1L]], inclusive = FALSE)
-  }
+  increment <- ztp_unit_increment(rounding_increment, smallest)
   mode <- ztp_rounding_mode_code(rounding_mode)
   if (since) {
     mode <- ztp_negate_rounding_mode(mode)

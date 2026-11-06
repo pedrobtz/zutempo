@@ -324,11 +324,8 @@ zoned_date_time_compare <- function(x, y) {
 temporal_equals.zutempo_zoned_date_time <- function(x, other) {
   other <- ztp_as_zoned_date_time(other)
   args <- ztp_recycle(list(ztp_zdt_instant(x), ztp_zdt_instant(other)))
-  same_instant <- instant_compare(
-    new_instant(args[[1L]]),
-    new_instant(args[[2L]])
-  ) ==
-    0L
+  order <- instant_compare(new_instant(args[[1L]]), new_instant(args[[2L]]))
+  same_instant <- order == 0L
   ztp_zdt_zones_ready(x)
   ztp_zdt_zones_ready(other)
   ids <- ztp_recycle(list(ztp_zdt_ids(x), ztp_zdt_ids(other)))
