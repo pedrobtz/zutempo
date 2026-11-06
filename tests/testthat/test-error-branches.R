@@ -13,11 +13,28 @@ test_that("an ill-formed time zone identifier is a range error", {
       "+05:30"
     )
   )
-  for (bad in c("+24", "+2", "+05:60", "+05:", "+05:3", "+05:30x", "?")) {
-    expect_error(normalise(bad), class = "zutempo_range_error", info = bad)
+  # A tz error is a range error too, so each is also checked not to be
+  # one: an ill-formed identifier must fail the syntax check, not the
+  # cache lookup.
+  bad <- c(
+    "+24",
+    "+2",
+    "+05:60",
+    "+05:",
+    "+05:3",
+    "+05:30x",
+    "+05:30:15",
+    "+0530:15",
+    "?",
+    "Ab$c",
+    "Europe/Par is",
+    "Europe//Paris",
+    "Europe/-Paris"
+  )
+  for (x in bad) {
+    e <- expect_error(normalise(x), class = "zutempo_range_error", info = x)
+    expect_false(inherits(e, "zutempo_tz_error"), info = x)
   }
-  expect_error(normalise("+05:30:15"), class = "zutempo_range_error")
-  expect_error(normalise("+0530:15"), class = "zutempo_range_error")
   # A well-formed name the cache does not hold.
   expect_error(normalise("Not/Loaded"), class = "zutempo_tz_error")
 })
