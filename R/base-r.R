@@ -104,7 +104,8 @@ as.Date.zutempo_zoned_date_time <- function(x, tz = NULL, ...) {
 #' @export
 as.Date.zutempo_instant <- function(x, tz = "UTC", ...) {
   ztp_check_dots_empty(...)
-  as.Date(temporal_to_plain_date(temporal_to_zoned_date_time_iso(x, ztp_system_tz(tz))))
+  z <- temporal_to_zoned_date_time_iso(x, ztp_system_tz(tz))
+  as.Date(temporal_to_plain_date(z))
 }
 
 #' @rdname base-r
@@ -246,7 +247,11 @@ ztp_zoned_from_plain <- function(x, tz, disambiguation) {
       kind = "type"
     )
   }
-  temporal_to_zoned_date_time(x, ztp_system_tz(tz), disambiguation = disambiguation)
+  temporal_to_zoned_date_time(
+    x,
+    ztp_system_tz(tz),
+    disambiguation = disambiguation
+  )
 }
 
 # POSIXlt from zoned values: the fields in each element's zone, its offset
