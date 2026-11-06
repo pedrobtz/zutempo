@@ -1,5 +1,9 @@
 # zutempo 0.0.0.9000
 
+* An ill-formed time zone identifier, such as `"Europe/Par is"`, is
+  reported as one. The message said what an ISO string would have needed
+  instead: "expected a four-digit year".
+
 * `temporal_total()` is the nearest double to the exact quotient, with or
   without `relative_to`, as the specification requires. It added the
   fraction to the whole units in doubles, which rounded twice:

@@ -782,7 +782,28 @@ ztp_status ztp_parse_time_zone_string(ztp_ctx *ctx, size_t index, const char *s,
             return ZTP_OK;
         }
     }
-    if (ztp_parse(ctx, index, s, n, ZTP_PARSE_ANY, &p, NULL) != ZTP_OK) return ctx->status;
+    if (ztp_parse(ctx, index, s, n, ZTP_PARSE_ANY, &p, NULL) != ZTP_OK) {
+        /* A string that cannot start an ISO string was meant as an
+           identifier: say so, rather than what the ISO reader expected. */
+        int c0 = n > 0 ? (unsigned char)s[0] : -1, c1 = n > 1 ? (unsigned char)s[1] : -1;
+        bool iso_shaped = ztp_is_digit(c0) || c0 == '+' || c0 == '-' ||
+                          ((c0 == 'T' || c0 == 't') && ztp_is_digit(c1));
+        if (!iso_shaped) {
+            char shown[41];
+            size_t k = n <= 40 ? n : ztp_utf8_prefix(s, n, 37);
+            ztp_status st;
+            memcpy(shown, s, k);
+            if (n > 40) memcpy(shown + k, "...", 3), k += 3;
+            shown[k] = '\0';
+            st = ztp_fail(ctx, ZTP_ERR_PARSE, index,
+                          "cannot parse \"%s\" as a time zone: it is not a valid time zone "
+                          "identifier",
+                          shown);
+            ctx->position = 1;
+            return st;
+        }
+        return ctx->status;
+    }
     if (p.has_tz) {
         strcpy(dst, p.tz);
         return ZTP_OK;
