@@ -105,6 +105,32 @@ test_that("Instant <-> POSIXct agree with base R for 10^4 instants, 1900 to 2100
   expect_lte(max(abs(off)), 250)
 })
 
+test_that("Instant to POSIXct is the double nearest the exact seconds", {
+  # Found with exact rationals (Python's fractions): for each, the epoch
+  # nanoseconds rounded to a double and then divided by 1e9 is one ulp
+  # off. The expected doubles are built exactly, as n * 2^-k with n below
+  # 2^53. No instant is a tie between two doubles (src/ztp_instant.c).
+  ns <- c(
+    "-1175349083408317517",
+    "219616335239701014",
+    "1861390121619659571",
+    "3922473470337312955"
+  )
+  expected <- c(
+    -154055355060495 * 2^-17,
+    7369101386889751 * 2^-25,
+    7807236032669825 * 2^-22,
+    8226023083264837 * 2^-21
+  )
+  x <- instant_from_epoch_nanoseconds(ns)
+  expect_identical(unclass(as.POSIXct(x)), structure(expected, tzone = "UTC"))
+  # Below 2^53 nanoseconds, one division.
+  expect_identical(
+    unclass(as.POSIXct(instant_from_epoch_nanoseconds("123456789123456"))),
+    structure(123456789123456 / 1e9, tzone = "UTC")
+  )
+})
+
 test_that("ZonedDateTime <-> POSIXct keeps the zone as tzone", {
   skip_without_tzdb()
   z <- zoned_date_time(c(
