@@ -137,6 +137,42 @@ test_that("accessors fall back to the function they mask", {
   expect_identical(zutempo::year(plain_date("2026-01-31")), 2026L)
 })
 
+test_that("instants print and convert to character", {
+  x <- instant(c("2026-01-31T12:30Z", NA))
+  expect_identical(as.character(x), c("2026-01-31T12:30:00Z", NA))
+  expect_identical(format(x), as.character(x))
+  out <- capture.output(print(x))
+  expect_identical(out[1], "<zutempo_instant[2]>")
+  expect_match(out[2], "2026-01-31T12:30:00Z", fixed = TRUE)
+})
+
+test_that("durations keep their fields through the base methods", {
+  d <- duration(c("PT1H", NA, "P1D"))
+  expect_true(anyNA(d))
+  expect_false(anyNA(d[c(1, 3)]))
+  expect_identical(is.na(d), c(FALSE, TRUE, FALSE))
+  expect_null(names(d))
+  # Element names would rename the ten fields.
+  y <- d
+  expect_error(names(y) <- c("a", "b", "c"), class = "zutempo_type_error")
+  expect_identical(y, d)
+  names(y) <- NULL
+  expect_identical(y, d)
+  expect_identical(as.list(d), list(d[1], d[2], d[3]))
+  expect_identical(class(as.list(d)[[1]]), class(d))
+  expect_identical(rep(d[1], 2), c(d[1], d[1]))
+  expect_identical(d[[3]], d[3])
+  y[[2]] <- d[1]
+  expect_identical(y[2], d[1])
+  length(y) <- 4
+  expect_identical(class(y), class(d))
+  expect_true(is.na(y[4]))
+  expect_identical(as.character(d), c("PT1H", NA, "P1D"))
+  expect_identical(unique(c(d, d)), d)
+  out <- capture.output(print(d))
+  expect_identical(out[1], "<zutempo_duration[3]>")
+})
+
 test_that("an accessor with nothing to fall back to is a type error", {
   expect_error(
     nanosecond(structure(1, class = "zutempo_nothing")),
