@@ -86,6 +86,13 @@ test262_drop_calendar <- function(bag) {
 
 # A constructor's calendar or zone is an identifier, not an ISO string
 # that names one.
+#
+# This check, the calendar checks of test262_new() and its reference day
+# and reference year checks raise their own errors. They stand in for
+# arguments of the JavaScript constructors that R's constructors do not
+# take (a calendar, a reference day or year), so the cases they decide
+# test this harness, not zutempo; they are kept to run the rest of each
+# case's arguments.
 test262_identifier <- function(x, what) {
   ok <- is.character(x) &&
     length(x) == 1L &&
@@ -114,13 +121,22 @@ test262_option_names <- c(
   "calendar_name",
   "time_zone_name",
   "unit",
-  "direction",
-  "rounding_increment"
+  "direction"
 )
 
-test262_option_error <- function(error) {
-  inherits(error, "zutempo_type_error") &&
-    isTRUE(error[["option"]] %in% test262_option_names)
+# `rounding_increment` is different: a number out of range or one that
+# does not divide the unit is a range error in R too, so only a value that
+# is not a number (JavaScript converts `false` and `{}` to one) may give a
+# type error.
+test262_option_error <- function(error, case) {
+  if (!inherits(error, "zutempo_type_error")) {
+    return(FALSE)
+  }
+  option <- error[["option"]]
+  if (identical(option, "rounding_increment")) {
+    return(!is.numeric(case[["options"]][["roundingIncrement"]]))
+  }
+  isTRUE(option %in% test262_option_names)
 }
 
 # R raises its own error for a missing argument, where JavaScript passes
@@ -272,17 +288,23 @@ test262_run <- function(type, case) {
 }
 
 # Run every case of a type; one expectation lists the failures that are
-# not documented differences.
+# not documented differences, and the documented differences that pass
+# (their row in differences.csv is stale).
 test262_run_cases <- function(type) {
   cases <- oracle_gctorture_sample(test262_cases(type))
   differences <- test262_differences()
   ids <- vapply(cases, function(c) c[["id"]], "")
-  cases <- cases[!test262_is_difference(ids, differences)]
+  listed <- test262_is_difference(ids, differences)
   failures <- character()
-  for (case in cases) {
-    problem <- test262_problem(type, case)
-    if (!is.null(problem)) {
-      failures <- c(failures, sprintf("%s: %s", case[["id"]], problem))
+  for (i in seq_along(cases)) {
+    problem <- test262_problem(type, cases[[i]])
+    if (listed[i] && is.null(problem)) {
+      failures <- c(
+        failures,
+        sprintf("%s: listed as a difference, passes", ids[i])
+      )
+    } else if (!listed[i] && !is.null(problem)) {
+      failures <- c(failures, sprintf("%s: %s", ids[i], problem))
     }
   }
   expect(
@@ -307,7 +329,7 @@ test262_problem <- function(type, case) {
       return(sprintf("expected a %s, got a value", expected_throw))
     }
     # Design 10: an invalid option value is a type error in R.
-    if (expected_throw == "RangeError" && test262_option_error(value)) {
+    if (expected_throw == "RangeError" && test262_option_error(value, case)) {
       return(NULL)
     }
     if (expected_throw == "TypeError" && test262_missing_argument(value)) {
