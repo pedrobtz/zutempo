@@ -2,8 +2,10 @@
 # with the `full-ci` label or on demand, the long run before submission.
 # The corpus cache is what makes the short runs add up to one campaign.
 on:
-  push:
-    branches: [main, master]
+  # No `push:`: a pull request already checks its merge with main,
+  # and the schedule checks main (r-actions README, "Pushes to main").
+  schedule:
+    - cron: "19 1 * * 1"
   pull_request:
     types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
